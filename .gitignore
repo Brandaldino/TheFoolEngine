@@ -6,3 +6,19 @@ bin-int/
 #Files
 *.user
 
+# Premake 生成的文件
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.workspace
+*.project
+
+*.o
+*.obj
+*.pch
+*.pdb
+*.ilk
+
+# model file
+*.blender
