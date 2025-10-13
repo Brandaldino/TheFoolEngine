@@ -22,3 +22,6 @@ bin-int/
 
 # model file
 *.blender
+
+# config file
+*.config
