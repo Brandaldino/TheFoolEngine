@@ -26,3 +26,4 @@ bin-int/
 
 # config file
 *.config
+*.json
