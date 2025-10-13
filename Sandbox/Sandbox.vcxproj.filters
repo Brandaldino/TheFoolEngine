@@ -1,22 +1,81 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="DemoGame">
+      <UniqueIdentifier>{64542DA2-5021-88AD-793A-76556566BD3B}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="DemoGameLib">
+      <UniqueIdentifier>{1BFB543D-87B0-CD32-10A5-C7097C59C436}</UniqueIdentifier>
     </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="ExampleLayer">
+      <UniqueIdentifier>{AE533BF6-9AB6-CA9A-433C-03512F7E961D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particle">
+      <UniqueIdentifier>{D94E718D-C51B-CC98-EE34-BA40DA600127}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sandbox2D">
+      <UniqueIdentifier>{AA155D3F-1680-11B6-5FBE-C25BCB67EF0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sandbox3D">
+      <UniqueIdentifier>{CB155D3F-3780-11B6-80BE-C25BEC67EF0A}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\SandboxApp.cpp">
-      <Filter>源文件</Filter>
+    <ClInclude Include="src\DemoGame\DemoGameLayer.h">
+      <Filter>DemoGame</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DemoGameLib\Color.h">
+      <Filter>DemoGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DemoGameLib\Level.h">
+      <Filter>DemoGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DemoGameLib\Player.h">
+      <Filter>DemoGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DemoGameLib\Random.h">
+      <Filter>DemoGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ExampleLayer\ExampleLayer.h">
+      <Filter>ExampleLayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Particle\ParticleSystem.h">
+      <Filter>Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sandbox2D\Sandbox2D.h">
+      <Filter>Sandbox2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sandbox3D\Sandbox3D.h">
+      <Filter>Sandbox3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sandbox_Model\Sandbox_Model.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\DemoGame\DemoGameLayer.cpp">
+      <Filter>DemoGame</Filter>
     </ClCompile>
+    <ClCompile Include="src\DemoGameLib\Level.cpp">
+      <Filter>DemoGameLib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DemoGameLib\Player.cpp">
+      <Filter>DemoGameLib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DemoGameLib\Random.cpp">
+      <Filter>DemoGameLib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle\ParticleSystem.cpp">
+      <Filter>Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sandbox2D\Sandbox2D.cpp">
+      <Filter>Sandbox2D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sandbox3D\Sandbox3D.cpp">
+      <Filter>Sandbox3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SandboxApp.cpp" />
+    <ClCompile Include="src\Sandbox_Model\Sandbox_Model.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\model\GLB\modelNew.glb" />
   </ItemGroup>
 </Project>
