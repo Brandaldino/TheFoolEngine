@@ -5,19 +5,22 @@
 
 namespace TFE = TheFoolEngine;
 
-class TheFoolEditor :public TheFoolEngine::Application {
+class TheFoolEditor :public TheFoolEngine::Application 
+{
 public:
 	TheFoolEditor()
 		: Application("TheFool Editor")
 	{
 		PushLayer(new TFE::EditorLayer());
 	}
-	~TheFoolEditor() {
+	~TheFoolEditor() 
+	{
 
 	}
 
 };
 
-TheFoolEngine::Application* TheFoolEngine::CreateApplication() {
+TheFoolEngine::Application* TheFoolEngine::CreateApplication() 
+{
 	return new TheFoolEditor();
 }
