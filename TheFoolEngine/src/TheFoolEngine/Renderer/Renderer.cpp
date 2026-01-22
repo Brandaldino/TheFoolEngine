@@ -18,9 +18,9 @@ namespace TheFoolEngine {
 
 		Renderer2D::Init();
 
-		Renderer3D::Init();
+		// Renderer3D::Init();
 
-		MeshRenderer::Init();
+		// MeshRenderer::Init();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)

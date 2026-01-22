@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 namespace TheFoolEngine {
-	class WindowsWindow:public Window
+	class WindowsWindow : public Window
 	{
 	public:
 		WindowsWindow(const WindowProps& props);

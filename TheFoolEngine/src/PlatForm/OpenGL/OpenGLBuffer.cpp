@@ -41,7 +41,7 @@ namespace TheFoolEngine {
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	}
 
-	void OpenGLVertexBuffer::Unbind() const 
+	void OpenGLVertexBuffer::Unbind() const
 	{
 		TF_PROFILE_FUNCTION();
 

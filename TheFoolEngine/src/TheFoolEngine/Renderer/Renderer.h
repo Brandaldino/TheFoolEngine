@@ -18,7 +18,8 @@ namespace TheFoolEngine{
 
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 	private:
-		struct SceneData {
+		struct SceneData 
+		{
 			glm::mat4 ViewProjectionMatrix;
 		};
 

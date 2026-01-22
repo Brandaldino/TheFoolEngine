@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "SceneCamera.h"
+
 namespace TheFoolEngine{
 
 	struct TagComponent
@@ -40,4 +42,13 @@ namespace TheFoolEngine{
 		}
 	};
 
+	struct CameraComponent
+	{
+		TheFoolEngine::SceneCamera Camera; 
+		bool Primary = true;
+		bool FixedAspectRatio = false;	// ×Ýºá±È
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
+	};
 }

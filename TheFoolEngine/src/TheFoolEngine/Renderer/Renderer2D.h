@@ -4,6 +4,8 @@
 
 #include "Texture.h"
 
+#include "Camera.h"
+
 namespace TheFoolEngine {
 
 	class Renderer2D {
@@ -11,6 +13,7 @@ namespace TheFoolEngine {
 		static void Init();
 		static void Shutdown();
 
+		static void BeginScene(const Camera& camera, glm::mat4& transform);
 		static void BeginScene(const OrthographicCamera& camera);
 		static void EndScene();
 

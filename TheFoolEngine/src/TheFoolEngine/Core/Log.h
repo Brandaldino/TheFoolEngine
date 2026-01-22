@@ -10,7 +10,7 @@
 
 namespace TheFoolEngine {
 
-	class THEFOOLENGINE_API Log{
+	class Log{
 	public:
 		static void Init();
 

@@ -12,12 +12,12 @@
 	#define TF_ENABLE_ASSERTS
 #endif
 
-#ifdef TF_ENABLE_ASSERTS
-	#define TF_ASSERT(x,...) {if(!(x)){TF_ERROR("Assertion Failed: {0}",__VA_ARGS__); __debugbreak();}}
-	#define TF_CORE_ASSERT(x,...){if(!(x)){TF_CORE_ERROR("Assertion Failed: {0}",__VA_ARGS__); __debugbreak();}}
-#else
-	#define TF_ASSERT(x,...)
-	#define TF_CORE_ASSERT(x,...)
+#ifdef TF_ENABLE_ASSERTS 
+	#define TF_ASSERT(x,...) {if(!(x)){TF_ERROR("Assertion Failed: {0}",__VA_ARGS__); __debugbreak();}} 
+	#define TF_CORE_ASSERT(x,...){if(!(x)){TF_CORE_ERROR("Assertion Failed: {0}",__VA_ARGS__); __debugbreak();}} 
+#else 
+	#define TF_ASSERT(x,...) 
+	#define TF_CORE_ASSERT(x,...) 
 #endif // ASSERTS
 
 
