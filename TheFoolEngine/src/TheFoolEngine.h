@@ -23,6 +23,7 @@
 
 #include "TheFoolEngine/Scene/Scene.h"
 #include "TheFoolEngine/Scene/Entity.h"
+#include "TheFoolEngine/Scene/ScriptableEntity.h"
 #include "TheFoolEngine/Scene/Components.h"
 
 // --Renderer------------------------

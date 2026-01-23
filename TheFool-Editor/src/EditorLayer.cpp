@@ -4,7 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
+
     EditorLayer::EditorLayer()
         : Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true)
     {
@@ -32,6 +34,35 @@ namespace TheFoolEngine{
 
         m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Camera Entity");
         m_SecondCamera.AddComponent<CameraComponent>().Primary = false;
+
+        class CameraController : public ScriptableEntity
+        {
+        public:
+            void OnCreate()
+            {
+            }
+
+            void OnDestroy()
+            {
+            }
+
+            void OnUpdate(TimeStep ts)
+            {
+                auto& transform = GetComponent<TransformComponent>().Transform;
+                float speed = 5.0f;
+
+                if (Input::IsKeyPressed(Key::A))
+                    transform[3][0] -= speed * ts;
+                if (Input::IsKeyPressed(Key::D))
+                    transform[3][0] += speed * ts;
+                if (Input::IsKeyPressed(Key::W))
+                    transform[3][1] += speed * ts;
+                if (Input::IsKeyPressed(Key::S))
+                    transform[3][1] -= speed * ts;
+            }
+        };
+
+        m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
     }
 
     void EditorLayer::OnDetach()
