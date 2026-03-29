@@ -40,6 +40,9 @@ namespace TheFoolEngine
         public:
             void OnCreate()
             {
+                // TEST CODE 测试相机代码是否生效
+                auto& transform = GetComponent<TransformComponent>().Transform;
+				transform[3][0] = rand() % 10 - 5.0f;
             }
 
             void OnDestroy()
@@ -62,7 +65,10 @@ namespace TheFoolEngine
             }
         };
 
+		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
         m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
     }
 
     void EditorLayer::OnDetach()
@@ -167,6 +173,8 @@ namespace TheFoolEngine
 
             ImGui::EndMenuBar();
         }
+
+		m_SceneHierarchyPanel.OnImGuiRender();
 
         ImGui::Begin("Settings");
 
