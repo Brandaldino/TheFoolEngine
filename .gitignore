@@ -1,0 +1,39 @@
+# 构建目录（CMake 通常生成在 build/，这里一并包含可能的旧目录）
+build/
+bin/
+bin-int/
+out/
+
+# Visual Studio 用户本地配置
+.vs/
+*.user
+*.suo
+*.slnx.user
+
+# CMake 生成的文件
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+
+# 编译产物
+*.o
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.lib
+*.dll
+*.exe
+
+# 模型源文件（不提交 Blender 等工程文件）
+*.blend
+*.blender
+*.zip
+
+# 本地临时配置
+*.local.config
+*.local.json
+
+# VS 新格式解决方案（CMake 生成，不提交）
+*.slnx

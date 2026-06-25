@@ -1,0 +1,1 @@
+{"otherData": {},"traceEvents":[{},{"cat":"function","dur":35430,"name":"void TheFoolEngine::WindowsWindow::Shutdown(void)","ph":"X","pid":0,"tid":28476,"ts":203449745980.200},{"cat":"function","dur":35600,"name":"TheFoolEngine::WindowsWindow::~WindowsWindow(void)","ph":"X","pid":0,"tid":28476,"ts":203449745979.900}]}
