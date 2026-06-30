@@ -48,9 +48,6 @@
     <ClInclude Include="src\Sandbox2D\Sandbox2D.h">
       <Filter>Sandbox2D</Filter>
     </ClInclude>
-    <ClInclude Include="src\Sandbox3D\Sandbox3D.h">
-      <Filter>Sandbox3D</Filter>
-    </ClInclude>
     <ClInclude Include="src\Sandbox_Model\Sandbox_Model.h">
       <Filter>Sandbox_Model</Filter>
     </ClInclude>
@@ -73,9 +70,6 @@
     </ClCompile>
     <ClCompile Include="src\Sandbox2D\Sandbox2D.cpp">
       <Filter>Sandbox2D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Sandbox3D\Sandbox3D.cpp">
-      <Filter>Sandbox3D</Filter>
     </ClCompile>
     <ClCompile Include="src\SandboxApp.cpp" />
     <ClCompile Include="src\Sandbox_Model\Sandbox_Model.cpp">

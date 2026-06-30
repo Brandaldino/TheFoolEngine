@@ -3,6 +3,8 @@
 #include "../Importer/PBRModel.h"
 #include "../Importer/PBRMaterial/PBRMaterialManager.h"
 
+#include "Light.h"
+
 class Shader;
 class PerspectiveCamera;
 
@@ -13,14 +15,6 @@ namespace TheFoolEngine
         Ref<PBRModel> Model;
         glm::mat4 Transform = glm::mat4(1.0f);
         bool Visible = true;
-    };
-
-    struct Light
-    {
-        glm::vec3 Position;
-        glm::vec3 Color;
-        float Intensity;
-        int Type;   // type: 0 = directional, 1 = point
     };
 
     struct CameraData
@@ -44,12 +38,16 @@ namespace TheFoolEngine
 
         static void ResetRendererState();
         static void Register(const PBRRenderProxy& proxy);
-        static void SetLight(const Light& light);
         static void SetCamera(const CameraData& camera);
+        static void AddLight(const DirectionLight& light);
+        static void AddLight(const PointLight& light);
+        static void AddLight(const SpotLight& light);
 
         static void Render();
 
         static void ResetStats();
         static PBRRenderState GetStats();
+
+        static std::int32_t GetLightsCount();
     };
 }

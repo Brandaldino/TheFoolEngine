@@ -153,18 +153,6 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\GraphicsContext.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\TheFoolEngine\Renderer\Material.h">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TheFoolEngine\Renderer\MeshData.h">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TheFoolEngine\Renderer\MeshRenderer.h">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TheFoolEngine\Renderer\ModelImporter.h">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\OrthographicCamera.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
@@ -184,9 +172,6 @@
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Renderer2D.h">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TheFoolEngine\Renderer\Renderer3D.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\RendererAPI.h">
@@ -1489,6 +1474,7 @@
     <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\PBRRenderer.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Light.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1542,18 +1528,6 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\FrameBuffer.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\TheFoolEngine\Renderer\Material.cpp">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TheFoolEngine\Renderer\MeshData.cpp">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TheFoolEngine\Renderer\MeshRenderer.cpp">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TheFoolEngine\Renderer\ModelImporter.cpp">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCamera.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
@@ -1573,9 +1547,6 @@
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\Renderer2D.cpp">
-      <Filter>src\TheFoolEngine\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TheFoolEngine\Renderer\Renderer3D.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\RendererAPI.cpp">

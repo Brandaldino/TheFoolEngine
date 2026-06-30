@@ -51,20 +51,24 @@ in vec3 v_FragPos;
 
 #define PI 3.1415926
 #define NR_LIGHTS 10
+#define LIGHT_TYPE_DIRECTION 0
+#define LIGHT_TYPE_POINT 1
+#define LIGHT_TYPE_SPOT 2
+#define LIGHT_TYPE_RECT 3
+#define LIGHT_TYPE_DISK 4
+
+struct GPU_Light
+{
+    vec4 Position; // xyz = pos (point/spot), w = range
+    vec4 Direction; // xyz = dir(direction/spot)
+    vec4 Color; // xyz = color, w = intensity
+    vec4 Params; // x = range, y = innerCos, z = outerCos, w = type
+};
 
 layout(std140, binding = 2) uniform LightBlock
 {
-    vec4 u_LightPositionType[NR_LIGHTS]; // xyz = pos, w = type
-    vec4 u_LightColorIntensity[NR_LIGHTS]; // xyz = color, w = intensity
+    GPU_Light u_Lights[NR_LIGHTS];
     int u_LightCount;
-};
-
-struct Light
-{
-    vec3 position;
-    vec3 color;
-    float intensity;
-    int type;
 };
 
 uniform vec3 u_CameraPos;
@@ -115,37 +119,6 @@ vec3 CalcFinalNormal(vec3 tangentNormal)
     return normalize(TBN * tn);
 }
 
-vec3 CalcDirectLighting(Light light, vec3 N, vec3 V, vec3 F0, vec3 albedo, float metallic, float roughness)
-{
-    vec3 L = light.type == 0
-        ? normalize(-light.position)
-        : normalize(light.position - v_FragPos);
-    vec3 H = normalize(V + L);
-
-    float NdotL = max(dot(N, L), 0.0);
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotH = max(dot(N, H), 0.0);
-    float HdotV = max(dot(H, V), 0.0);
-
-    float D = DistributionGGX(NdotH, roughness);
-    float G = GeometrySmith(NdotV, NdotL, roughness);
-    vec3 F = fresnelSchlick(HdotV, F0);
-
-    vec3 specularBRDF = (D * G * F) / (4.0 * NdotV * NdotL + 0.0001);
-    vec3 kD = (1.0 - F) * (1.0 - metallic);
-    vec3 diffuseBRDF = kD * albedo / PI;
-
-    float attenuation = 1.0;
-    if (light.type == 1)
-    {
-        float distance = length(light.position - v_FragPos);
-        attenuation = 1.0 / (distance * distance);
-    }
-    vec3 radiance = light.color * light.intensity * attenuation;
-
-    return (diffuseBRDF + specularBRDF) * radiance * NdotL;
-}
-
 vec3 CalculateIBL(vec3 N, vec3 V, vec3 F0, vec3 albedo, float metallic, float roughness, float occlusion)
 {
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
@@ -180,12 +153,58 @@ void main()
     vec3 Lo = vec3(0.0);
     for (int i = 0; i < u_LightCount; ++i)
     {
-        Light light;
-        light.position = u_LightPositionType[i].xyz;
-        light.color = u_LightColorIntensity[i].xyz;
-        light.intensity = u_LightColorIntensity[i].w;
-        light.type = int(u_LightPositionType[i].w);
-        Lo += CalcDirectLighting(light, N, V, F0, albedo, metallic, roughness);
+        GPU_Light gl = u_Lights[i];
+        int type = int(gl.Params.w);
+
+        vec3 L;
+        float attenuation = 1.0;
+
+        if(type == LIGHT_TYPE_DIRECTION)
+            L = normalize(gl.Direction.xyz);
+        else if(type == LIGHT_TYPE_POINT)
+        {
+            vec3 delta = gl.Position.xyz - v_FragPos;
+            float dist = length(delta);
+            if(dist > gl.Position.w)
+                continue;
+            L = delta / dist;
+            attenuation = 1.0 / (dist * dist);
+        }
+        else if(type == LIGHT_TYPE_SPOT)
+        {
+            vec3 delta = gl.Position.xyz - v_FragPos;
+            float dist = length(delta);
+            if(dist > gl.Position.w)
+                continue;
+            L = delta / dist;
+
+            float theta = dot(L, normalize(-gl.Direction.xyz));
+            float epsilon = gl.Params.y - gl.Params.z; // innerCos - outerCos
+            float spotFactor = clamp((theta - gl.Params.z) / epsilon, 0.0, 1.0);
+            if(spotFactor < 0.001)
+                continue;
+
+            attenuation = spotFactor * spotFactor / (dist * dist);
+        }
+        else
+            continue;
+
+        vec3 H = normalize(V + L);
+        float NdotL = max(dot(N, L), 0.0);
+        float NdotV = max(dot(N, V), 0.0);
+        float NdotH = max(dot(N, H), 0.0);
+        float HdotV = max(dot(H, V), 0.0);
+
+        float D = DistributionGGX(NdotH, roughness);
+        float G = GeometrySmith(NdotV, NdotL, roughness);
+        vec3 F = fresnelSchlick(HdotV, F0);
+
+        vec3 specularBRDF = (D * G * F) / (4.0 * NdotV * NdotL + 0.0001);
+        vec3 kD = (1.0 - F) * (1.0 - metallic);
+        vec3 diffuseBRDF = kD * albedo / PI;
+
+        vec3 radiance = gl.Color.xyz * gl.Color.w * attenuation;
+        Lo += (diffuseBRDF + specularBRDF) * radiance * NdotL;
     }
 
     vec3 ambient = CalculateIBL(N, V, F0, albedo, metallic, roughness, occlusion);

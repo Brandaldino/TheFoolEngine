@@ -29,8 +29,6 @@
 // --Renderer------------------------
 #include "TheFoolEngine/Renderer/Renderer.h"
 #include "TheFoolEngine/Renderer/Renderer2D.h"
-#include "TheFoolEngine/Renderer/Renderer3D.h"
-#include "TheFoolEngine/Renderer/MeshRenderer.h"
 #include "TheFoolEngine/Renderer/RenderCommand.h"
 
 #include "TheFoolEngine/Renderer/Buffer.h"
@@ -40,6 +38,7 @@
 #include "TheFoolEngine/Renderer/VertexArray.h"
 
 #include "TheFoolEngine/Renderer/OrthographicCamera.h"
+#include "TheFoolEngine/Renderer/PerspectiveCameraController.h"
 
 #include "TheFoolEngine/Renderer/PBRRenderer.h"
 // ------------------------------------

@@ -11,7 +11,6 @@ namespace TheFoolEngine {
 	{
 	public:
 		OpenGLTexture2D(uint32_t width, uint32_t height);
-		OpenGLTexture2D(const std::string& path);
 		OpenGLTexture2D(const std::filesystem::path& path);
 		OpenGLTexture2D(const void* data, uint32_t size);
 		virtual ~OpenGLTexture2D();

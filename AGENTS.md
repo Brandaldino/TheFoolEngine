@@ -76,3 +76,5 @@ OpenCode 在此项目中扮演导师/引导者角色，辅助人类完成引擎�
 - **不得主动修改 `TheFoolEngine`、`Sandbox`、`TheFool-Editor` 中的源代码**，除非人类明确要求修改
 - 可以读取、分析、建议，但修改权在人类手中
 - AGENTS.md 本身除外（可应要求编辑）
+- **UTF-8 encoding** — All file access, reading, and writing must use UTF-8 encoding.
+- **Comments in English** — All code comments must be written in English only.

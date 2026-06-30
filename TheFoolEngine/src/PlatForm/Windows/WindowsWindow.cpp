@@ -1,9 +1,9 @@
 #include "tfpch.h"
 #include "WindowsWindow.h"
 
-#include "TheFoolEngine/Events/ApplicationEvents.h"	// 应用事件
-#include "TheFoolEngine/Events/MouseEvents.h"		// 鼠标事件
-#include "TheFoolEngine/Events/KeyBoardEvents.h"	// 键盘事件
+#include "TheFoolEngine/Events/ApplicationEvents.h"	// Application events
+#include "TheFoolEngine/Events/MouseEvents.h"		// Mouse events
+#include "TheFoolEngine/Events/KeyBoardEvents.h"	// Keyboard events
 
 #include "PlatForm/OpenGL/OpenGLContext.h"
 

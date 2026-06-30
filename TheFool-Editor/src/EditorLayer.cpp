@@ -40,7 +40,7 @@ namespace TheFoolEngine
         public:
             void OnCreate()
             {
-                // TEST CODE 测试相机代码是否生效
+                // TEST CODE
                 auto& transform = GetComponent<TransformComponent>().Transform;
 				transform[3][0] = rand() % 10 - 5.0f;
             }

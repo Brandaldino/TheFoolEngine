@@ -25,7 +25,7 @@ namespace TheFoolEngine
 
         // Frame state
         std::vector<PBRRenderProxy> Renderables;
-        std::vector<Light> Lights;
+        std::vector<GPULight> GPULights;
         GLuint LightUBO = 0;    // UBO handle
         CameraData Camera;
 
@@ -34,8 +34,7 @@ namespace TheFoolEngine
 
     struct LightGPUBlock
     {
-        glm::vec4 PositionType[NR_LIGHTS];     // xyz = pos, w = type
-        glm::vec4 ColorIntensity[NR_LIGHTS];   // xyz = color, w = intensity
+        GPULight Lights[NR_LIGHTS];
         int32_t LightCount;
     };
 
@@ -54,11 +53,11 @@ namespace TheFoolEngine
         s_Data.DefaultBlack->SetData(&blackData, sizeof(uint32_t));
 
         s_Data.DefaultNormal = Texture2D::Create(1, 1);
-        uint32_t normalData = 0xffff8080; // (1,0.5,0.5,1) → decode to (0,0,1) in tangent space
+        uint32_t normalData = 0xffff8080; // (1,0.5,0.5,1) => decode to (0,0,1) in tangent space
         s_Data.DefaultNormal->SetData(&normalData, sizeof(uint32_t));
 
         s_Data.DefaultGray = Texture2D::Create(1, 1);
-        uint32_t grayData = 0xFF7F7F7F; // (0.5,0.5,0.5,1) → Roughness=0.5, Metallic=0.5
+        uint32_t grayData = 0xFF7F7F7F; // (0.5,0.5,0.5,1) => Roughness=0.5, Metallic=0.5
         s_Data.DefaultGray->SetData(&grayData, sizeof(uint32_t));
 
         int32_t samplers[MAX_TEXTURE_SLOTS];
@@ -83,7 +82,7 @@ namespace TheFoolEngine
         ResetStats();
 
         s_Data.Renderables.clear();
-        s_Data.Lights.clear();
+        s_Data.GPULights.clear();
 
         s_Data.Shader->Bind();
         s_Data.DefaultWhite->Bind(1);
@@ -97,16 +96,41 @@ namespace TheFoolEngine
         s_Data.Renderables.push_back(proxy);
     }
 
-    void PBRRenderer::SetLight(const Light& light)
-    {
-        s_Data.Lights.push_back(light);
-    }
-
     void PBRRenderer::SetCamera(const CameraData& camera)
     {
         s_Data.Camera.ViewMatrix = camera.ViewMatrix;
         s_Data.Camera.ProjectionMatrix = camera.ProjectionMatrix;
         s_Data.Camera.Position = camera.Position;
+    }
+
+    void PBRRenderer::AddLight(const DirectionLight& light)
+    {
+        GPULight& gpu = s_Data.GPULights.emplace_back();
+        gpu.Position = glm::vec4(light.Direction * 1e6f, 0.0f);
+        gpu.Direction = glm::vec4(light.Direction, 0.0f);
+        gpu.Color = glm::vec4(light.Color, light.Intensity);
+        gpu.Params = glm::vec4(0.0f, 0.0f, 0.0f, (float)LightType::Directional);
+    }
+
+    void PBRRenderer::AddLight(const PointLight& light)
+    {
+        GPULight& gpu = s_Data.GPULights.emplace_back();
+        gpu.Position = glm::vec4(light.Position, light.Range);
+        gpu.Direction = glm::vec4(0.0f);
+        gpu.Color = glm::vec4(light.Color, light.Intensity);
+        gpu.Params = glm::vec4(0.0f, 0.0f, 0.0f, (float)LightType::Point);
+    }
+
+    void PBRRenderer::AddLight(const SpotLight& light)
+    {
+        float innerCos = glm::cos(light.InnerAngle);
+        float outerCos = glm::cos(light.OuterAngle);
+
+        GPULight& gpu = s_Data.GPULights.emplace_back();
+        gpu.Position = glm::vec4(light.Position, light.Range);
+        gpu.Direction = glm::vec4(light.Direction, 0.0f);
+        gpu.Color = glm::vec4(light.Color, light.Intensity);
+        gpu.Params = glm::vec4(light.Range, innerCos, outerCos, (float)LightType::Spot);
     }
 
     void PBRRenderer::Render()
@@ -122,11 +146,13 @@ namespace TheFoolEngine
 
         // light
         LightGPUBlock lightblock = {};
-        lightblock.LightCount = (int32_t)s_Data.Lights.size();
+        lightblock.LightCount = (int32_t)s_Data.GPULights.size();
         for (int32_t i = 0; i < lightblock.LightCount && i < NR_LIGHTS; ++i)
         {
-            lightblock.PositionType[i] = glm::vec4(s_Data.Lights[i].Position, (float)s_Data.Lights[i].Type);
-            lightblock.ColorIntensity[i] = glm::vec4(s_Data.Lights[i].Color, s_Data.Lights[i].Intensity);
+            lightblock.Lights[i].Position = s_Data.GPULights[i].Position;
+            lightblock.Lights[i].Direction = s_Data.GPULights[i].Direction;
+            lightblock.Lights[i].Color = s_Data.GPULights[i].Color;
+            lightblock.Lights[i].Params = s_Data.GPULights[i].Params;
         }
         glNamedBufferSubData(s_Data.LightUBO, 0, sizeof(LightGPUBlock), &lightblock);
 
@@ -182,6 +208,9 @@ namespace TheFoolEngine
         return s_Data.State;
     }
 
-
+    std::int32_t PBRRenderer::GetLightsCount()
+    {
+        return (std::int32_t)s_Data.GPULights.size();
+    }
 
 }

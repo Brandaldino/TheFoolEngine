@@ -9,7 +9,9 @@ namespace TFE = TheFoolEngine;
 Sandbox_Model::Sandbox_Model()
 	: Layer("Sandbox_Model"), m_CameraController(1280.0f / 720.0f)
 {
-	m_LightPos = { 5.0f, 5.0f , 5.0f };
+    m_DebugLights.push_back({ 0, {5,5,5}, {2,3,2}, {1,0.95f,0.9f}, 1.5f });
+    m_DebugLights.push_back({ 0, {5,5,5}, {-1,0.5f,1}, {0.6f,0.6f,0.7f}, 0.5f });
+    m_DebugLights.push_back({ 0, {5,5,5}, {0,-1,-2}, {0.4f,0.5f,0.6f}, 0.4f });
 }
 
 void Sandbox_Model::OnAttach() 
@@ -22,6 +24,8 @@ void Sandbox_Model::OnAttach()
     proxy.Model = TFE::CreateRef<TFE::PBRModel>();
     std::filesystem::path path = "assets/model/Test/Furina.fbx";
     path = "assets/model/Test/MetalRoughSpheres.glb";
+    // path = "assets/model/Test/BoxTextured.glb";
+    // path = "assets/model/GLB/furina_02.glb";
     proxy.Model->Import(path);
     proxy.Model->UpLoad();
     // register material
@@ -71,19 +75,22 @@ void Sandbox_Model::OnUpdate(TFE::TimeStep ts)
         TFE::PBRRenderer::Register(m_PBRProxy);
 
         // Lights
-        TFE::Light light;
-        light.Position = glm::vec3(1000.0f, 1000.0f, -10.0f);
-        light.Color = glm::vec3(1.0f);
-        light.Intensity = 100.0f;
-
-        m_TotalTime += ts;
-        float radius = 5.0f;
-        float theta = m_TotalTime * 0.5f;
-        float phi = m_TotalTime * 0.2f;
-        light.Position.x = cos(theta) * cos(phi) * radius;
-        light.Position.y = sin(phi) * radius;
-        light.Position.z = sin(theta) * cos(phi) * radius;
-        TFE::PBRRenderer::SetLight(light);
+        for (auto& dl : m_DebugLights)
+        {
+            if (dl.Type == 0)
+                TFE::PBRRenderer::AddLight(TFE::DirectionLight{
+                    glm::normalize(dl.Direction), dl.Color, dl.Intensity
+                });
+            else if (dl.Type == 1)
+                TFE::PBRRenderer::AddLight(TFE::PointLight{
+                    dl.Position, dl.Color, dl.Intensity, dl.Range
+                });
+            else if (dl.Type == 2 && glm::length(dl.Direction) > 0.001f)
+                TFE::PBRRenderer::AddLight(TFE::SpotLight{
+                    dl.Position, glm::normalize(dl.Direction), dl.Color, dl.Intensity,
+                    dl.Range, dl.InnerAngle, dl.OuterAngle
+                });
+        }
 
         TFE::PBRRenderer::Render();
     }
@@ -100,7 +107,48 @@ void Sandbox_Model::OnImGuiRender()
     ImGui::Text("Draw Calls: %d", stats.DrawCalls);
     ImGui::Text("MeshCount: %d", stats.MeshCount);
 
-    // ImGui::ColorEdit4("Square Color", glm::value_ptr(m_SquareColor));
+    ImGui::End();
+
+    ImGui::Begin("Lights");
+
+    const char* lightTypes[] = { "Directional", "Point", "Spot" };
+
+    for (int i = 0; i < (int)m_DebugLights.size(); ++i)
+    {
+        ImGui::PushID(i);
+        ImGui::Separator();
+        ImGui::Text("Light %d", i);
+
+        auto& dl = m_DebugLights[i];
+        ImGui::Combo("Type", &dl.Type, lightTypes, IM_ARRAYSIZE(lightTypes));
+
+        if (dl.Type == 0 || dl.Type == 2)
+            ImGui::DragFloat3("Direction", glm::value_ptr(dl.Direction), 0.05f);
+        if (dl.Type == 1 || dl.Type == 2)
+            ImGui::DragFloat3("Position", glm::value_ptr(dl.Position), 0.1f);
+
+        ImGui::ColorEdit3("Color", glm::value_ptr(dl.Color));
+        ImGui::SliderFloat("Intensity", &dl.Intensity, 0.0f, 20.0f);
+        if (dl.Type == 1 || dl.Type == 2)
+            ImGui::SliderFloat("Range", &dl.Range, 0.0f, 100.0f);
+        if (dl.Type == 2)
+        {
+            ImGui::SliderAngle("Inner Angle", &dl.InnerAngle, 0.0f, 90.0f);
+            ImGui::SliderAngle("Outer Angle", &dl.OuterAngle, 0.0f, 90.0f);
+        }
+
+        if (ImGui::Button("Remove"))
+        {
+            m_DebugLights.erase(m_DebugLights.begin() + i);
+            ImGui::PopID();
+            break;
+        }
+
+        ImGui::PopID();
+    }
+
+    if (ImGui::Button("+ Add Light"))
+        m_DebugLights.emplace_back();
 
     ImGui::End();
 }

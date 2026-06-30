@@ -23,67 +23,6 @@ namespace TheFoolEngine {
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-		:m_Path(path)
-	{
-		TF_PROFILE_FUNCTION();
-
-		int width, height, channels;
-		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = nullptr;
-		{
-			TF_PROFILE_SCOPE("OpenGLTexture2D::OpenGLTexture2D(const std::string& path)");
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-		}
-
-		uint32_t whitePixel = 0xFFFFFFFF;
-		if (!data)
-		{
-			TF_CORE_ERROR("Failed to load texture: {0}. Falling back to 1x1 white.", path);
-			width = 1;
-			height = 1;
-			channels = 4;
-			data = (stbi_uc*)&whitePixel;
-		}
-
-		m_Width = width;
-		m_Height = height;
-
-		GLenum internalFormat = 0, dataFormat = 0;
-		if (channels == 4) {
-			internalFormat = GL_RGBA8;
-			dataFormat = GL_RGBA;
-		}
-		else if (channels == 3) {
-			internalFormat = GL_RGB8;
-			dataFormat = GL_RGB;
-		}
-		else
-		{
-			internalFormat = GL_RGBA8;
-			dataFormat = GL_RGBA;
-		}
-
-		m_InternalFormat = internalFormat;
-		m_DataFormat = dataFormat;
-
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
-
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
-
-		m_Data = nullptr;
-
-		if (data != (stbi_uc*)&whitePixel)
-			stbi_image_free(data);
-	}
-
     OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
         : m_Path(path.u8string())
     {

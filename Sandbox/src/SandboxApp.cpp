@@ -12,8 +12,6 @@
 
 #include "Sandbox2D/Sandbox2D.h"
 
-#include "Sandbox3D/Sandbox3D.h"
-
 #include "Sandbox_Model/Sandbox_Model.h"
 
 class Sandbox :public TheFoolEngine::Application 
@@ -24,7 +22,6 @@ public:
 		// PushLayer(new GameLayer());
 		
 		// PushLayer(new Sandbox2D());
-		// PushLayer(new Sandbox3D());
 		PushLayer(new Sandbox_Model());
 	}
 	~Sandbox() 

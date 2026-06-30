@@ -155,7 +155,6 @@
     <ClInclude Include="src\ExampleLayer\ExampleLayer.h" />
     <ClInclude Include="src\Particle\ParticleSystem.h" />
     <ClInclude Include="src\Sandbox2D\Sandbox2D.h" />
-    <ClInclude Include="src\Sandbox3D\Sandbox3D.h" />
     <ClInclude Include="src\Sandbox_Model\Sandbox_Model.h" />
   </ItemGroup>
   <ItemGroup>
@@ -165,7 +164,6 @@
     <ClCompile Include="src\DemoGameLib\Random.cpp" />
     <ClCompile Include="src\Particle\ParticleSystem.cpp" />
     <ClCompile Include="src\Sandbox2D\Sandbox2D.cpp" />
-    <ClCompile Include="src\Sandbox3D\Sandbox3D.cpp" />
     <ClCompile Include="src\SandboxApp.cpp" />
     <ClCompile Include="src\Sandbox_Model\Sandbox_Model.cpp" />
   </ItemGroup>
