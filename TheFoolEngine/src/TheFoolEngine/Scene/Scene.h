@@ -3,7 +3,8 @@
 #include "entt.hpp"
 #include "TheFoolEngine/Core/TimeStep.h"
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
 
 	class Entity;
 
@@ -15,7 +16,7 @@ namespace TheFoolEngine{
 
 		Entity CreateEntity(const std::string& name = std::string());
 
-		void OnUpdate(const TimeStep& ts);
+		void OnUpdate(const TimeStep& ts, bool render2D = true);
 		void OnViewportResize(uint32_t width, uint32_t height);
 	private:
 		//template<typename T>
@@ -28,6 +29,9 @@ namespace TheFoolEngine{
 
 		friend class Entity;
 		friend class SceneHierarchyPanel;
+		friend class EditorLayer;
+
+        
 	};
 
 }

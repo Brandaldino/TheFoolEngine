@@ -2,9 +2,11 @@
 
 #include "RendererAPI.h"
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
-	class RenderCommand {
+	class RenderCommand 
+    {
 	public:
 		inline static void Init() 
 		{
@@ -30,6 +32,16 @@ namespace TheFoolEngine {
 		{
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
+
+        // === Render State ============================================================
+        inline static void SetDepthFunc(RendererAPI::DepthFunc func) { s_RendererAPI->SetDepthFunc(func); };
+        inline static void SetDepthWrite(RendererAPI::DepthWrite flag) { s_RendererAPI->SetDepthWrite(flag); };
+        inline static void SetDepthTest(RendererAPI::DepthTest flag) { s_RendererAPI->SetDepthTest(flag); };
+        inline static void SetCullMode(RendererAPI::CullMode mode) { s_RendererAPI->SetCullMode(mode); };
+        inline static void SetPolygonMode(RendererAPI::PolygonMode mode) { s_RendererAPI->SetPolygonMode(mode); };
+        inline static void SetBlendMode(RendererAPI::BlendMode mode) { s_RendererAPI->SetBlendMode(mode); };
+        inline static void SetBlend(bool flag) { s_RendererAPI->SetBlend(flag); };
+        inline static void DrawArrays(RendererAPI::DrawMode mode, uint32_t count) { s_RendererAPI->DrawArrays(mode, count); };
 	private:
 		static RendererAPI* s_RendererAPI;
 	};

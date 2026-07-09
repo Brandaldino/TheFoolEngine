@@ -160,6 +160,10 @@
       <Project>{0C468628-7806-025F-4141-4BDCADC0463B}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\EquirectToCubeMap.glsl" />
+    <None Include="assets\shaders\SkyBoxShader.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

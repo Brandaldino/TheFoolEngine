@@ -68,6 +68,16 @@ namespace TheFoolEngine
                     vertex.tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
                     vertex.bitTangent = { mesh->mBitangents[i].x,mesh->mBitangents[i].y, mesh->mBitangents[i].z };
                 }
+                else
+                {
+                    vertex.texCoord = { 0.0f, 0.0f };
+                    glm::vec3 n = glm::normalize(vertex.normal);
+                    glm::vec3 t = glm::normalize(
+                        glm::abs(n.y) < 0.999f ? glm::cross(n, glm::vec3(0.0f, 1.0f, 0.0f)) : glm::cross(n, glm::vec3(1.0f, 0.0f, 0.0f))
+                    );
+                    vertex.tangent = t;
+                    vertex.bitTangent = glm::normalize(glm::cross(n, t));
+                }
                 // bone
                 memset(vertex.boneIDs, 0, sizeof(vertex.boneIDs));
                 memset(vertex.weights, 0, sizeof(vertex.weights));
@@ -128,6 +138,7 @@ namespace TheFoolEngine
         static constexpr aiPostProcessSteps s_AssimpLoadType[] = {
             aiProcess_Triangulate,
             aiProcess_FlipUVs,
+            aiProcess_GenSmoothNormals,
             aiProcess_CalcTangentSpace,
         };
 

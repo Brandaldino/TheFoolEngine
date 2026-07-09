@@ -1475,6 +1475,7 @@
     <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\PBRRenderer.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Light.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\CubeMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">

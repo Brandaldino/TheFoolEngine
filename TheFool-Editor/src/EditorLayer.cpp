@@ -8,11 +8,15 @@ namespace TheFoolEngine
 {
 
     EditorLayer::EditorLayer()
-        : Layer("EditorLayer"), m_CameraController(1280.0f / 720.0f, true)
+        : Layer("EditorLayer"), m_PerspectiveCameraController(1280.0f / 720.0f)
     {
+        m_DebugLights.push_back({ 0, {5,5,5}, {2,3,2}, {1,0.95f,0.9f}, 1.5f });
+        m_DebugLights.push_back({ 0, {5,5,5}, {-1,0.5f,1}, {0.6f,0.6f,0.7f}, 0.5f });
+        m_DebugLights.push_back({ 0, {5,5,5}, {0,-1,-2}, {0.4f,0.5f,0.6f}, 0.4f });
     }
 
-    void EditorLayer::OnAttach() {
+    void EditorLayer::OnAttach() 
+    {
         TF_PROFILE_FUNCTION();
 
         m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
@@ -23,14 +27,37 @@ namespace TheFoolEngine
 
         m_ActiveScene = CreateRef<Scene>();
 
-        // Entity
+        PBRRenderer::Init();
+
+        // Lights
+        auto dirLight = m_ActiveScene->CreateEntity("DirLight");
+        dirLight.AddComponent<LightComponent>(LightComponent{ 0, {0,0,0}, {2,3,2}, {1,0.95f,0.9f}, 1.5f });
+
+        auto pointLight = m_ActiveScene->CreateEntity("PointLight");
+        pointLight.AddComponent<LightComponent>(LightComponent{ 1, {3,3,3}, {0,-1,0}, {1,0.3f,0.3f}, 2.0f, 15.0f });
+
+        auto spotLight = m_ActiveScene->CreateEntity("SpotLight");
+        spotLight.AddComponent<LightComponent>(LightComponent{ 2, {-3,2,0}, {1,-1,0}, {0.3f,1,0.3f}, 2.0f, 10.0f, glm::radians(10.0f), glm::radians(20.0f) });
+
+        // Model
+        m_PBRModel = CreateRef<PBRModel>();
+        std::filesystem::path modelPath = "assets/model/MetalRoughSpheres.glb";
+        modelPath = "assets/model/BoxTextured.glb";
+        modelPath = "assets/model/Furina.fbx";
+        m_PBRModel->Import(modelPath);
+        PBRRenderer::DefaultTextureFill(m_PBRModel);
+        m_PBRModel->UpLoad();
+
+        auto modelEntity = m_ActiveScene->CreateEntity("Model");
+        modelEntity.AddComponent<PBRModelComponent>(m_PBRModel);
+
         auto square = m_ActiveScene->CreateEntity("Green Square");
         square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 
         m_SquareEntity = square;
 
-        m_CameraEntity = m_ActiveScene->CreateEntity("Camera Entity");
-        m_CameraEntity.AddComponent<CameraComponent>();
+        m_MainCamera = m_ActiveScene->CreateEntity("Camera Entity");
+        m_MainCamera.AddComponent<CameraComponent>();
 
         m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Camera Entity");
         m_SecondCamera.AddComponent<CameraComponent>().Primary = false;
@@ -65,7 +92,7 @@ namespace TheFoolEngine
             }
         };
 
-		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		m_MainCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
         m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
@@ -77,23 +104,23 @@ namespace TheFoolEngine
 
     }
 
-    void EditorLayer::OnUpdate(TimeStep ts) {
+    void EditorLayer::OnUpdate(TimeStep ts) 
+    {
         TF_PROFILE_FUNCTION();
 
         m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         // Resize
         if (FrameBufferSpecification spec = m_FrameBuffer->GetSpecification();
-            m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&   // zero sized framebuffer is invaild
+            m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
             (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
         {
             m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+            m_PerspectiveCameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
         }
 
-        // Update
-        if(m_ViewportFocused)
-            m_CameraController.OnUpdate(ts);
+        // Update editor camera
+        m_PerspectiveCameraController.OnUpdate(ts);
 
         // Render
         Renderer2D::ResetStats();
@@ -102,12 +129,59 @@ namespace TheFoolEngine
         RenderCommand::Clear();
 
         // Update Scene
-        m_ActiveScene->OnUpdate(ts);
+        m_ActiveScene->OnUpdate(ts, !m_Is3DMode);
+
+        // PBR pass (editor camera)
+        if (m_Is3DMode)
+        {
+            CameraData cameraData;
+            {
+                const auto& cam = m_PerspectiveCameraController.GetCamera();
+                cameraData.ViewMatrix = cam.GetViewMatrix();
+                cameraData.ProjectionMatrix = cam.GetProjectionMatrix();
+                cameraData.Position = cam.GetPosition();
+            }
+
+            PBRRenderer::ResetRendererState();
+            PBRRenderer::SetCamera(cameraData);
+
+            // Submit lights from ECS
+            auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
+            for (auto entity : lightView)
+            {
+                auto& lc = lightView.get<LightComponent>(entity);
+                switch (lc.Type)
+                {
+                    case 0:
+                        PBRRenderer::AddLight(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity });
+                        break;
+                    case 1:
+                        PBRRenderer::AddLight(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range });
+                        break;
+                    case 2:
+                        PBRRenderer::AddLight(SpotLight{ lc.Position, glm::normalize(lc.Direction), lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle });
+                        break;
+                }
+            }
+
+            auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent>();
+            for (auto entity : pbrView)
+            {
+                auto& transform = pbrView.get<TransformComponent>(entity);
+                auto& pbr = pbrView.get<PBRModelComponent>(entity);
+                PBRRenderProxy proxy;
+                proxy.Model = pbr.Model;
+                proxy.Transform = transform.Transform;
+                PBRRenderer::Register(proxy);
+            }
+            PBRRenderer::Render();
+        }
 
         m_FrameBuffer->UnBind();
     }
 
-    void EditorLayer::OnImGuiRender() {
+    void EditorLayer::OnImGuiRender() 
+    {
         TF_PROFILE_FUNCTION();
 
         static bool dockspaceOpen = true;
@@ -178,6 +252,8 @@ namespace TheFoolEngine
 
         ImGui::Begin("Settings");
 
+        ImGui::Checkbox("3D Mode", &m_Is3DMode);
+
         auto stats = Renderer2D::GetStats();
         ImGui::Text("Renderer2D Stats:");
         ImGui::Text("Draw Calls: %d", stats.DrawCalls);
@@ -197,11 +273,11 @@ namespace TheFoolEngine
         }
 
         ImGui::DragFloat3("Camera Transform",
-            glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
+            glm::value_ptr(m_MainCamera.GetComponent<TransformComponent>().Transform[3]));
 
         if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
         {
-            m_CameraEntity.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
+            m_MainCamera.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
             m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
         }
 
@@ -225,9 +301,8 @@ namespace TheFoolEngine
         if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize) && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
         {
             m_FrameBuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+            m_PerspectiveCameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
-            m_CameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);
         }
         // TF_WARN("Viewport Size: {0},{1}", viewportPanelSize.x, viewportPanelSize.y);
         uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
@@ -241,6 +316,6 @@ namespace TheFoolEngine
 
     void EditorLayer::OnEvent(Event & e) 
     {
-        m_CameraController.OnEvent(e);
+        m_PerspectiveCameraController.OnEvent(e);
     }
 }

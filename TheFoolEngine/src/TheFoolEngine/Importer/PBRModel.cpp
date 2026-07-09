@@ -20,6 +20,11 @@ namespace TheFoolEngine
     {
         PBRMaterialData data = AssimpImporter::Import(path);
         
+        // Ensure at least one blank texture set so material indices stay valid
+        // and UpLoad() doesn't skip mesh upload for textureless models.
+ /*       if (data.Textures.empty())
+            data.Textures.resize(1);*/
+
         m_ModelData = data;
     }
 
@@ -65,6 +70,21 @@ namespace TheFoolEngine
     {
         if (!m_VertexArray.empty())
             m_VertexArray.clear();
+    }
+
+    void PBRModel::CheckTexture(const PBRMaterialTextureSet& defaultTexture)
+    {
+        for (auto& texture : m_ModelData.Textures)
+        {
+            if (!texture.AlbedoMap)
+                texture.AlbedoMap = defaultTexture.AlbedoMap;
+            if (!texture.NormalMap)
+                texture.NormalMap = defaultTexture.NormalMap;
+            if (!texture.MetallicRoughnessMap)
+                texture.MetallicRoughnessMap = defaultTexture.MetallicRoughnessMap;
+            if (!texture.AOMap)
+                texture.AOMap = defaultTexture.AOMap;
+        }
     }
 
 }

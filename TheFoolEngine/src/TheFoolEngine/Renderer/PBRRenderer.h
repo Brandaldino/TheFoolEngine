@@ -4,6 +4,7 @@
 #include "../Importer/PBRMaterial/PBRMaterialManager.h"
 
 #include "Light.h"
+#include "CubeMap.h"
 
 class Shader;
 class PerspectiveCamera;
@@ -49,5 +50,9 @@ namespace TheFoolEngine
         static PBRRenderState GetStats();
 
         static std::int32_t GetLightsCount();
+
+        static void DefaultTextureFill(Ref<PBRModel> model);
+
+        static void SetSkybox(const Ref<CubeMap> skybox);
     };
 }

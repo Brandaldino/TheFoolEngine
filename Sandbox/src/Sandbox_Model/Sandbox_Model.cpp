@@ -20,13 +20,19 @@ void Sandbox_Model::OnAttach()
 
     TFE::PBRRenderer::Init();
 
+    // skybox
+    auto skybox = TFE::CubeMap::Create("assets/cubemap/alley.hdr");
+    TFE::PBRRenderer::SetSkybox(skybox);
+
+    // model
     TFE::PBRRenderProxy proxy;
     proxy.Model = TFE::CreateRef<TFE::PBRModel>();
     std::filesystem::path path = "assets/model/Test/Furina.fbx";
-    path = "assets/model/Test/MetalRoughSpheres.glb";
+    // path = "assets/model/Test/MetalRoughSpheres.glb";
     // path = "assets/model/Test/BoxTextured.glb";
     // path = "assets/model/GLB/furina_02.glb";
     proxy.Model->Import(path);
+    TFE::PBRRenderer::DefaultTextureFill(proxy.Model);
     proxy.Model->UpLoad();
     // register material
     auto& texSets = proxy.Model->GetModelData().Textures;

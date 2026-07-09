@@ -155,6 +155,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="src\PlatForm\OpenGL\OpenGLCubeMap.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLRendererAPI.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLShader.h" />
@@ -186,6 +187,7 @@
     <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Buffer.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Camera.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\CubeMap.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\FrameBuffer.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Light.h" />
@@ -632,6 +634,7 @@
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="src\PlatForm\OpenGL\OpenGLCubeMap.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLRendererAPI.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLShader.cpp" />
@@ -650,6 +653,7 @@
     <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\PBRModel.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\CubeMap.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCameraController.cpp" />

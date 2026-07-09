@@ -5,9 +5,29 @@
 #include "Panels/SceneHierarchyPanel.h"
 
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
+    enum class ViewportModel
+    {
+        Mode2D,
+        Mode3D
+    };
+
 	class EditorLayer : public TheFoolEngine::Layer
 	{
+
+        struct DebugLight
+        {
+            int Type = 0;               // 0=directional, 1=point, 2=spot
+            glm::vec3 Position = { 5.0f, 5.0f, 5.0f };
+            glm::vec3 Direction = { -1.0f, -1.0f, -1.0f };
+            glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
+            float Intensity = 1.5f;
+            float Range = 20.0f;
+            float InnerAngle = glm::radians(15.0f);
+            float OuterAngle = glm::radians(25.0f);
+        };
+
 	public:
 		EditorLayer();
 		virtual ~EditorLayer() = default;
@@ -19,8 +39,6 @@ namespace TheFoolEngine{
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& e) override;
 	private:
-		OrthographicCameraController m_CameraController;
-
 		// Temp
 		Ref<VertexArray> m_SquareVA;
 		Ref<Shader> m_FlatColorShader;
@@ -28,7 +46,7 @@ namespace TheFoolEngine{
 
 		Ref<Scene> m_ActiveScene;
 		Entity m_SquareEntity;
-		Entity m_CameraEntity;
+		Entity m_MainCamera;
 		Entity m_SecondCamera;
 
 		bool m_PrimaryCamera = false;
@@ -41,8 +59,16 @@ namespace TheFoolEngine{
 
 		glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 
+        // === PBR TEST
+        Ref<PBRModel> m_PBRModel;
+        PerspectiveCameraController m_PerspectiveCameraController;
+
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+
+        std::vector<DebugLight> m_DebugLights;
+
+        bool m_Is3DMode = true;
 	};
 }
 

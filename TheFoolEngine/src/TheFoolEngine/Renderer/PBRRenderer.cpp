@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "PerspectiveCameraController.h"
 #include "RenderCommand.h"
+#include "VertexArray.h"
 
 #include <glad/glad.h>
 
@@ -11,6 +12,13 @@ namespace TheFoolEngine
 {
     constexpr uint32_t NR_LIGHTS = 10;
     constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
+
+    struct CubeMapData
+    {
+        Ref<CubeMap> Skybox;
+        Ref<VertexArray> SkyboxCubeVAO;
+        Ref<Shader> SkyboxShader;
+    };
 
     struct PBRRendererData
     {
@@ -23,6 +31,8 @@ namespace TheFoolEngine
         Ref<Texture2D> DefaultGray;
         Ref<Texture2D> DefaultBlack;
 
+        PBRMaterialTextureSet DefaultTexture;
+
         // Frame state
         std::vector<PBRRenderProxy> Renderables;
         std::vector<GPULight> GPULights;
@@ -30,6 +40,9 @@ namespace TheFoolEngine
         CameraData Camera;
 
         PBRRenderState State;
+
+        // SkyBox
+        CubeMapData Skybox;
     };
 
     struct LightGPUBlock
@@ -60,6 +73,11 @@ namespace TheFoolEngine
         uint32_t grayData = 0xFF7F7F7F; // (0.5,0.5,0.5,1) => Roughness=0.5, Metallic=0.5
         s_Data.DefaultGray->SetData(&grayData, sizeof(uint32_t));
 
+        s_Data.DefaultTexture.AlbedoMap = s_Data.DefaultWhite;
+        s_Data.DefaultTexture.NormalMap = s_Data.DefaultNormal;
+        s_Data.DefaultTexture.MetallicRoughnessMap = s_Data.DefaultGray;
+        s_Data.DefaultTexture.AOMap = s_Data.DefaultWhite;
+
         int32_t samplers[MAX_TEXTURE_SLOTS];
         for (int32_t i = 0; i < MAX_TEXTURE_SLOTS; ++i)
             samplers[i] = i;
@@ -71,6 +89,33 @@ namespace TheFoolEngine
         glCreateBuffers(1, &s_Data.LightUBO);
         glNamedBufferStorage(s_Data.LightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, s_Data.LightUBO); // binding = 2
+
+        // SkyBox
+        s_Data.Skybox.SkyboxShader = Shader::Create("assets/shaders/SkyBoxShader.glsl");
+
+        float skyboxVerts[] = {
+            -1, 1,-1, -1,-1,-1,  1,-1,-1,
+             1,-1,-1,  1, 1,-1, -1, 1,-1,
+            -1,-1, 1, -1,-1,-1, -1, 1,-1,
+            -1, 1,-1, -1, 1, 1, -1,-1, 1,
+             1,-1,-1,  1,-1, 1,  1, 1, 1,
+             1, 1, 1,  1, 1,-1,  1,-1,-1,
+            -1,-1, 1, -1, 1, 1,  1, 1, 1,
+             1, 1, 1,  1,-1, 1, -1,-1, 1,
+            -1, 1,-1,  1, 1,-1,  1, 1, 1,
+             1, 1, 1, -1, 1, 1, -1, 1,-1,
+            -1,-1,-1, -1,-1, 1,  1,-1,-1,
+             1,-1,-1, -1,-1, 1,  1,-1, 1,
+        };
+
+        s_Data.Skybox.SkyboxCubeVAO = VertexArray::Create();
+        auto skyVBO = VertexBuffer::Create(skyboxVerts, sizeof(skyboxVerts));
+        skyVBO->SetLayout(
+            {
+                { ShaderDataType::Float3, "a_Position" }
+            });
+        s_Data.Skybox.SkyboxCubeVAO->AddVertexBuffer(skyVBO);
+
     }
 
     void PBRRenderer::Shutdown()
@@ -171,7 +216,6 @@ namespace TheFoolEngine
             {
                 // Per-mesh transform
                 glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                model = glm::mat4(1.0f);
                 s_Data.Shader->SetMat4("u_Model", model);
 
                 // Per-mesh textures (override fallback if exists)
@@ -195,6 +239,22 @@ namespace TheFoolEngine
             }
             s_Data.State.MeshCount += (uint32_t)vas.size();
         }
+
+        // Skybox
+        if (s_Data.Skybox.Skybox && s_Data.Skybox.SkyboxCubeVAO)
+        {
+            s_Data.Skybox.SkyboxShader->Bind();
+            s_Data.Skybox.SkyboxShader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
+            glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(s_Data.Camera.ViewMatrix));
+            s_Data.Skybox.SkyboxShader->SetMat4("u_View", viewNoTranslate);
+            s_Data.Skybox.Skybox->Bind(0);
+            s_Data.Skybox.SkyboxShader->SetInt("u_Skybox", 0);
+
+            RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::LessEqual);
+            s_Data.Skybox.SkyboxCubeVAO->Bind();
+            RenderCommand::DrawArrays(RendererAPI::DrawMode::Triangles, 36);
+            RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::Less);
+        }
     }
 
     void PBRRenderer::ResetStats()
@@ -213,4 +273,13 @@ namespace TheFoolEngine
         return (std::int32_t)s_Data.GPULights.size();
     }
 
+    void PBRRenderer::DefaultTextureFill(Ref<PBRModel> model)
+    {
+        model->CheckTexture(s_Data.DefaultTexture);
+    }
+
+    void PBRRenderer::SetSkybox(const Ref<CubeMap> skybox)
+    {
+        s_Data.Skybox.Skybox = skybox;
+    }
 }

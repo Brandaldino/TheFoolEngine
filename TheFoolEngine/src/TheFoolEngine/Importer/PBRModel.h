@@ -18,6 +18,8 @@ namespace TheFoolEngine
         void UpLoad();
         void Release();
 
+        void CheckTexture(const PBRMaterialTextureSet& defaultTexture);
+
         const std::filesystem::path& GetPath() const { return m_FilePath; };
         const PBRMaterialData& GetModelData() const { return m_ModelData; };
         const std::vector<Ref<VertexArray>>& GetVertexArray() const { return m_VertexArray; };

@@ -4,9 +4,10 @@
 #include "stb_image.h"
 
 //------------------ 2D ---------------------------- //
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
-		: m_Width(width),m_Height(height), m_Data(nullptr)
+		: m_Width(width),m_Height(height), m_Data(nullptr), m_Path("")
 	{
 		TF_PROFILE_FUNCTION();
 
@@ -216,4 +217,29 @@ namespace TheFoolEngine {
 	{
 		return m_Data;
 	}
+
+    // === TextureCache ================================================================
+    std::unordered_map<std::filesystem::path, Ref<Texture2D>> TextureCache::s_Cache;
+    bool TextureCache::Regist(const std::filesystem::path& path, Ref<Texture2D> texture)
+    {
+        if (s_Cache.find(path) != s_Cache.end())
+            return false;
+
+        s_Cache[path] = texture;
+        return true;
+    }
+
+    Ref<Texture2D> TextureCache::FindTexture(const std::filesystem::path& path)
+    {
+        if (s_Cache.find(path) != s_Cache.end())
+            return s_Cache[path];
+
+        return nullptr;
+    }
+
+    void TextureCache::Clear()
+    {
+        s_Cache.clear();
+    }
+
 }

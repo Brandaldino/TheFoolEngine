@@ -3,7 +3,8 @@
 
 #include "PlatForm/OpenGL/OpenGLRendererAPI.h"
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
 
 	RendererAPI* RenderCommand::s_RendererAPI = new OpenGLRendererAPI;
 

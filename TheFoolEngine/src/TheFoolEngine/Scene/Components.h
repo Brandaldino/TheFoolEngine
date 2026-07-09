@@ -4,6 +4,7 @@
 
 #include "SceneCamera.h"
 #include "ScriptableEntity.h"
+#include "../Importer/PBRModel.h"
 
 namespace TheFoolEngine{
 
@@ -47,7 +48,7 @@ namespace TheFoolEngine{
 	{
 		TheFoolEngine::SceneCamera Camera; 
 		bool Primary = true;
-		bool FixedAspectRatio = false;	// ×Ýºá±È
+		bool FixedAspectRatio = false;	// lock aspect ratio
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
@@ -67,4 +68,22 @@ namespace TheFoolEngine{
 			DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 		}
 	};
+
+    struct PBRModelComponent
+    {
+        Ref<PBRModel> Model;
+    };
+
+    struct LightComponent
+    {
+        int Type = 0; // Direction = 0, Point = 1, Spot = 2
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 Direction = { -1.0f, -1.0f, -1.0f };
+        glm::vec3 Color = { 1.0f,1.0f, 1.0f };
+        float Intensity = 1.0f;
+        float Range = 10.0f;
+        float InnerAngle = glm::radians(15.0f);
+        float OuterAngle = glm::radians(30.0f);
+    };
+
 }

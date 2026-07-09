@@ -136,7 +136,7 @@ void main()
     vec3 albedo = texture(u_Textures[1], v_TexCoord).rgb * u_AlbedoFactor;
 
     vec3 tangentNormal = texture(u_Textures[2], v_TexCoord).rgb;
-    vec3 N = CalcFinalNormal(tangentNormal);
+    vec3 N = (length(v_Tangent) < 0.001) ? normalize(v_Normal) : CalcFinalNormal(tangentNormal);
 
     vec4 mr = texture(u_Textures[3], v_TexCoord);
     float roughness = mr.g * u_RoughnessFactor;
@@ -212,4 +212,7 @@ void main()
     vec3 result = ambient + Lo;
     result = result / (result + vec3(1.0));
     color = vec4(result, 1.0);
+
+    // === Test Color ==============
+    // color = vec4(N + 0.5 , 1.0);
 }

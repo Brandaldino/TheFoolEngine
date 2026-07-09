@@ -23,7 +23,16 @@ namespace TheFoolEngine {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::None:		TF_CORE_ASSERT(false, "RendererAPI:: None is currently not supported!"); return nullptr;
-            case RendererAPI::API::OpenGL:		return CreateRef<OpenGLTexture2D>(path);
+            case RendererAPI::API::OpenGL:
+            {
+                auto cached = TextureCache::FindTexture(path);
+                if (cached)
+                    return cached;
+
+                auto tex = CreateRef<OpenGLTexture2D>(path);
+                TextureCache::Regist(path, tex);
+                return tex;
+            }
         }
 
         TF_CORE_ASSERT(false, "Unknown RendererAPI.");

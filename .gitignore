@@ -37,3 +37,5 @@ cmake_install.cmake
 
 # VS 新格式解决方案（CMake 生成，不提交）
 *.slnx"Sandbox/TheFoolEngineProfile-Runtime.json" 
+*.slnx 
+Sandbox/TheFoolEngineProfile-Runtime.json 

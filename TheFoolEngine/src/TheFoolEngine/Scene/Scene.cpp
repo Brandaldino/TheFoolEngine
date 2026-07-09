@@ -5,6 +5,7 @@
 #include "TheFoolEngine/Renderer/Renderer2D.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Entity.h"
 
@@ -53,7 +54,7 @@ namespace TheFoolEngine {
 		return entity;
 	}
 
-	void Scene::OnUpdate(const TimeStep& ts)
+	void Scene::OnUpdate(const TimeStep& ts, bool render2D)
 	{
 		// Update Scripts
 		{
@@ -73,43 +74,46 @@ namespace TheFoolEngine {
 		}
 
 		// Render 2D
-		Camera* mainCamera = nullptr;
-		glm::mat4* cameraTransform = nullptr;
-		{
-			auto view = m_Registry.view<TransformComponent, CameraComponent>();
-			for (auto entity : view)
-			{
-				auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
+        if (render2D)
+        {
+            Camera* mainCamera = nullptr;
+            glm::mat4* cameraTransform = nullptr;
+            {
+                auto view = m_Registry.view<TransformComponent, CameraComponent>();
+                for (auto entity : view)
+                {
+                    auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
 
-				if (camera.Primary)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = &transform.Transform;
-					break;
-				}
-			}
-		}
+                    if (camera.Primary)
+                    {
+                        mainCamera = &camera.Camera;
+                        cameraTransform = &transform.Transform;
+                        break;
+                    }
+                }
+            }
 
-		if (mainCamera)
-		{
-			Renderer2D::BeginScene(mainCamera->GetProjection(), *cameraTransform);
+            if (mainCamera)
+            {
+                Renderer2D::BeginScene(mainCamera->GetProjection(), *cameraTransform);
 
-			auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-			for (auto entity : group)
-			{
-				auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+                auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
+                for (auto entity : group)
+                {
+                    auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-				Renderer2D::DrawQuad(transform, sprite.Color);
-			}
+                    Renderer2D::DrawQuad(transform, sprite.Color);
+                }
 
-			Renderer2D::EndScene();
-		}
+                Renderer2D::EndScene();
+            }
+        }
 
 	}
 	
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
-		// TODO: ¿¼ÂÇÊÇ·ñ´æÖü´«ÈëµÄ³¤¿íÔÚÀàÖÐ
+		// TODO: ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 		// Resize our non-FixedAspectRatio cameras
 		auto view = m_Registry.view<CameraComponent>();

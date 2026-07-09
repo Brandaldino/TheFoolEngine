@@ -5,7 +5,8 @@
 #include <glad/glad.h>
 
 //------------------ 2D ---------------------------- //
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
 	class OpenGLTexture2D : public Texture2D
 	{
@@ -43,6 +44,17 @@ namespace TheFoolEngine {
 		void* m_Data;
 	};
 
+    class TextureCache
+    {
+    public:
+        static bool Regist(const std::filesystem::path& path, Ref<Texture2D> texture);
+        static Ref<Texture2D> FindTexture(const std::filesystem::path& path);
+        static void Clear();
+    private:
+        TextureCache() = delete;
+    private:
+        static std::unordered_map<std::filesystem::path, Ref<Texture2D>> s_Cache;
+    };
 }
 
 

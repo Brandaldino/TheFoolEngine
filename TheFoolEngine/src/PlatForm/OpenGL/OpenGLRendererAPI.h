@@ -2,9 +2,11 @@
 
 #include "TheFoolEngine/Renderer/RendererAPI.h"
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
-	class OpenGLRendererAPI :public RendererAPI {
+	class OpenGLRendererAPI :public RendererAPI 
+    {
 	public:
 		virtual void Init() override;
 
@@ -13,6 +15,20 @@ namespace TheFoolEngine {
 		virtual void Clear() override;
 
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
+
+        // === Depth State =========================================
+        virtual void SetDepthFunc(DepthFunc func) override;
+        virtual void SetDepthWrite(DepthWrite flag) override;
+        virtual void SetDepthTest(DepthTest flag) override;
+        // === Rasterization State =================================
+        virtual void SetCullMode(CullMode mode) override;
+        virtual void SetPolygonMode(PolygonMode mode) override;
+        // === Blend State =========================================
+        virtual void SetBlendMode(BlendMode mode) override;
+        virtual void SetBlend(bool flag) override;
+        // === Draw ================================================
+        virtual void DrawArrays(DrawMode mode, uint32_t count) override;
+        // =========================================================
 	};
 
 }
