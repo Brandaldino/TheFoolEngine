@@ -24,6 +24,24 @@ namespace TheFoolEngine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
+    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, TextureFormat format)
+        : m_Width(width), m_Height(height), m_InternalFormat(TypeTranslate(format)), 
+            m_DataFormat(0), m_Data(nullptr), m_Path("")
+    {
+        TF_PROFILE_FUNCTION();
+
+        m_DataFormat = (format == TextureFormat::RG16F) ? GL_RG : GL_RGBA;
+
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+        glTextureStorage2D(m_RendererID, 1, TypeTranslate(format), width, height);
+        
+        glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    }
+
     OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
         : m_Path(path.u8string())
     {
@@ -217,6 +235,38 @@ namespace TheFoolEngine
 	{
 		return m_Data;
 	}
+
+    void OpenGLTexture2D::SetInternalFormat(TextureFormat type)
+    {
+        m_InternalFormat = TypeTranslate(type);
+    }
+
+    void OpenGLTexture2D::SetDataFormat(TextureFormat type)
+    {
+        m_DataFormat = TypeTranslate(type);
+    }
+
+    GLenum OpenGLTexture2D::TypeTranslate(TextureFormat type)
+    {
+        GLenum res = NULL;
+
+        switch (type)
+        {
+            case TextureFormat::RG16F:    res = GL_RG16F;     break;
+            case TextureFormat::RGB:      res = GL_RGB;       break;
+            case TextureFormat::RGBA:     res = GL_RGBA;      break;
+            case TextureFormat::RGB8:     res = GL_RGB8;      break;
+            case TextureFormat::RGBA8:    res = GL_RGBA8;     break;
+            case TextureFormat::RGB16:    res = GL_RGB16;     break;
+            case TextureFormat::RGBA16:   res = GL_RGBA16;    break;
+            case TextureFormat::RGB16F:   res = GL_RGB16F;    break;
+            case TextureFormat::RGBA16F:  res = GL_RGBA16F;   break;
+            case TextureFormat::RGB32F:   res = GL_RGB32F;    break;
+            case TextureFormat::RGBA32F:  res = GL_RGBA32F;   break;
+        }
+
+        return res;
+    }
 
     // === TextureCache ================================================================
     std::unordered_map<std::filesystem::path, Ref<Texture2D>> TextureCache::s_Cache;

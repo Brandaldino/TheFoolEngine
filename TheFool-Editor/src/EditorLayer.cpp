@@ -10,16 +10,12 @@ namespace TheFoolEngine
     EditorLayer::EditorLayer()
         : Layer("EditorLayer"), m_PerspectiveCameraController(1280.0f / 720.0f)
     {
-        m_DebugLights.push_back({ 0, {5,5,5}, {2,3,2}, {1,0.95f,0.9f}, 1.5f });
-        m_DebugLights.push_back({ 0, {5,5,5}, {-1,0.5f,1}, {0.6f,0.6f,0.7f}, 0.5f });
-        m_DebugLights.push_back({ 0, {5,5,5}, {0,-1,-2}, {0.4f,0.5f,0.6f}, 0.4f });
     }
 
     void EditorLayer::OnAttach() 
     {
         TF_PROFILE_FUNCTION();
 
-        m_CheckerboardTexture = Texture2D::Create("assets/textures/Checkerboard.png");
         FrameBufferSpecification fbSpec;
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
@@ -28,6 +24,15 @@ namespace TheFoolEngine
         m_ActiveScene = CreateRef<Scene>();
 
         PBRRenderer::Init();
+
+        // SkyBox
+        auto skybox = CubeMap::Create("assets/cubemap/alley.hdr");
+        PBRRenderer::SetSkybox(skybox);
+        // Environment
+        auto irradiance = IBLUtils::CreateIrradianceMap(skybox);
+        auto prefilter = IBLUtils::CreatePrefilteredMap(skybox);
+        auto brdfLUT = IBLUtils::CreateBRDFLUT(512);
+        PBRRenderer::SetEnvironmentMap(irradiance, prefilter, brdfLUT);
 
         // Lights
         auto dirLight = m_ActiveScene->CreateEntity("DirLight");

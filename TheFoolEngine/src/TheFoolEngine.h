@@ -38,9 +38,8 @@
 #include "TheFoolEngine/Renderer/Texture.h"
 #include "TheFoolEngine/Renderer/VertexArray.h"
 #include "TheFoolEngine/Renderer/CubeMap.h"
+#include "TheFoolEngine/Renderer/IBLUtils.h"
 
 #include "TheFoolEngine/Renderer/OrthographicCamera.h"
 #include "TheFoolEngine/Renderer/PerspectiveCameraController.h"
-
-#include "TheFoolEngine/Renderer/PBRRenderer.h"
 // ------------------------------------

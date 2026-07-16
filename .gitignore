@@ -39,3 +39,7 @@ cmake_install.cmake
 *.slnx"Sandbox/TheFoolEngineProfile-Runtime.json" 
 *.slnx 
 Sandbox/TheFoolEngineProfile-Runtime.json 
+TheFoolEngine.sln 
+TheFoolEngineProfile-Runtime.json 
+TheFoolEngineProfile-Startup.json 
+imgui.ini 

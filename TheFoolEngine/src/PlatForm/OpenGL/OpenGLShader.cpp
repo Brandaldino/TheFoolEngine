@@ -22,6 +22,7 @@ namespace TheFoolEngine {
 		TF_PROFILE_FUNCTION();
 
 		std::string source = ReadFile(filepath);
+        source = ResolveIncludes(source, filepath);
 		auto shaderSources = PreProcess(source);
 		Compile(shaderSources);
 
@@ -163,6 +164,28 @@ namespace TheFoolEngine {
 
 		m_RendererID = program;
 	}
+
+    std::string OpenGLShader::ResolveIncludes(const std::string& source, const std::string& filepath)
+    {
+        std::string result = source;
+        std::size_t pos = 0;
+        while ((pos = result.find("#include \"", pos)) != std::string::npos)
+        {
+            // Extract the filename within the quotation marks
+            std::size_t start = pos + 10;
+            std::size_t end = result.find("\"", start);
+            std::string includeFile = result.substr(start, end - start);
+
+            std::filesystem::path dir = std::filesystem::path(filepath).parent_path();
+            std::string includeContent = ReadFile((dir / includeFile).string());
+
+            std::size_t lineEnd = result.find("\n", end);
+            if (lineEnd == std::string::npos)
+                lineEnd = result.length();
+            result.replace(pos, lineEnd - pos + 1, includeContent + "\n");
+        }
+        return result;
+    }
 
 	OpenGLShader::~OpenGLShader()
 	{

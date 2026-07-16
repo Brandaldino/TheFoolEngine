@@ -18,8 +18,4 @@
     </ClCompile>
     <ClCompile Include="src\TheFoolEditorApp.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\EquirectToCubeMap.glsl" />
-    <None Include="assets\shaders\SkyBoxShader.glsl" />
-  </ItemGroup>
 </Project>

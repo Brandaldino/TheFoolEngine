@@ -23,14 +23,19 @@ void Sandbox_Model::OnAttach()
     // skybox
     auto skybox = TFE::CubeMap::Create("assets/cubemap/alley.hdr");
     TFE::PBRRenderer::SetSkybox(skybox);
+    // environment
+    auto irradiance = TFE::IBLUtils::CreateIrradianceMap(skybox);
+    auto prefilter = TFE::IBLUtils::CreatePrefilteredMap(skybox);
+    auto brdfLUT = TFE::IBLUtils::CreateBRDFLUT(512);
+    TFE::PBRRenderer::SetEnvironmentMap(irradiance, prefilter, brdfLUT);
 
     // model
     TFE::PBRRenderProxy proxy;
     proxy.Model = TFE::CreateRef<TFE::PBRModel>();
-    std::filesystem::path path = "assets/model/Test/Furina.fbx";
-    // path = "assets/model/Test/MetalRoughSpheres.glb";
-    // path = "assets/model/Test/BoxTextured.glb";
-    // path = "assets/model/GLB/furina_02.glb";
+    std::filesystem::path path = "assets/model/Furina.fbx";
+    // path = "assets/model/MetalRoughSpheres.glb";
+    // path = "assets/model/BoxTextured.glb";
+    // path = "assets/model/furina_02.glb";
     proxy.Model->Import(path);
     TFE::PBRRenderer::DefaultTextureFill(proxy.Model);
     proxy.Model->UpLoad();

@@ -13,11 +13,14 @@ namespace TheFoolEngine
     constexpr uint32_t NR_LIGHTS = 10;
     constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
 
-    struct CubeMapData
+    struct EnvironmentData
     {
         Ref<CubeMap> Skybox;
-        Ref<VertexArray> SkyboxCubeVAO;
         Ref<Shader> SkyboxShader;
+        Ref<VertexArray> SkyboxCubeVAO;
+        Ref<CubeMap> IrradianceMap;
+        Ref<CubeMap> PrefilterMap;
+        Ref<Texture2D> BRDFLUT;
     };
 
     struct PBRRendererData
@@ -41,8 +44,8 @@ namespace TheFoolEngine
 
         PBRRenderState State;
 
-        // SkyBox
-        CubeMapData Skybox;
+        // Environment
+        EnvironmentData Environment;
     };
 
     struct LightGPUBlock
@@ -55,7 +58,7 @@ namespace TheFoolEngine
 
     void PBRRenderer::Init()
     {
-        s_Data.Shader = Shader::Create("assets/shaders/PBRShader.glsl");
+        s_Data.Shader = Shader::Create("assets/shader/PBRShader.glsl");
 
         s_Data.DefaultWhite = Texture2D::Create(1, 1);
         uint32_t whiteData = 0xffffffff;
@@ -91,7 +94,7 @@ namespace TheFoolEngine
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, s_Data.LightUBO); // binding = 2
 
         // SkyBox
-        s_Data.Skybox.SkyboxShader = Shader::Create("assets/shaders/SkyBoxShader.glsl");
+        s_Data.Environment.SkyboxShader = Shader::Create("assets/shader/SkyBoxShader.glsl");
 
         float skyboxVerts[] = {
             -1, 1,-1, -1,-1,-1,  1,-1,-1,
@@ -108,13 +111,13 @@ namespace TheFoolEngine
              1,-1,-1, -1,-1, 1,  1,-1, 1,
         };
 
-        s_Data.Skybox.SkyboxCubeVAO = VertexArray::Create();
+        s_Data.Environment.SkyboxCubeVAO = VertexArray::Create();
         auto skyVBO = VertexBuffer::Create(skyboxVerts, sizeof(skyboxVerts));
         skyVBO->SetLayout(
             {
                 { ShaderDataType::Float3, "a_Position" }
             });
-        s_Data.Skybox.SkyboxCubeVAO->AddVertexBuffer(skyVBO);
+        s_Data.Environment.SkyboxCubeVAO->AddVertexBuffer(skyVBO);
 
     }
 
@@ -241,17 +244,17 @@ namespace TheFoolEngine
         }
 
         // Skybox
-        if (s_Data.Skybox.Skybox && s_Data.Skybox.SkyboxCubeVAO)
+        if (s_Data.Environment.Skybox && s_Data.Environment.SkyboxCubeVAO)
         {
-            s_Data.Skybox.SkyboxShader->Bind();
-            s_Data.Skybox.SkyboxShader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
+            s_Data.Environment.SkyboxShader->Bind();
+            s_Data.Environment.SkyboxShader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
             glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(s_Data.Camera.ViewMatrix));
-            s_Data.Skybox.SkyboxShader->SetMat4("u_View", viewNoTranslate);
-            s_Data.Skybox.Skybox->Bind(0);
-            s_Data.Skybox.SkyboxShader->SetInt("u_Skybox", 0);
+            s_Data.Environment.SkyboxShader->SetMat4("u_View", viewNoTranslate);
+            s_Data.Environment.Skybox->Bind(0);
+            s_Data.Environment.SkyboxShader->SetInt("u_Skybox", 0);
 
             RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::LessEqual);
-            s_Data.Skybox.SkyboxCubeVAO->Bind();
+            s_Data.Environment.SkyboxCubeVAO->Bind();
             RenderCommand::DrawArrays(RendererAPI::DrawMode::Triangles, 36);
             RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::Less);
         }
@@ -280,6 +283,14 @@ namespace TheFoolEngine
 
     void PBRRenderer::SetSkybox(const Ref<CubeMap> skybox)
     {
-        s_Data.Skybox.Skybox = skybox;
+        s_Data.Environment.Skybox = skybox;
     }
+
+    void PBRRenderer::SetEnvironmentMap(const Ref<CubeMap> irradiance, const Ref<CubeMap> prefilter, const Ref<Texture2D> brdfLUT)
+    {
+        s_Data.Environment.IrradianceMap = irradiance;
+        s_Data.Environment.PrefilterMap = prefilter;
+        s_Data.Environment.BRDFLUT = brdfLUT;
+    }
+
 }

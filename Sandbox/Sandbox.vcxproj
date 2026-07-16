@@ -147,22 +147,10 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\DemoGame\DemoGameLayer.h" />
-    <ClInclude Include="src\DemoGameLib\Color.h" />
-    <ClInclude Include="src\DemoGameLib\Level.h" />
-    <ClInclude Include="src\DemoGameLib\Player.h" />
-    <ClInclude Include="src\DemoGameLib\Random.h" />
-    <ClInclude Include="src\ExampleLayer\ExampleLayer.h" />
-    <ClInclude Include="src\Particle\ParticleSystem.h" />
     <ClInclude Include="src\Sandbox2D\Sandbox2D.h" />
     <ClInclude Include="src\Sandbox_Model\Sandbox_Model.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\DemoGame\DemoGameLayer.cpp" />
-    <ClCompile Include="src\DemoGameLib\Level.cpp" />
-    <ClCompile Include="src\DemoGameLib\Player.cpp" />
-    <ClCompile Include="src\DemoGameLib\Random.cpp" />
-    <ClCompile Include="src\Particle\ParticleSystem.cpp" />
     <ClCompile Include="src\Sandbox2D\Sandbox2D.cpp" />
     <ClCompile Include="src\SandboxApp.cpp" />
     <ClCompile Include="src\Sandbox_Model\Sandbox_Model.cpp" />

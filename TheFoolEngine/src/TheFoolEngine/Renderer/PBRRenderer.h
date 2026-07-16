@@ -54,5 +54,6 @@ namespace TheFoolEngine
         static void DefaultTextureFill(Ref<PBRModel> model);
 
         static void SetSkybox(const Ref<CubeMap> skybox);
+        static void SetEnvironmentMap(const Ref<CubeMap> irradiance, const Ref<CubeMap> prefilter, const Ref<Texture2D> brdfLUT);
     };
 }

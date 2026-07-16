@@ -22,6 +22,7 @@ IncludeDir["glm"] = "TheFoolEngine/vendor/glm"
 IncludeDir["stb_image"] = "TheFoolEngine/vendor/stb_image"
 IncludeDir["entt"] = "TheFoolEngine/vendor/entity/include"
 IncludeDir["assimp"] = "TheFoolEngine/vendor/assimp/include"
+IncludeDir["moodycamel"] = "TheFoolEngine/vendor/moodycamel/include"
 
 include "TheFoolEngine/vendor/GLFW"
 include "TheFoolEngine/vendor/Glad"
@@ -72,6 +73,7 @@ project "TheFoolEngine"	-- ��Ŀ����
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.assimp}",
+		"%{IncludeDir.moodycamel}",
 	}
 
 	links{
@@ -128,6 +130,7 @@ project "Sandbox"
 
 	targetdir("bin/"..outputdir.."/%{prj.name}")
 	objdir("bin-int/"..outputdir.."/%{prj.name}")
+	debugdir "../"
 
 	files{
 		"%{prj.name}/src/**.h",
@@ -184,6 +187,7 @@ project "TheFool-Editor"
 
 	targetdir("bin/"..outputdir.."/%{prj.name}")
 	objdir("bin-int/"..outputdir.."/%{prj.name}")
+	debugdir "../"
 
 	files{
 		"%{prj.name}/src/**.h",

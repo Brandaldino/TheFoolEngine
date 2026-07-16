@@ -4,9 +4,36 @@
 
 #include "TheFoolEngine/Core/Base.h"
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
-	class Texture {
+    enum TextureFormat : uint8_t
+    {
+        RG16F,
+        RGB,
+        RGBA,
+        RGB8,
+        RGBA8,
+        RGB16,
+        RGBA16,
+        RGB16F,
+        RGBA16F,
+        RGB32F,
+        RGBA32F
+    };
+
+    struct TextureSpec
+    {
+        bool IsDefaultSetting = true;
+
+        uint32_t Width = 1;
+        uint32_t Height = 1;
+        
+
+    };
+
+	class Texture 
+    {
 	public:
 		virtual ~Texture() = default;
 
@@ -34,6 +61,7 @@ namespace TheFoolEngine {
 		virtual ~Texture2D() = default;
 
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+        static Ref<Texture2D> Create(uint32_t width, uint32_t height, TextureFormat format);
         static Ref<Texture2D> Create(const std::filesystem::path& path);
 		static Ref<Texture2D> Create(const void* data, uint32_t size);
 	};

@@ -17,6 +17,8 @@ namespace TheFoolEngine
         virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
         virtual std::string GetPath() const override { return m_Path; };
+
+        virtual void GenerateMipmap() override;
     private:
         std::string m_Path;
         uint32_t m_RendererID;

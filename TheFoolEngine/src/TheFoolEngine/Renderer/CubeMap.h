@@ -15,6 +15,8 @@ namespace TheFoolEngine
         virtual uint32_t GetRendererID() const = 0;
 
         virtual std::string GetPath() const = 0;
+
+        virtual void GenerateMipmap() = 0;
     };
 
     class CubeMap : public CubeMapBase

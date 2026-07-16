@@ -19,6 +19,9 @@
     <Filter Include="src\TheFoolEngine\Core">
       <UniqueIdentifier>{9B75B0CB-876F-D91D-70DC-6F2E5C753F8A}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\TheFoolEngine\Core\Job">
+      <UniqueIdentifier>{65DAF273-51EA-9E44-BAA3-0363A6D28DDD}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\TheFoolEngine\Debug">
       <UniqueIdentifier>{1984CB41-85BB-13D9-8EC5-77FCFA7B3AD2}</UniqueIdentifier>
     </Filter>
@@ -27,6 +30,15 @@
     </Filter>
     <Filter Include="src\TheFoolEngine\ImGui">
       <UniqueIdentifier>{CDEE2942-3926-72D9-4230-D6FCAEE698D2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\TheFoolEngine\Importer">
+      <UniqueIdentifier>{C470B95F-B080-6530-193A-CA4E056954C9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\TheFoolEngine\Importer\MaterialData">
+      <UniqueIdentifier>{9CD2652A-0862-2715-115E-082D7D6C6221}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\TheFoolEngine\Importer\PBRMaterial">
+      <UniqueIdentifier>{268CF96A-12DE-D05A-FBFC-0D6BE7EDE943}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\TheFoolEngine\Renderer">
       <UniqueIdentifier>{697EBF40-558E-6B11-BE47-D02FAA765AAA}</UniqueIdentifier>
@@ -69,7 +81,13 @@
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLContext.h">
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="src\PlatForm\OpenGL\OpenGLCubeMap.h">
+      <Filter>src\PlatForm\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.h">
+      <Filter>src\PlatForm\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PlatForm\OpenGL\OpenGLRenderUtil.h">
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLRendererAPI.h">
@@ -102,6 +120,9 @@
     <ClInclude Include="src\TheFoolEngine\Core\Input.h">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Core\Job\JobSystem.h">
+      <Filter>src\TheFoolEngine\Core\Job</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Core\KeyCodes.h">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
@@ -115,6 +136,9 @@
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Core\MouseCodes.h">
+      <Filter>src\TheFoolEngine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Core\ThreadPool.h">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Core\TimeStep.h">
@@ -141,10 +165,28 @@
     <ClInclude Include="src\TheFoolEngine\ImGui\ImGuiLayer.h">
       <Filter>src\TheFoolEngine\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Importer\MaterialData\PBRMaterialData.h">
+      <Filter>src\TheFoolEngine\Importer\MaterialData</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Importer\ModelLoader.h">
+      <Filter>src\TheFoolEngine\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.h">
+      <Filter>src\TheFoolEngine\Importer\PBRMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.h">
+      <Filter>src\TheFoolEngine\Importer\PBRMaterial</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h">
+      <Filter>src\TheFoolEngine\Importer</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Buffer.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Camera.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\CubeMap.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\FrameBuffer.h">
@@ -153,10 +195,19 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\GraphicsContext.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\IBLUtils.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Light.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\OrthographicCamera.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\OrthographicCameraController.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\PBRRenderer.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\PerspectiveCamera.h">
@@ -166,6 +217,9 @@
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\RenderCommand.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\RenderUtil.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Renderer.h">
@@ -1467,15 +1521,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="src\TheFoolEngine\Importer\ModelLoader.h" />
-    <ClInclude Include="src\TheFoolEngine\Importer\MaterialData\PBRMaterialData.h" />
-    <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.h" />
-    <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.h" />
-    <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\PBRRenderer.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Light.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\CubeMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1484,7 +1529,13 @@
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLContext.cpp">
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\PlatForm\OpenGL\OpenGLCubeMap.cpp">
+      <Filter>src\PlatForm\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.cpp">
+      <Filter>src\PlatForm\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatForm\OpenGL\OpenGLRenderUtil.cpp">
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLRendererAPI.cpp">
@@ -1508,6 +1559,9 @@
     <ClCompile Include="src\TheFoolEngine\Core\Application.cpp">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Core\Job\JobSystem.cpp">
+      <Filter>src\TheFoolEngine\Core\Job</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Core\Layer.cpp">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClCompile>
@@ -1517,22 +1571,46 @@
     <ClCompile Include="src\TheFoolEngine\Core\Log.cpp">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Core\ThreadPool.cpp">
+      <Filter>src\TheFoolEngine\Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\ImGui\ImGuiBuild.cpp">
       <Filter>src\TheFoolEngine\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\ImGui\ImGuiLayer.cpp">
       <Filter>src\TheFoolEngine\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Importer\ModelLoader.cpp">
+      <Filter>src\TheFoolEngine\Importer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.cpp">
+      <Filter>src\TheFoolEngine\Importer\PBRMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.cpp">
+      <Filter>src\TheFoolEngine\Importer\PBRMaterial</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Importer\PBRModel.cpp">
+      <Filter>src\TheFoolEngine\Importer</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\Buffer.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\CubeMap.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\FrameBuffer.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\IBLUtils.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCamera.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCameraController.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\PBRRenderer.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\PerspectiveCamera.cpp">
@@ -1542,6 +1620,9 @@
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\RenderCommand.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\RenderUtil.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\Renderer.cpp">
@@ -1580,13 +1661,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\TheFoolEngine\Importer\ModelLoader.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Importer\PBRModel.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\PBRRenderer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="TheFoolEngine.rc" />
   </ItemGroup>
 </Project>

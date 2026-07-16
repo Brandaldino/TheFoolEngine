@@ -1,50 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="DemoGame">
-      <UniqueIdentifier>{64542DA2-5021-88AD-793A-76556566BD3B}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="DemoGameLib">
-      <UniqueIdentifier>{1BFB543D-87B0-CD32-10A5-C7097C59C436}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ExampleLayer">
-      <UniqueIdentifier>{AE533BF6-9AB6-CA9A-433C-03512F7E961D}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Particle">
-      <UniqueIdentifier>{D94E718D-C51B-CC98-EE34-BA40DA600127}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Sandbox2D">
       <UniqueIdentifier>{AA155D3F-1680-11B6-5FBE-C25BCB67EF0A}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sandbox3D">
-      <UniqueIdentifier>{CB155D3F-3780-11B6-80BE-C25BEC67EF0A}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sandbox_Model">
       <UniqueIdentifier>{6470BD97-D030-39CE-996B-824B05EB7DAA}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\DemoGame\DemoGameLayer.h">
-      <Filter>DemoGame</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DemoGameLib\Color.h">
-      <Filter>DemoGameLib</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DemoGameLib\Level.h">
-      <Filter>DemoGameLib</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DemoGameLib\Player.h">
-      <Filter>DemoGameLib</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DemoGameLib\Random.h">
-      <Filter>DemoGameLib</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ExampleLayer\ExampleLayer.h">
-      <Filter>ExampleLayer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Particle\ParticleSystem.h">
-      <Filter>Particle</Filter>
-    </ClInclude>
     <ClInclude Include="src\Sandbox2D\Sandbox2D.h">
       <Filter>Sandbox2D</Filter>
     </ClInclude>
@@ -53,21 +17,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\DemoGame\DemoGameLayer.cpp">
-      <Filter>DemoGame</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DemoGameLib\Level.cpp">
-      <Filter>DemoGameLib</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DemoGameLib\Player.cpp">
-      <Filter>DemoGameLib</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DemoGameLib\Random.cpp">
-      <Filter>DemoGameLib</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Particle\ParticleSystem.cpp">
-      <Filter>Particle</Filter>
-    </ClCompile>
     <ClCompile Include="src\Sandbox2D\Sandbox2D.cpp">
       <Filter>Sandbox2D</Filter>
     </ClCompile>

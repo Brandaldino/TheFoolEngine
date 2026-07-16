@@ -8,8 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "DemoGame/DemoGameLayer.h"
-
 #include "Sandbox2D/Sandbox2D.h"
 
 #include "Sandbox_Model/Sandbox_Model.h"

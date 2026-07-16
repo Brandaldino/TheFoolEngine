@@ -123,7 +123,7 @@ namespace TheFoolEngine
         glVertexArrayAttribBinding(cubeVAO, 0, 0);
 
         // Shader + Matrix
-        auto shader = Shader::Create("assets/shaders/EquirectToCubeMap.glsl");
+        auto shader = Shader::Create("assets/shader/EquirectToCubeMap.glsl");
 
         glm::mat4 proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 
@@ -189,6 +189,11 @@ namespace TheFoolEngine
         TF_PROFILE_FUNCTION();
 
         glBindTextureUnit(slot, m_RendererID);
+    }
+
+    void OpenGLCubeMap::GenerateMipmap()
+    {
+        glGenerateTextureMipmap(m_RendererID);
     }
     
     // === CubeMap ========================================================

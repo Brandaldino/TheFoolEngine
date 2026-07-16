@@ -16,6 +16,12 @@ namespace TheFoolEngine
 		void OnImGuiRender();
 	private:
 		void DrawEntityNode(Entity entity);
+        void DrawTagComponent(Entity entity);
+        void DrawTransformComponent(Entity entity);
+        void DrawSpriteRendererComponent(Entity entity);
+        void DrawCameraComponent(Entity entity);
+        void DrawLightComponent(Entity entity);
+        void DrawPBRModelComponent(Entity entity);
 	private:
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
