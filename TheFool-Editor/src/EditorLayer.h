@@ -19,6 +19,9 @@ namespace TheFoolEngine
 		void OnUpdate(TimeStep ts) override;
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& e) override;
+    private:
+        void ImportModel();
+        void ImportSkybox();
 	private:
 		Ref<FrameBuffer> m_FrameBuffer;
 

@@ -5,7 +5,8 @@
 
 #include "Renderer2D.h"
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 

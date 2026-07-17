@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <commdlg.h>
+
 namespace TheFoolEngine
 {
 
@@ -247,6 +249,13 @@ namespace TheFoolEngine
 
                 if (ImGui::MenuItem("Exit"))
                     Application::Get().Close();
+
+                if (ImGui::MenuItem("ImportModel"))
+                    ImportModel();
+
+                if (ImGui::MenuItem("ImportSkybox"))
+                    ImportSkybox();
+
                 ImGui::EndMenu();
             }
 
@@ -323,4 +332,68 @@ namespace TheFoolEngine
     {
         m_PerspectiveCameraController.OnEvent(e);
     }
+
+    void EditorLayer::ImportModel()
+    {
+        // win32 api
+        OPENFILENAMEW ofn = {};
+        wchar_t path[260] = {};
+
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = nullptr;
+        ofn.lpstrFile = path;
+        ofn.nMaxFile = 260;
+        ofn.lpstrFilter = L"Model Files\0*.fbx;*.glb;*.gltf\0All Files\0*.*\0";
+        ofn.Flags = OFN_FILEMUSTEXIST;
+
+        if (!GetOpenFileNameW(&ofn))
+            return;
+
+        std::filesystem::path filepath(path);
+
+        // load model
+        auto model = CreateRef<PBRModel>();
+        model->Import(filepath);
+        if (model->GetModelData().Meshes.empty())
+        {
+            TF_ERROR("Failed to import model: {0}", filepath.u8string());
+            return;
+        }
+
+        PBRRenderer::DefaultTextureFill(model);
+        model->UpLoad();
+
+        // create entity
+        auto entity = m_ActiveScene->CreateEntity(filepath.stem().u8string());
+        entity.AddComponent<PBRModelComponent>(model);
+    }
+
+    void EditorLayer::ImportSkybox()
+    {
+        // win32 api
+        OPENFILENAMEW ofn = {};
+        wchar_t path[260] = {};
+
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = nullptr;
+        ofn.lpstrFile = path;
+        ofn.nMaxFile = 260;
+        ofn.lpstrFilter = L"Skybox Files\0*.hdr\0All Files\0*.*\0";
+        ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+        if (!GetOpenFileNameW(&ofn))
+            return;
+
+        std::filesystem::path filepath(path);
+
+        // load skybox
+        auto skybox = CubeMap::Create(path);
+        PBRRenderer::SetSkybox(skybox);
+        // environment
+        auto irradiance = IBLUtils::CreateIrradianceMap(skybox);
+        auto prefilter = IBLUtils::CreatePrefilteredMap(skybox);
+        auto brdfLUT = IBLUtils::CreateBRDFLUT(512);
+        PBRRenderer::SetEnvironmentMap(irradiance, prefilter, brdfLUT);
+    }
+
 }
