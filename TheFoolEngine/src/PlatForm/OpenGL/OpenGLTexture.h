@@ -41,8 +41,8 @@ namespace TheFoolEngine
         void SetInternalFormat(TextureFormat type);
         void SetDataFormat(TextureFormat type);
 
-    protected:
-        GLenum TypeTranslate(TextureFormat type);
+    public:
+        static GLenum TypeTranslate(TextureFormat type);
 	private:
 		std::string m_Path;
 		uint32_t m_Width, m_Height;

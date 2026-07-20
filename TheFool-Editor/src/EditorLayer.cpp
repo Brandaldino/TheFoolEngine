@@ -17,11 +17,18 @@ namespace TheFoolEngine
     void EditorLayer::OnAttach() 
     {
         TF_PROFILE_FUNCTION();
+        // Shader
+        m_ToneMappingShader = Shader::Create("assets/shader/ToneMapping.glsl");
 
         FrameBufferSpecification fbSpec;
         fbSpec.Width = 1280;
         fbSpec.Height = 720;
-        m_FrameBuffer = FrameBuffer::Create(fbSpec);
+        // HDR FrameBuffer
+        fbSpec.FrameBufferFormat = TextureFormat::RGBA16F;
+        m_HDRFrameBuffer = FrameBuffer::Create(fbSpec);
+        // LDR FrameBuffer
+        fbSpec.FrameBufferFormat = TextureFormat::RGBA8;
+        m_LDRFrameBuffer = FrameBuffer::Create(fbSpec);
 
         m_ActiveScene = CreateRef<Scene>();
 
@@ -118,11 +125,12 @@ namespace TheFoolEngine
         m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         // Resize
-        if (FrameBufferSpecification spec = m_FrameBuffer->GetSpecification();
+        if (FrameBufferSpecification spec = m_LDRFrameBuffer->GetSpecification();
             m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
             (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
         {
-            m_FrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_HDRFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_LDRFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_PerspectiveCameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
         }
 
@@ -131,7 +139,7 @@ namespace TheFoolEngine
 
         // Render
         Renderer2D::ResetStats();
-        m_FrameBuffer->Bind();
+        m_HDRFrameBuffer->Bind();
         RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
         RenderCommand::Clear();
 
@@ -184,7 +192,23 @@ namespace TheFoolEngine
             PBRRenderer::Render();
         }
 
-        m_FrameBuffer->UnBind();
+        m_HDRFrameBuffer->UnBind();
+
+        // ToneMapping Pass
+        m_LDRFrameBuffer->Bind();
+        RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
+        m_ToneMappingShader->Bind();
+        m_ToneMappingShader->SetFloat("u_Exposure", 1.0f);
+        m_ToneMappingShader->SetInt("u_HDRColor", 0);
+        m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
+
+        // Draw
+        auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
+        quadVAO->Bind();
+        RenderCommand::DrawIndexed(quadVAO, 6);
+
+        RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
+        m_LDRFrameBuffer->UnBind();
     }
 
     void EditorLayer::OnImGuiRender() 
@@ -314,12 +338,13 @@ namespace TheFoolEngine
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize) && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
         {
-            m_FrameBuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+            m_HDRFrameBuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+            m_LDRFrameBuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
             m_PerspectiveCameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
         }
         // TF_WARN("Viewport Size: {0},{1}", viewportPanelSize.x, viewportPanelSize.y);
-        uint32_t textureID = m_FrameBuffer->GetColorAttachmentRendererID();
+        uint32_t textureID = m_LDRFrameBuffer->GetColorAttachment()->GetRendererID();
         ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
         ImGui::End();

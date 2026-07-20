@@ -17,12 +17,14 @@ namespace TheFoolEngine
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
-		virtual uint32_t GetColorAttachmentRendererID() const override { return m_ColorAttachment; }
-		virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
+        virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; };
+
+        virtual Ref<Texture2D> GetColorAttachment() override { return m_ColorAttachment; };
+        virtual uint32_t GetRenderID() const override { return m_RendererID; };
 	private:
 		uint32_t m_RendererID = 0;
-		uint32_t m_ColorAttachment = 0, m_DepthAttachment = 0;
+        uint32_t m_DepthAttachment;
+        Ref<Texture2D> m_ColorAttachment;
 		FrameBufferSpecification m_Specification;
-
 	};
 }

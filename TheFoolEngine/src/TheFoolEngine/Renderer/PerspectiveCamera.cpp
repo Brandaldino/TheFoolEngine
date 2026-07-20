@@ -47,7 +47,10 @@ namespace TheFoolEngine {
 	void PerspectiveCamera::RecalculateFrustumMatrix()
 	{
 		m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Forward, m_Up);
-		m_ProjectionMatrix = glm::perspective(glm::radians(m_FovDegrees), m_AspectRatio, m_NearClip, m_FarClip);
+
+        float horizontalFovRad = glm::radians(m_FovDegrees);
+        float verticalFovRad = 2.0f * atan(tan(horizontalFovRad * 0.5f) / m_AspectRatio);
+		m_ProjectionMatrix = glm::perspective(verticalFovRad, m_AspectRatio, m_NearClip, m_FarClip);
 
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 	}

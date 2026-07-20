@@ -23,7 +23,8 @@ namespace TheFoolEngine
         void ImportModel();
         void ImportSkybox();
 	private:
-		Ref<FrameBuffer> m_FrameBuffer;
+		Ref<FrameBuffer> m_HDRFrameBuffer;
+		Ref<FrameBuffer> m_LDRFrameBuffer;
 
 		Ref<Scene> m_ActiveScene;
 		Entity m_SquareEntity;
@@ -44,6 +45,9 @@ namespace TheFoolEngine
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
         bool m_Is3DMode = true;
+
+		Ref<Shader> m_ToneMappingShader;
+		// ============================================================
 	};
 }
 

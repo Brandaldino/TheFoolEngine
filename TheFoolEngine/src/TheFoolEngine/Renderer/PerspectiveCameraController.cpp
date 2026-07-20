@@ -5,9 +5,8 @@
 #include "TheFoolEngine/Core/KeyCodes.h"
 #include "TheFoolEngine/Core/MouseCodes.h"
 
-// TODO: 相机的移动应按照朝向时的方位移动
-
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
 	PerspectiveCameraController::PerspectiveCameraController(float aspectRatio)
 		:m_AspectRatio(aspectRatio),m_Camera(45.0f, 1280.0f / 720.0f, 0.1f, 100.0f)
@@ -51,8 +50,8 @@ namespace TheFoolEngine {
 
 	void PerspectiveCameraController::OnEvent(Event& e)
 	{
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowResizeEvent>(TF_BIND_EVENT_FN(PerspectiveCameraController::OnWindowResized));
+		// EventDispatcher dispatcher(e);
+		// dispatcher.Dispatch<WindowResizeEvent>(TF_BIND_EVENT_FN(PerspectiveCameraController::OnWindowResized));
 		// dispatcher.Dispatch<MouseButtonEvent>(TF_BIND_EVENT_FN(PerspectiveCameraController::OnWindowResized));
 		// dispatcher.Dispatch<MouseMovedEvent>(TF_BIND_EVENT_FN(PerspectiveCameraController::OnMouseMoved));
 	}
@@ -101,7 +100,9 @@ namespace TheFoolEngine {
 
 	bool PerspectiveCameraController::OnWindowResized(WindowResizeEvent& e)
 	{
-		OnResize(e.GetWidth(), e.GetHeight());
+        /*if (e.GetWidth() == 0 || e.GetHeight() == 0)
+            return false;
+		OnResize(e.GetWidth(), e.GetHeight());*/
 		return false;
 	}
 

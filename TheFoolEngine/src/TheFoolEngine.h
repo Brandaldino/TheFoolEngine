@@ -31,6 +31,7 @@
 #include "TheFoolEngine/Renderer/Renderer2D.h"
 #include "TheFoolEngine/Renderer/PBRRenderer.h"
 #include "TheFoolEngine/Renderer/RenderCommand.h"
+#include "TheFoolEngine/Renderer/RenderUtil.h"
 
 #include "TheFoolEngine/Renderer/Buffer.h"
 #include "TheFoolEngine/Renderer/Shader.h"

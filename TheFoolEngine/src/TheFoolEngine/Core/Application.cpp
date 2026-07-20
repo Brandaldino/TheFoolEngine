@@ -114,9 +114,10 @@ namespace TheFoolEngine {
 	{
 		TF_PROFILE_FUNCTION();
 
-		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
+		if (e.GetWidth() == 0 || e.GetHeight() == 0) 
+        {
 			m_Minized = true;
-			return false;
+			return true;
 		}
 		m_Minized = false;
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());

@@ -113,7 +113,8 @@ namespace TheFoolEngine {
 	
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	{
-		// TODO: �����Ƿ��������ĳ���������
+        if (width == 0 || height == 0)
+            return;
 
 		// Resize our non-FixedAspectRatio cameras
 		auto view = m_Registry.view<CameraComponent>();
