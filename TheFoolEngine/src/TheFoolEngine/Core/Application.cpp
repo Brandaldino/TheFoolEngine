@@ -9,7 +9,10 @@
 
 #include <glfw/glfw3.h>
 
-namespace TheFoolEngine {
+#include "Job/JobSystem.h"
+
+namespace TheFoolEngine 
+{
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
@@ -27,22 +30,27 @@ namespace TheFoolEngine {
 
 		Renderer::Init();
 
+        JobSystem::Initialize();
+
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverLayer(m_ImGuiLayer);
 	}
 
-	Application::~Application() {
-
+	Application::~Application()
+    {
+        JobSystem::Shutdown();
 	}
 
-	void Application::PushLayer(Layer* layer) {
+	void Application::PushLayer(Layer* layer)
+    {
 		TF_PROFILE_FUNCTION();
 
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
 
-	void Application::PushOverLayer(Layer* layer) {
+	void Application::PushOverLayer(Layer* layer) 
+    {
 		TF_PROFILE_FUNCTION();
 
 		m_LayerStack.PushOverLayer(layer);
@@ -69,14 +77,15 @@ namespace TheFoolEngine {
 		m_Running = false;
 	}
 
-	void Application::Run() {
+	void Application::Run() 
+    {
 		TF_PROFILE_FUNCTION();
 
 		while (m_Running) 
 		{
 			TF_PROFILE_SCOPE("RunLoop");
 
-			float time = (float)glfwGetTime(); // 这里应该由平台的函数决定 // TODO: PlatForm::GetTime
+			float time = (float)glfwGetTime();
 			TimeStep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 
