@@ -19,6 +19,9 @@ namespace TheFoolEngine
         TF_PROFILE_FUNCTION();
         // Shader
         m_ToneMappingShader = Shader::Create("assets/shader/ToneMapping.glsl");
+        m_BloomExtractShader = Shader::Create("assets/shader/BloomExtract.glsl");
+        m_BloomBlurShader = Shader::Create("assets/shader/GaussianBlur.glsl");
+        m_BloomCombineShader = Shader::Create("assets/shader/BloomCombine.glsl");
 
         FrameBufferSpecification fbSpec;
         fbSpec.Width = 1280;
@@ -29,6 +32,12 @@ namespace TheFoolEngine
         // LDR FrameBuffer
         fbSpec.FrameBufferFormat = TextureFormat::RGBA8;
         m_LDRFrameBuffer = FrameBuffer::Create(fbSpec);
+
+        // Bloom
+        FrameBufferSpecification bloomSpec = fbSpec;
+        bloomSpec.FrameBufferFormat = TextureFormat::RGBA16F;
+        m_BloomFBO_A = FrameBuffer::Create(bloomSpec);
+        m_BloomFBO_B = FrameBuffer::Create(bloomSpec);
 
         m_ActiveScene = CreateRef<Scene>();
 
@@ -131,6 +140,8 @@ namespace TheFoolEngine
         {
             m_HDRFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_LDRFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_BloomFBO_A->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_BloomFBO_B->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_PerspectiveCameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
         }
 
@@ -194,18 +205,60 @@ namespace TheFoolEngine
 
         m_HDRFrameBuffer->UnBind();
 
-        // ToneMapping Pass
-        m_LDRFrameBuffer->Bind();
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
-        m_ToneMappingShader->Bind();
-        m_ToneMappingShader->SetFloat("u_Exposure", 1.0f);
-        m_ToneMappingShader->SetInt("u_HDRColor", 0);
-        m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
+        // Pass
+        {
+            auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
 
-        // Draw
-        auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
-        quadVAO->Bind();
-        RenderCommand::DrawIndexed(quadVAO, 6);
+            //// Bloom Pass: Extract highlight
+            //m_BloomFBO_A->Bind();
+            //m_BloomExtractShader->Bind();
+            //m_BloomExtractShader->SetFloat("u_Threshold", 1.0f);
+            //m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
+            //// Draw
+            //quadVAO->Bind();
+            //RenderCommand::DrawIndexed(quadVAO, 6);
+
+            //// Bloom Pass: Horizontal blur
+            //m_BloomFBO_B->Bind();
+            //m_BloomBlurShader->Bind();
+            //m_BloomBlurShader->SetFloat2("u_Direction", { 1.0f, 0.0f });
+            //m_BloomFBO_A->GetColorAttachment()->Bind(0);
+            //// Draw
+            //quadVAO->Bind();
+            //RenderCommand::DrawIndexed(quadVAO, 6);
+
+            //// Bloom Pass: Vertical blur
+            //m_BloomFBO_A->Bind();
+            //m_BloomBlurShader->SetFloat2("u_Direction", { 0.0f, 1.0f });
+            //m_BloomFBO_B->GetColorAttachment()->Bind(0);
+            //// Draw
+            //quadVAO->Bind();
+            //RenderCommand::DrawIndexed(quadVAO, 6);
+
+            //// Bloom Pass: HDR + Bloom -> Combine -> LDR FBO
+            //m_LDRFrameBuffer->Bind();
+            //m_BloomCombineShader->Bind();
+            //m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
+            //m_BloomFBO_A->GetColorAttachment()->Bind(1);
+            //m_BloomCombineShader->SetInt("u_HDRColor", 0);
+            //m_BloomCombineShader->SetInt("u_BloomBlur", 1);
+            //m_BloomCombineShader->SetFloat("u_Intensity", 1.0f);
+            //// Draw
+            //quadVAO->Bind();
+            //RenderCommand::DrawIndexed(quadVAO, 6);
+
+            // ToneMapping Pass
+            m_LDRFrameBuffer->Bind();
+            m_ToneMappingShader->Bind();
+            m_ToneMappingShader->SetFloat("u_Exposure", 1.0f);
+            m_ToneMappingShader->SetInt("u_HDRColor", 0);
+            m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
+
+            // Draw
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
+        }
 
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
         m_LDRFrameBuffer->UnBind();
@@ -340,6 +393,8 @@ namespace TheFoolEngine
         {
             m_HDRFrameBuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
             m_LDRFrameBuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+            m_BloomFBO_A->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+            m_BloomFBO_B->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_PerspectiveCameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
         }

@@ -26,6 +26,12 @@ namespace TheFoolEngine
 		Ref<FrameBuffer> m_HDRFrameBuffer;
 		Ref<FrameBuffer> m_LDRFrameBuffer;
 
+		Ref<FrameBuffer> m_BloomFBO_A;
+		Ref<FrameBuffer> m_BloomFBO_B;
+		Ref<Shader> m_BloomExtractShader;
+		Ref<Shader> m_BloomBlurShader;
+		Ref<Shader> m_BloomCombineShader;
+
 		Ref<Scene> m_ActiveScene;
 		Entity m_SquareEntity;
 		Entity m_MainCamera;
