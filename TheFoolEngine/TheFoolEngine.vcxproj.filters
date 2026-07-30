@@ -70,6 +70,9 @@
     <Filter Include="vendor\glm\glm\gtx">
       <UniqueIdentifier>{B3A6A76B-9F8A-68C1-08EB-6214F4ED5243}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\imguizmo">
+      <UniqueIdentifier>{B36F5F1F-1FFB-CCE3-280C-50D8941629E4}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor\stb_image">
       <UniqueIdentifier>{0DA0BA59-F998-D9AB-22CB-BE300E23B9B7}</UniqueIdentifier>
     </Filter>
@@ -115,6 +118,9 @@
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Core\EntryPoint.h">
+      <Filter>src\TheFoolEngine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Core\IOThread.h">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Core\Input.h">
@@ -214,6 +220,9 @@
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\PerspectiveCameraController.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Ray.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\RenderCommand.h">
@@ -1518,6 +1527,9 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\imguizmo\ImGuizmo.h">
+      <Filter>vendor\imguizmo</Filter>
+    </ClInclude>
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
@@ -1557,6 +1569,9 @@
       <Filter>src\PlatForm\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Core\Application.cpp">
+      <Filter>src\TheFoolEngine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Core\IOThread.cpp">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Core\Job\JobSystem.cpp">
@@ -1619,6 +1634,9 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\PerspectiveCameraController.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\Ray.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\RenderCommand.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
@@ -1657,6 +1675,9 @@
     </ClCompile>
     <ClCompile Include="src\tfpch.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imguizmo\ImGuizmo.cpp">
+      <Filter>vendor\imguizmo</Filter>
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>

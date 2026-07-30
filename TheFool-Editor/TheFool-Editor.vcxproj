@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TF_PLATFORM_WINDOWS;TF_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\TheFoolEngine\vendor\spdlog\include;..\TheFoolEngine\src;..\TheFoolEngine\vendor;..\TheFoolEngine\vendor\glm;..\TheFoolEngine\vendor\entity\include;..\TheFoolEngine\vendor\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\TheFoolEngine\vendor\spdlog\include;..\TheFoolEngine\src;..\TheFoolEngine\vendor;..\TheFoolEngine\vendor\glm;..\TheFoolEngine\vendor\entity\include;..\TheFoolEngine\vendor\assimp\include;..\%{IncludeDir.imguizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -99,7 +99,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TF_PLATFORM_WINDOWS;TF_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\TheFoolEngine\vendor\spdlog\include;..\TheFoolEngine\src;..\TheFoolEngine\vendor;..\TheFoolEngine\vendor\glm;..\TheFoolEngine\vendor\entity\include;..\TheFoolEngine\vendor\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\TheFoolEngine\vendor\spdlog\include;..\TheFoolEngine\src;..\TheFoolEngine\vendor;..\TheFoolEngine\vendor\glm;..\TheFoolEngine\vendor\entity\include;..\TheFoolEngine\vendor\assimp\include;..\%{IncludeDir.imguizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -125,7 +125,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>TF_PLATFORM_WINDOWS;TF_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\TheFoolEngine\vendor\spdlog\include;..\TheFoolEngine\src;..\TheFoolEngine\vendor;..\TheFoolEngine\vendor\glm;..\TheFoolEngine\vendor\entity\include;..\TheFoolEngine\vendor\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\TheFoolEngine\vendor\spdlog\include;..\TheFoolEngine\src;..\TheFoolEngine\vendor;..\TheFoolEngine\vendor\glm;..\TheFoolEngine\vendor\entity\include;..\TheFoolEngine\vendor\assimp\include;..\%{IncludeDir.imguizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>None</DebugInformationFormat>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>

@@ -32,6 +32,10 @@ namespace TheFoolEngine
         std::vector<uint32_t> indices;
         uint32_t MaterialIndex = 0;
         glm::mat4 NodeTransform = glm::mat4(1.0f);
+
+        // outline
+        glm::vec3 AABBMin = glm::vec3(1.0f);
+        glm::vec3 AABBMax = glm::vec3(-1.0f);
     };
 
     struct PBRMaterialTextureSet

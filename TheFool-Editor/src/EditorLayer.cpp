@@ -3,8 +3,11 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/glm.hpp>
 
 #include <commdlg.h>
+
+#include "imguizmo/ImGuizmo.h"
 
 namespace TheFoolEngine
 {
@@ -22,6 +25,7 @@ namespace TheFoolEngine
         m_BloomExtractShader = Shader::Create("assets/shader/BloomExtract.glsl");
         m_BloomBlurShader = Shader::Create("assets/shader/GaussianBlur.glsl");
         m_BloomCombineShader = Shader::Create("assets/shader/BloomCombine.glsl");
+        m_FlatShader = Shader::Create("assets/shader/FlatColor.glsl");
 
         FrameBufferSpecification fbSpec;
         fbSpec.Width = 1280;
@@ -119,6 +123,14 @@ namespace TheFoolEngine
         m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+        // FlatColor
+        m_OutlineVBO = VertexBuffer::Create(24 * sizeof(glm::vec3));
+        m_OutlineVBO->SetLayout({
+            {ShaderDataType::Float3, "a_Position"}
+            });
+        m_OutlineVAO = VertexArray::Create();
+        m_OutlineVAO->AddVertexBuffer(m_OutlineVBO);
     }
 
     void EditorLayer::OnDetach()
@@ -205,48 +217,55 @@ namespace TheFoolEngine
 
         m_HDRFrameBuffer->UnBind();
 
+        // FlatColor
+        if (auto selected = m_SceneHierarchyPanel.GetSelectionContext() &&
+            m_SceneHierarchyPanel.GetSelectionContext().GetComponent<PBRModelComponent>())
+        {
+            
+        }
+
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
         // Pass
         {
             auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
 
-            //// Bloom Pass: Extract highlight
-            //m_BloomFBO_A->Bind();
-            //m_BloomExtractShader->Bind();
-            //m_BloomExtractShader->SetFloat("u_Threshold", 1.0f);
-            //m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
-            //// Draw
-            //quadVAO->Bind();
-            //RenderCommand::DrawIndexed(quadVAO, 6);
+            // Bloom Pass: Extract highlight
+            m_BloomFBO_A->Bind();
+            m_BloomExtractShader->Bind();
+            m_BloomExtractShader->SetFloat("u_Threshold", 1.0f);
+            m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
+            // Draw
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
 
-            //// Bloom Pass: Horizontal blur
-            //m_BloomFBO_B->Bind();
-            //m_BloomBlurShader->Bind();
-            //m_BloomBlurShader->SetFloat2("u_Direction", { 1.0f, 0.0f });
-            //m_BloomFBO_A->GetColorAttachment()->Bind(0);
-            //// Draw
-            //quadVAO->Bind();
-            //RenderCommand::DrawIndexed(quadVAO, 6);
+            // Bloom Pass: Horizontal blur
+            m_BloomFBO_B->Bind();
+            m_BloomBlurShader->Bind();
+            m_BloomBlurShader->SetFloat2("u_Direction", { 1.0f, 0.0f });
+            m_BloomFBO_A->GetColorAttachment()->Bind(0);
+            // Draw
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
 
-            //// Bloom Pass: Vertical blur
-            //m_BloomFBO_A->Bind();
-            //m_BloomBlurShader->SetFloat2("u_Direction", { 0.0f, 1.0f });
-            //m_BloomFBO_B->GetColorAttachment()->Bind(0);
-            //// Draw
-            //quadVAO->Bind();
-            //RenderCommand::DrawIndexed(quadVAO, 6);
+            // Bloom Pass: Vertical blur
+            m_BloomFBO_A->Bind();
+            m_BloomBlurShader->SetFloat2("u_Direction", { 0.0f, 1.0f });
+            m_BloomFBO_B->GetColorAttachment()->Bind(0);
+            // Draw
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
 
-            //// Bloom Pass: HDR + Bloom -> Combine -> LDR FBO
-            //m_LDRFrameBuffer->Bind();
-            //m_BloomCombineShader->Bind();
-            //m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
-            //m_BloomFBO_A->GetColorAttachment()->Bind(1);
-            //m_BloomCombineShader->SetInt("u_HDRColor", 0);
-            //m_BloomCombineShader->SetInt("u_BloomBlur", 1);
-            //m_BloomCombineShader->SetFloat("u_Intensity", 1.0f);
-            //// Draw
-            //quadVAO->Bind();
-            //RenderCommand::DrawIndexed(quadVAO, 6);
+            // Bloom Pass: HDR + Bloom -> Combine -> LDR FBO
+            m_LDRFrameBuffer->Bind();
+            m_BloomCombineShader->Bind();
+            m_HDRFrameBuffer->GetColorAttachment()->Bind(0);
+            m_BloomFBO_A->GetColorAttachment()->Bind(1);
+            m_BloomCombineShader->SetInt("u_HDRColor", 0);
+            m_BloomCombineShader->SetInt("u_BloomBlur", 1);
+            m_BloomCombineShader->SetFloat("u_Intensity", 1.0f);
+            // Draw
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
 
             // ToneMapping Pass
             m_LDRFrameBuffer->Bind();
@@ -278,8 +297,8 @@ namespace TheFoolEngine
         if (opt_fullscreen)
         {
             ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->GetWorkPos());
-            ImGui::SetNextWindowSize(viewport->GetWorkSize());
+            ImGui::SetNextWindowPos(viewport->WorkPos);
+            ImGui::SetNextWindowSize(viewport->WorkSize);
             ImGui::SetNextWindowViewport(viewport->ID);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -402,6 +421,46 @@ namespace TheFoolEngine
         uint32_t textureID = m_LDRFrameBuffer->GetColorAttachment()->GetRendererID();
         ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
+        // Converting screen coordinates back to local coordinates
+        if (ImGui::IsMouseDoubleClicked(0) && m_ViewportHovered)
+        {
+            ImVec2 mousePos = ImGui::GetMousePos();
+            ImVec2 windowPos = ImGui::GetItemRectMin();
+            ImVec2 localPos = { mousePos.x - windowPos.x, mousePos.y - windowPos.y };
+
+            Ray::RayData ray = Ray::ScreenToRay(
+                { localPos.x, localPos.y },
+                m_ViewportSize.x, m_ViewportSize.y,
+                m_PerspectiveCameraController.GetCamera().GetViewMatrix(),
+                m_PerspectiveCameraController.GetCamera().GetProjectionMatrix()
+            );
+
+            // Iterate through all PBRModel entities for detection
+            PickEntity(ray);
+        }
+
+        if (auto selected = m_SceneHierarchyPanel.GetSelectionContext())
+        {
+            auto& transform = selected.GetComponent<TransformComponent>().Transform;
+
+            ImGuizmo::SetDrawlist();
+            ImGuizmo::SetRect(
+                ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
+                ImGui::GetWindowWidth(), ImGui::GetWindowHeight()
+            );
+
+            ImGuizmo::Manipulate(
+                glm::value_ptr(m_PerspectiveCameraController.GetCamera().GetViewMatrix()),
+                glm::value_ptr(m_PerspectiveCameraController.GetCamera().GetProjectionMatrix()),
+                ImGuizmo::TRANSLATE,
+                ImGuizmo::WORLD,
+                glm::value_ptr(transform)
+            );
+
+            if (ImGuizmo::IsUsing())
+                m_ViewportHovered = false;
+        }
+       
         ImGui::End();
         ImGui::PopStyleVar();
 
@@ -410,7 +469,59 @@ namespace TheFoolEngine
 
     void EditorLayer::OnEvent(Event & e) 
     {
+        if (ImGuizmo::IsUsing())
+            return;
+
         m_PerspectiveCameraController.OnEvent(e);
+    }
+
+    void EditorLayer::PickEntity(const Ray::RayData& ray)
+    {
+        float nearDistance = 1e30f;
+        Entity picked;
+
+        auto view = m_ActiveScene->m_Registry.view<PBRModelComponent, TransformComponent>();
+        for (auto entity : view)
+        {
+            auto& [model, transfer] = view.get<PBRModelComponent, TransformComponent>(entity);
+            auto& modelData = model.Model->GetModelData();
+
+            for (auto& mesh : modelData.Meshes)
+            {
+                glm::vec3 corners[8] = {
+                    {mesh.AABBMin.x, mesh.AABBMin.y, mesh.AABBMin.z},
+                    {mesh.AABBMin.x, mesh.AABBMin.y, mesh.AABBMax.z},
+                    {mesh.AABBMin.x, mesh.AABBMax.y, mesh.AABBMin.z},
+                    {mesh.AABBMin.x, mesh.AABBMax.y, mesh.AABBMax.z},
+                    {mesh.AABBMax.x, mesh.AABBMin.y, mesh.AABBMin.z},
+                    {mesh.AABBMax.x, mesh.AABBMin.y, mesh.AABBMax.z},
+                    {mesh.AABBMax.x, mesh.AABBMax.y, mesh.AABBMin.z},
+                    {mesh.AABBMax.x, mesh.AABBMax.y, mesh.AABBMax.z}
+                };
+
+                glm::mat4& t = transfer.Transform;
+                glm::vec3 worldMin(1e30f), worldMax(-1e30f);
+                for (auto& c : corners)
+                {
+                    glm::vec3 wc = glm::vec3(t * glm::vec4(c, 1.0f));
+                    worldMin = glm::min(worldMin, wc);
+                    worldMax = glm::max(worldMax, wc);
+                }
+
+                float dist;
+                if (Ray::RayAABBIntersect(ray, worldMin, worldMax, dist))
+                {
+                    if (dist < nearDistance)
+                    {
+                        nearDistance = dist;
+                        picked = Entity{ entity, m_ActiveScene.get() };
+                    }
+                }
+            }
+        }
+
+        if (picked)
+            m_SceneHierarchyPanel.SetSelectionContext(picked);
     }
 
     void EditorLayer::ImportModel()

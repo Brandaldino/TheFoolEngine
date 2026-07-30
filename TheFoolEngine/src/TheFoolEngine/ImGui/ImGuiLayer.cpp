@@ -3,10 +3,11 @@
 
 #include "imgui.h"
 
-#include "examples/imgui_impl_opengl3.h"
-#include "examples/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_glfw.h"
 
 #include "TheFoolEngine/Core/Application.h"
+#include "../../../vendor/imguizmo/ImGuizmo.h"
 
 // TEMPORARY
 #include <GLFW/glfw3.h>
@@ -23,7 +24,8 @@ namespace TheFoolEngine{
 	}
 
 
-	void ImGuiLayer::OnAttach() {
+	void ImGuiLayer::OnAttach() 
+    {
 		TF_PROFILE_FUNCTION();
 
 		// Setup Dear ImGui context
@@ -43,7 +45,8 @@ namespace TheFoolEngine{
 
 		// When viewports are enable we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 		ImGuiStyle& style = ImGui::GetStyle();
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) 
+        {
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
@@ -56,7 +59,8 @@ namespace TheFoolEngine{
         ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
-	void ImGuiLayer::OnDetach() {
+	void ImGuiLayer::OnDetach() 
+    {
 		TF_PROFILE_FUNCTION();
 
 		ImGui_ImplOpenGL3_Shutdown();
@@ -74,15 +78,18 @@ namespace TheFoolEngine{
 		}
 	}
 
-	void ImGuiLayer::Begin() {
+	void ImGuiLayer::Begin() 
+    {
 		TF_PROFILE_FUNCTION();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
 	}
 
-	void ImGuiLayer::End() {
+	void ImGuiLayer::End() 
+    {
 		TF_PROFILE_FUNCTION();
 
 		ImGuiIO& io = ImGui::GetIO();

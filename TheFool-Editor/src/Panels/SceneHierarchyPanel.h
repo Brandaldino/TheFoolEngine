@@ -14,6 +14,8 @@ namespace TheFoolEngine
 		SceneHierarchyPanel(const Ref<Scene>& scene);
 		void SetContext(const Ref<Scene>& scene);
 		void OnImGuiRender();
+        Entity GetSelectionContext() const { return m_SelectionContext; };
+        void SetSelectionContext(Entity entity) { m_SelectionContext = entity; };
 	private:
 		void DrawEntityNode(Entity entity);
         void DrawTagComponent(Entity entity);

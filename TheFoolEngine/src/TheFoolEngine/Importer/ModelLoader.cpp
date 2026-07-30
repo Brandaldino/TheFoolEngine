@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <stb_image.h>
+#include <glm/glm.hpp>
 
 namespace TheFoolEngine
 {
@@ -58,6 +59,9 @@ namespace TheFoolEngine
 
                 // position
                 vertex.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+                // AABB
+                meshData.AABBMin = glm::min(meshData.AABBMin, vertex.position);
+                meshData.AABBMax = glm::max(meshData.AABBMax, vertex.position);
                 // normal
                 if (mesh->HasNormals())
                     vertex.normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };

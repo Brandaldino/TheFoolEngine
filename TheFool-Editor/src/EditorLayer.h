@@ -19,6 +19,8 @@ namespace TheFoolEngine
 		void OnUpdate(TimeStep ts) override;
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& e) override;
+
+        void PickEntity(const Ray::RayData& ray);
     private:
         void ImportModel();
         void ImportSkybox();
@@ -31,6 +33,10 @@ namespace TheFoolEngine
 		Ref<Shader> m_BloomExtractShader;
 		Ref<Shader> m_BloomBlurShader;
 		Ref<Shader> m_BloomCombineShader;
+
+        Ref<VertexArray> m_OutlineVAO;
+        Ref<VertexBuffer> m_OutlineVBO;
+        Ref<Shader> m_FlatShader;
 
 		Ref<Scene> m_ActiveScene;
 		Entity m_SquareEntity;
