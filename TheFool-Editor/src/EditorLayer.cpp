@@ -20,6 +20,7 @@ namespace TheFoolEngine
     void EditorLayer::OnAttach() 
     {
         TF_PROFILE_FUNCTION();
+
         // Shader
         m_ToneMappingShader = Shader::Create("assets/shader/ToneMapping.glsl");
         m_BloomExtractShader = Shader::Create("assets/shader/BloomExtract.glsl");
@@ -136,7 +137,6 @@ namespace TheFoolEngine
     void EditorLayer::OnDetach()
     {
         TF_PROFILE_FUNCTION();
-
     }
 
     void EditorLayer::OnUpdate(TimeStep ts) 
@@ -184,12 +184,15 @@ namespace TheFoolEngine
             PBRRenderer::SetCamera(cameraData);
 
             // Submit lights from ECS
-            auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
-            for (auto entity : lightView)
             {
-                auto& lc = lightView.get<LightComponent>(entity);
-                switch (lc.Type)
+                TF_PROFILE_SCOPE("SubmitLights");
+
+                auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
+                for (auto entity : lightView)
                 {
+                    auto& lc = lightView.get<LightComponent>(entity);
+                    switch (lc.Type)
+                    {
                     case 0:
                         PBRRenderer::AddLight(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity });
                         break;
@@ -199,34 +202,84 @@ namespace TheFoolEngine
                     case 2:
                         PBRRenderer::AddLight(SpotLight{ lc.Position, glm::normalize(lc.Direction), lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle });
                         break;
+                    }
                 }
             }
 
-            auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent>();
-            for (auto entity : pbrView)
+            // Renderable
             {
-                auto& transform = pbrView.get<TransformComponent>(entity);
-                auto& pbr = pbrView.get<PBRModelComponent>(entity);
-                PBRRenderProxy proxy;
-                proxy.Model = pbr.Model;
-                proxy.Transform = transform.Transform;
-                PBRRenderer::Register(proxy);
+                TF_PROFILE_SCOPE("SubmitRenderables");
+                auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent>();
+                for (auto entity : pbrView)
+                {
+                    auto& transform = pbrView.get<TransformComponent>(entity);
+                    auto& pbr = pbrView.get<PBRModelComponent>(entity);
+                    PBRRenderProxy proxy;
+                    proxy.Model = pbr.Model;
+                    proxy.Transform = transform.Transform;
+                    PBRRenderer::Register(proxy);
+                }
             }
+
             PBRRenderer::Render();
+        }
+
+        // FlatColor
+        {
+            if (auto selected = m_SceneHierarchyPanel.GetSelectionContext())
+            {
+                auto& modelData = m_SceneHierarchyPanel.GetSelectionContext().GetComponent<PBRModelComponent>().Model->GetModelData();
+                glm::vec3 mergedMin(1e30f), mergedMax(-1e30f);
+
+                for (auto& mesh : modelData.Meshes)
+                {
+                    mergedMin = glm::min(mergedMin, mesh.AABBMin);
+                    mergedMax = glm::max(mergedMax, mesh.AABBMax);
+                }
+
+                // Model selection box
+                glm::vec3 corners[8] = {
+                    {mergedMin.x, mergedMin.y, mergedMin.z}, {mergedMax.x, mergedMin.y, mergedMin.z},
+                    {mergedMin.x, mergedMax.y, mergedMin.z}, {mergedMax.x, mergedMax.y, mergedMin.z},
+                    {mergedMin.x, mergedMin.y, mergedMax.z}, {mergedMax.x, mergedMin.y, mergedMax.z},
+                    {mergedMin.x, mergedMax.y, mergedMax.z}, {mergedMax.x, mergedMax.y, mergedMax.z}
+                };
+
+                glm::vec3 lines[24];
+                int edges[12][2] = {
+                    {0,1},{1,3},{3,2},{2,0},
+                    {4,5},{5,7},{7,6},{6,4},
+                    {0,4},{1,5},{2,6},{3,7}
+                };
+                for (int i = 0;i < 12;++i)
+                {
+                    lines[i * 2] = corners[edges[i][0]];
+                    lines[i * 2 + 1] = corners[edges[i][1]];
+                }
+                    m_OutlineVBO->SetData(lines, sizeof(lines));
+                
+                auto transform = m_SceneHierarchyPanel.GetSelectionContext().GetComponent<TransformComponent>().Transform;
+
+                m_FlatShader->Bind();
+                m_FlatShader->SetMat4("u_ViewProjection",
+                    m_PerspectiveCameraController.GetCamera().GetProjectionMatrix() *
+                    m_PerspectiveCameraController.GetCamera().GetViewMatrix()
+                );
+                m_FlatShader->SetMat4("u_Transform", transform);
+                m_FlatShader->SetFloat4("u_Color", { 1.0f, 0.9f, 0.1f, 1.0f }); // yellow
+
+                m_OutlineVAO->Bind();
+                RenderCommand::DrawArrays(RendererAPI::DrawMode::Lines, 24);
+            }
         }
 
         m_HDRFrameBuffer->UnBind();
 
-        // FlatColor
-        if (auto selected = m_SceneHierarchyPanel.GetSelectionContext() &&
-            m_SceneHierarchyPanel.GetSelectionContext().GetComponent<PBRModelComponent>())
-        {
-            
-        }
-
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
+
         // Pass
         {
+            TF_PROFILE_SCOPE("PostProcess");
             auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
 
             // Bloom Pass: Extract highlight

@@ -127,6 +127,8 @@ namespace TheFoolEngine
 
     void PBRRenderer::ResetRendererState()
     {
+        TF_PROFILE_FUNCTION();
+
         ResetStats();
 
         s_Data.Renderables.clear();

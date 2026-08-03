@@ -93,7 +93,9 @@ namespace TheFoolEngine
     {
         switch (mode)
         {
-            case DrawMode::Triangles: glDrawArrays(GL_TRIANGLES, 0, count); break;
+            case DrawMode::Points:       glDrawArrays(GL_POINTS, 0, count); break;
+            case DrawMode::Lines:        glDrawArrays(GL_LINES, 0, count); break;
+            case DrawMode::Triangles:    glDrawArrays(GL_TRIANGLES, 0, count); break;
             default: break;
         }
     }

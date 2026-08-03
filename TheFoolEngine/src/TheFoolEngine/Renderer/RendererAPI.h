@@ -20,7 +20,7 @@ namespace TheFoolEngine{
         enum class DepthTest    : uint8_t { On, Off };
         enum class CullMode     : uint8_t { None, Front, Back };
         enum class BlendMode    : uint8_t { None, Alpha, Additive };
-        enum class DrawMode     : uint8_t { Triangles };
+        enum class DrawMode     : uint8_t { Points, Lines, Triangles };
         enum class PolygonMode  : uint8_t { Fill, Line };
 	public:
 		virtual void Init() = 0;
