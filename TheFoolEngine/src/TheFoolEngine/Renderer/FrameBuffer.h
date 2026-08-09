@@ -6,7 +6,6 @@
 namespace TheFoolEngine
 {
 
-
 	struct FrameBufferSpecification
 	{
 		uint32_t Width, Height;
@@ -15,11 +14,14 @@ namespace TheFoolEngine
         TextureFormat FrameBufferFormat = RGBA;
 
 		bool SwapChainTarget = false;
+        bool DepthOnly = false;
+
+        uint32_t LayerCount = 1;
 	};
 
-	class FrameBuffer {
+	class FrameBuffer 
+    {
 	public:
-
 		virtual ~FrameBuffer() = default;
 
 		virtual void Bind() = 0;
@@ -34,5 +36,9 @@ namespace TheFoolEngine
 		static Ref<FrameBuffer> Create(const FrameBufferSpecification& spec);
 
         virtual Ref<Texture2D> GetColorAttachment() = 0;
+        virtual Ref<Texture2D> GetDepthAttachment() = 0;
+        virtual uint32_t GetDepthArrayTextureID() = 0;
+
+        virtual void AttachLayer(uint32_t layer) = 0;
 	};
 }

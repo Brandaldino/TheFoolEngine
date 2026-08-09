@@ -58,14 +58,55 @@ namespace TheFoolEngine
         PBRRenderer::SetEnvironmentMap(irradiance, prefilter, brdfLUT);
 
         // Lights
-        auto dirLight = m_ActiveScene->CreateEntity("DirLight");
-        dirLight.AddComponent<LightComponent>(LightComponent{ 0, {0,0,0}, {2,3,2}, {1,0.95f,0.9f}, 1.5f });
+        //{
+        //    auto dirLight = m_ActiveScene->CreateEntity("DirLight");
+        //    dirLight.AddComponent<LightComponent>(LightComponent{ 0, {0,0,0}, {2,3,2}, {1,0.95f,0.9f}, 1.5f });
 
-        auto pointLight = m_ActiveScene->CreateEntity("PointLight");
-        pointLight.AddComponent<LightComponent>(LightComponent{ 1, {3,3,3}, {0,-1,0}, {1,0.3f,0.3f}, 2.0f, 15.0f });
+        //    auto pointLight = m_ActiveScene->CreateEntity("PointLight");
+        //    pointLight.AddComponent<LightComponent>(LightComponent{ 1, {3,3,3}, {0,-1,0}, {1,0.3f,0.3f}, 2.0f, 15.0f });
 
-        auto spotLight = m_ActiveScene->CreateEntity("SpotLight");
-        spotLight.AddComponent<LightComponent>(LightComponent{ 2, {-3,2,0}, {1,-1,0}, {0.3f,1,0.3f}, 2.0f, 10.0f, glm::radians(10.0f), glm::radians(20.0f) });
+        //    auto spotLight = m_ActiveScene->CreateEntity("SpotLight");
+        //    spotLight.AddComponent<LightComponent>(LightComponent{ 2, {-3,2,0}, {1,-1,0}, {0.3f,1,0.3f}, 2.0f, 10.0f, glm::radians(10.0f), glm::radians(20.0f) });
+        //}
+        {
+            // === sun =========================
+            auto sun = m_ActiveScene->CreateEntity("Sun");
+            sun.AddComponent<LightComponent>(LightComponent{
+                0,                          // Type: Directional
+                {0,0,0},                    // Position
+                glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f)),   // Direction:
+                {1.0f, 0.95f, 0.9f},        // Color: 
+                1.5f                        // Intensity
+                });
+
+            auto fill1 = m_ActiveScene->CreateEntity("FillLight1");
+            fill1.AddComponent<LightComponent>(LightComponent{
+                0,
+                {0,0,0},
+                glm::normalize(glm::vec3(0.8f, -0.4f, 0.4f)),    //
+                {0.6f, 0.7f, 1.0f},         // Color:
+                0.4f
+                });
+
+            auto fill2 = m_ActiveScene->CreateEntity("FillLight2");
+            fill2.AddComponent<LightComponent>(LightComponent{
+                0,
+                {0,0,0},
+                glm::normalize(glm::vec3(0.2f, -0.3f, -0.9f)),   //
+                {1.0f, 0.8f, 0.6f},         // Color
+                0.3f
+                });
+
+            auto pointLight = m_ActiveScene->CreateEntity("PointLight");
+            pointLight.AddComponent<LightComponent>(LightComponent{
+                1,                          // Type: Point
+                {3.0f, 2.0f, 3.0f},         // Position
+                {0, -1, 0},                 // Direction
+                {1.0f, 0.3f, 0.3f},         // Color: 
+                2.0f,
+                15.0f                       // Range
+                });
+        }
 
         // Model
         m_PBRModel = CreateRef<PBRModel>();
@@ -184,43 +225,40 @@ namespace TheFoolEngine
             PBRRenderer::SetCamera(cameraData);
 
             // Submit lights from ECS
+            auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
+            for (auto entity : lightView)
             {
-                TF_PROFILE_SCOPE("SubmitLights");
-
-                auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
-                for (auto entity : lightView)
+                auto& lc = lightView.get<LightComponent>(entity);
+                switch (lc.Type)
                 {
-                    auto& lc = lightView.get<LightComponent>(entity);
-                    switch (lc.Type)
-                    {
-                    case 0:
-                        PBRRenderer::AddLight(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity });
-                        break;
-                    case 1:
-                        PBRRenderer::AddLight(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range });
-                        break;
-                    case 2:
-                        PBRRenderer::AddLight(SpotLight{ lc.Position, glm::normalize(lc.Direction), lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle });
-                        break;
-                    }
+                case 0:
+                {
+                    int shadowIndex = PBRRenderer::SetShadowLight(glm::normalize(lc.Direction));
+                    PBRRenderer::AddLight(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
+                    break;
+                }
+                case 1:
+                    PBRRenderer::AddLight(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range });
+                    break;
+                case 2:
+                    PBRRenderer::AddLight(SpotLight{ lc.Position, glm::normalize(lc.Direction), lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle });
+                    break;
                 }
             }
 
             // Renderable
+            auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent>();
+            for (auto entity : pbrView)
             {
-                TF_PROFILE_SCOPE("SubmitRenderables");
-                auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent>();
-                for (auto entity : pbrView)
-                {
-                    auto& transform = pbrView.get<TransformComponent>(entity);
-                    auto& pbr = pbrView.get<PBRModelComponent>(entity);
-                    PBRRenderProxy proxy;
-                    proxy.Model = pbr.Model;
-                    proxy.Transform = transform.Transform;
-                    PBRRenderer::Register(proxy);
-                }
+                auto& transform = pbrView.get<TransformComponent>(entity);
+                auto& pbr = pbrView.get<PBRModelComponent>(entity);
+                PBRRenderProxy proxy;
+                proxy.Model = pbr.Model;
+                proxy.Transform = transform.Transform;
+                PBRRenderer::Register(proxy);
             }
-
+            PBRRenderer::RenderShadowPass();
+            m_HDRFrameBuffer->Bind();
             PBRRenderer::Render();
         }
 
@@ -470,7 +508,6 @@ namespace TheFoolEngine
             m_PerspectiveCameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
         }
-        // TF_WARN("Viewport Size: {0},{1}", viewportPanelSize.x, viewportPanelSize.y);
         uint32_t textureID = m_LDRFrameBuffer->GetColorAttachment()->GetRendererID();
         ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
@@ -575,6 +612,8 @@ namespace TheFoolEngine
 
         if (picked)
             m_SceneHierarchyPanel.SetSelectionContext(picked);
+        else
+            m_SceneHierarchyPanel.SetSelectionContext(Entity{});
     }
 
     void EditorLayer::ImportModel()

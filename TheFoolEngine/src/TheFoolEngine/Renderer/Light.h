@@ -53,13 +53,17 @@ namespace TheFoolEngine
     };
 
     // === Unified GPU Packed Architecture ======================================
-    struct GPULight
+    struct alignas(16) GPULight
     {
         glm::vec4 Position;
         glm::vec4 Direction;
         glm::vec4 Color;
         glm::vec4 Params;
+        int32_t ShadowIndex = -1; // -1 == no shadow
+        uint8_t _pad[12] = { 0 };
     };
+
+    static_assert(sizeof(GPULight) == 80, "GPULight must be 80 bytes for std140 alignment");
 
     enum class LightType : int
     {

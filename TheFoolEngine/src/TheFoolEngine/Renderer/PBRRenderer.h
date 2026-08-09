@@ -6,6 +6,8 @@
 #include "Light.h"
 #include "CubeMap.h"
 
+#include "FrameBuffer.h"
+
 class Shader;
 class PerspectiveCamera;
 
@@ -41,6 +43,7 @@ namespace TheFoolEngine
         static void Register(const PBRRenderProxy& proxy);
         static void SetCamera(const CameraData& camera);
         static void AddLight(const DirectionLight& light);
+        static void AddLight(const DirectionLight& light, int shadowIndex);
         static void AddLight(const PointLight& light);
         static void AddLight(const SpotLight& light);
 
@@ -55,5 +58,8 @@ namespace TheFoolEngine
 
         static void SetSkybox(const Ref<CubeMap> skybox);
         static void SetEnvironmentMap(const Ref<CubeMap> irradiance, const Ref<CubeMap> prefilter, const Ref<Texture2D> brdfLUT);
+
+        static int SetShadowLight(const glm::vec3& lightDir, float orthoSize = 10.0f, float nearPlane = 0.1f, float farPlane = 100.0f);
+        static void RenderShadowPass();
     };
 }

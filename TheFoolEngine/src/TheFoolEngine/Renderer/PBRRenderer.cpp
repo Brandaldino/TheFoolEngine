@@ -7,11 +7,13 @@
 #include "VertexArray.h"
 
 #include <glad/glad.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace TheFoolEngine
 {
     constexpr uint32_t NR_LIGHTS = 10;
     constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
+    constexpr uint32_t MAX_SHADOW_LIGHTS = 4;
 
     struct EnvironmentData
     {
@@ -21,6 +23,13 @@ namespace TheFoolEngine
         Ref<CubeMap> IrradianceMap;
         Ref<CubeMap> PrefilterMap;
         Ref<Texture2D> BRDFLUT;
+    };
+
+    struct ShadowData
+    {
+        Ref<FrameBuffer> ShadowFBO;
+        Ref<Shader> DepthOnlyShader;
+        std::vector<glm::mat4> LightViewProjections;  // lightProj * lightView
     };
 
     struct PBRRendererData
@@ -46,6 +55,9 @@ namespace TheFoolEngine
 
         // Environment
         EnvironmentData Environment;
+
+        // Shadow
+        ShadowData Shadow;
     };
 
     struct LightGPUBlock
@@ -119,6 +131,14 @@ namespace TheFoolEngine
             });
         s_Data.Environment.SkyboxCubeVAO->AddVertexBuffer(skyVBO);
 
+        // Shadow
+        FrameBufferSpecification shadowSpec;
+        shadowSpec.Width = 1024;
+        shadowSpec.Height = 1024;
+        shadowSpec.DepthOnly = true;
+        shadowSpec.LayerCount = MAX_SHADOW_LIGHTS;
+        s_Data.Shadow.ShadowFBO = FrameBuffer::Create(shadowSpec);
+        s_Data.Shadow.DepthOnlyShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
     }
 
     void PBRRenderer::Shutdown()
@@ -133,6 +153,7 @@ namespace TheFoolEngine
 
         s_Data.Renderables.clear();
         s_Data.GPULights.clear();
+        s_Data.Shadow.LightViewProjections.clear();
 
         s_Data.Shader->Bind();
         s_Data.DefaultWhite->Bind(1);
@@ -155,11 +176,17 @@ namespace TheFoolEngine
 
     void PBRRenderer::AddLight(const DirectionLight& light)
     {
+        AddLight(light, -1);
+    }
+
+    void PBRRenderer::AddLight(const DirectionLight& light, int shadowIndex)
+    {
         GPULight& gpu = s_Data.GPULights.emplace_back();
         gpu.Position = glm::vec4(light.Direction * 1e6f, 0.0f);
         gpu.Direction = glm::vec4(light.Direction, 0.0f);
         gpu.Color = glm::vec4(light.Color, light.Intensity);
         gpu.Params = glm::vec4(0.0f, 0.0f, 0.0f, (float)LightType::Directional);
+        gpu.ShadowIndex = shadowIndex;
     }
 
     void PBRRenderer::AddLight(const PointLight& light)
@@ -189,6 +216,15 @@ namespace TheFoolEngine
 
         s_Data.Shader->Bind();
 
+        // Shadow
+        RenderCommand::BindArrayTexture(s_Data.Shadow.ShadowFBO->GetDepthArrayTextureID(), 8);
+        s_Data.Shader->SetInt("u_ShadowMaps", 8);
+        
+        std::vector<glm::mat4> shadowLightsViewProjs;
+        for (int i = 0; i < (int)s_Data.Shadow.LightViewProjections.size() && i < MAX_SHADOW_LIGHTS; ++i)
+            shadowLightsViewProjs.push_back(s_Data.Shadow.LightViewProjections[i]);
+        s_Data.Shader->SetMat4Array("u_ShadowMatrices", shadowLightsViewProjs);
+
         // camera
         s_Data.Shader->SetMat4("u_View", s_Data.Camera.ViewMatrix);
         s_Data.Shader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
@@ -203,6 +239,7 @@ namespace TheFoolEngine
             lightblock.Lights[i].Direction = s_Data.GPULights[i].Direction;
             lightblock.Lights[i].Color = s_Data.GPULights[i].Color;
             lightblock.Lights[i].Params = s_Data.GPULights[i].Params;
+            lightblock.Lights[i].ShadowIndex = s_Data.GPULights[i].ShadowIndex;
         }
         glNamedBufferSubData(s_Data.LightUBO, 0, sizeof(LightGPUBlock), &lightblock);
 
@@ -246,7 +283,7 @@ namespace TheFoolEngine
         }
 
         // Skybox
-        if (s_Data.Environment.Skybox && s_Data.Environment.SkyboxCubeVAO)
+        if (!s_Data.Environment.Skybox && s_Data.Environment.SkyboxCubeVAO)
         {
             s_Data.Environment.SkyboxShader->Bind();
             s_Data.Environment.SkyboxShader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
@@ -293,6 +330,63 @@ namespace TheFoolEngine
         s_Data.Environment.IrradianceMap = irradiance;
         s_Data.Environment.PrefilterMap = prefilter;
         s_Data.Environment.BRDFLUT = brdfLUT;
+    }
+
+    int PBRRenderer::SetShadowLight(const glm::vec3& lightDir, float orthoSize, float nearPlane, float farPlane)
+    {
+        glm::vec3 sceneCenter = glm::vec3(0.0f);    // TODO: Use the origin temporarily; the scene bounding box can be replaced later.
+        glm::vec3 lightPos = sceneCenter - lightDir * 50.0f;
+
+        glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 lightProj = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, nearPlane, farPlane);
+
+        int index = (int)s_Data.Shadow.LightViewProjections.size();
+        s_Data.Shadow.LightViewProjections.push_back(lightProj * lightView);
+        return index;
+    }
+
+    void PBRRenderer::RenderShadowPass()
+    {
+        uint32_t layerCount = (uint32_t)s_Data.Shadow.LightViewProjections.size();
+        if (layerCount == 0)
+            return;
+
+        s_Data.Shadow.ShadowFBO->Bind();
+        s_Data.Shadow.DepthOnlyShader->Bind();
+
+        RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
+        RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
+
+        for (uint32_t layer = 0; layer < layerCount; ++layer)
+        {
+            if (layer >= MAX_SHADOW_LIGHTS)
+                break;
+
+            s_Data.Shadow.ShadowFBO->AttachLayer(layer);
+            RenderCommand::SetClearColor({ 1.0f,1.0f, 1.0f, 1.0f });
+            RenderCommand::Clear();
+            s_Data.Shadow.DepthOnlyShader->SetMat4("u_LightViewProjection", s_Data.Shadow.LightViewProjections[layer]);
+
+            for (auto& proxy : s_Data.Renderables)
+            {
+                if (!proxy.Visible)
+                    continue;
+
+                auto& modelData = proxy.Model->GetModelData();
+                auto& vas = proxy.Model->GetVertexArray();
+                auto& meshes = modelData.Meshes;
+
+                for (std::size_t i = 0; i < vas.size(); ++i)
+                {
+                    glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
+                    s_Data.Shadow.DepthOnlyShader->SetMat4("u_Model", model);
+                    vas[i]->Bind();
+                    RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
+                }
+            }
+        }
+
+        s_Data.Shadow.ShadowFBO->UnBind();
     }
 
 }

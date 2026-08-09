@@ -100,4 +100,9 @@ namespace TheFoolEngine
         }
     }
 
+    void OpenGLRendererAPI::BindArrayTexture(uint32_t renderID, uint32_t slot)
+    {
+        glBindTextureUnit(slot, renderID);
+    }
+
 }

@@ -24,8 +24,8 @@ namespace TheFoolEngine
 		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
-    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, TextureFormat format)
-        : m_Width(width), m_Height(height), m_InternalFormat(TypeTranslate(format)), 
+    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, GLenum format)
+        : m_Width(width), m_Height(height), m_InternalFormat(format),
             m_DataFormat(0), m_Data(nullptr), m_Path("")
     {
         TF_PROFILE_FUNCTION();
@@ -33,13 +33,23 @@ namespace TheFoolEngine
         m_DataFormat = (format == TextureFormat::RG16F) ? GL_RG : GL_RGBA;
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-        glTextureStorage2D(m_RendererID, 1, TypeTranslate(format), width, height);
+        glTextureStorage2D(m_RendererID, 1, m_InternalFormat, width, height);
         
         glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    }
+
+    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, TextureFormat format)
+        : OpenGLTexture2D(width, height, RGBTypeTranslate(format))
+    {
+    }
+
+    OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, AttachmentType format)
+        : OpenGLTexture2D(width, height, AttachmentTypeTranslate(format))
+    {
     }
 
     OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
@@ -238,15 +248,15 @@ namespace TheFoolEngine
 
     void OpenGLTexture2D::SetInternalFormat(TextureFormat type)
     {
-        m_InternalFormat = TypeTranslate(type);
+        m_InternalFormat = RGBTypeTranslate(type);
     }
 
     void OpenGLTexture2D::SetDataFormat(TextureFormat type)
     {
-        m_DataFormat = TypeTranslate(type);
+        m_DataFormat = RGBTypeTranslate(type);
     }
 
-    GLenum OpenGLTexture2D::TypeTranslate(TextureFormat type)
+    GLenum OpenGLTexture2D::RGBTypeTranslate(TextureFormat type)
     {
         GLenum res = NULL;
 
@@ -265,6 +275,17 @@ namespace TheFoolEngine
             case TextureFormat::RGBA32F:  res = GL_RGBA32F;   break;
         }
 
+        return res;
+    }
+
+    GLenum OpenGLTexture2D::AttachmentTypeTranslate(AttachmentType type)
+    {
+        GLenum res = NULL;
+        switch (type)
+        {
+            case TheFoolEngine::Depth:          res = GL_DEPTH_COMPONENT32F;               break;
+            case TheFoolEngine::DepthStencil:   res = GL_DEPTH24_STENCIL8; break;
+        }
         return res;
     }
 

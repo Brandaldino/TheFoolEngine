@@ -22,14 +22,18 @@ namespace TheFoolEngine
         RGBA32F
     };
 
+    enum AttachmentType : uint8_t
+    {
+        Depth,
+        DepthStencil
+    };
+
     struct TextureSpec
     {
         bool IsDefaultSetting = true;
 
         uint32_t Width = 1;
         uint32_t Height = 1;
-        
-
     };
 
 	class Texture 
@@ -62,6 +66,7 @@ namespace TheFoolEngine
 
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height);
         static Ref<Texture2D> Create(uint32_t width, uint32_t height, TextureFormat format);
+        static Ref<Texture2D> Create(uint32_t width, uint32_t height, AttachmentType format);
         static Ref<Texture2D> Create(const std::filesystem::path& path);
 		static Ref<Texture2D> Create(const void* data, uint32_t size);
 	};

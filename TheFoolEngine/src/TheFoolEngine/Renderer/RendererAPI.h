@@ -43,6 +43,8 @@ namespace TheFoolEngine{
         virtual void SetBlend(bool flag) = 0;
         // === Draw ================================================
         virtual void DrawArrays(DrawMode mode, uint32_t count) = 0;
+        // === ArrayTexture ========================================
+        virtual void BindArrayTexture(uint32_t renderID, uint32_t slot) = 0;
         // =========================================================
 		inline static API GetAPI() { return s_API; }
 	private:

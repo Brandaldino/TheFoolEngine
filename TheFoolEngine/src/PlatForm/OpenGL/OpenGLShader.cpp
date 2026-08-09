@@ -122,7 +122,7 @@ namespace TheFoolEngine {
 
 				glDeleteShader(shader);
 
-				TF_CORE_ERROR("{0}", (void*)(infoLog.data()));
+				TF_CORE_ERROR("{0}", infoLog.data());
 				TF_CORE_ASSERT(false, "Shader complication failure.");
 				break;
 			}
@@ -252,6 +252,13 @@ namespace TheFoolEngine {
 		UploadUniformMat4(name, value);
 	}
 
+	void OpenGLShader::SetMat4Array(const std::string& name, const std::vector<glm::mat4>& values)
+	{
+        TF_PROFILE_FUNCTION();
+
+        UploadUniformMat4Array(name, values);
+	}
+
 	void OpenGLShader::UploadUniformInt(const std::string& name, int value) {
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniform1i(location, value);
@@ -295,5 +302,11 @@ namespace TheFoolEngine {
 		// 4 * 4 float vector
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
+
+    void OpenGLShader::UploadUniformMat4Array(const std::string& name, const std::vector<glm::mat4>& values)
+    {
+        GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+        glUniformMatrix4fv(location, values.size(), GL_FALSE, glm::value_ptr(values[0]));
+    }
 
 }

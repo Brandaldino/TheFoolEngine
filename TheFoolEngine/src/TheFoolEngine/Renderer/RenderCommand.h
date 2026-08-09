@@ -42,6 +42,7 @@ namespace TheFoolEngine
         inline static void SetBlendMode(RendererAPI::BlendMode mode) { s_RendererAPI->SetBlendMode(mode); };
         inline static void SetBlend(bool flag) { s_RendererAPI->SetBlend(flag); };
         inline static void DrawArrays(RendererAPI::DrawMode mode, uint32_t count) { s_RendererAPI->DrawArrays(mode, count); };
+        inline static void BindArrayTexture(uint32_t renderID, uint32_t slot) { s_RendererAPI->BindArrayTexture(renderID, slot); };
 	private:
 		static RendererAPI* s_RendererAPI;
 	};

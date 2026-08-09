@@ -56,13 +56,15 @@ in vec3 v_FragPos;
 #define LIGHT_TYPE_SPOT 2
 #define LIGHT_TYPE_RECT 3
 #define LIGHT_TYPE_DISK 4
+#define MAX_SHADOW_LIGHTS 4
 
 struct GPU_Light
 {
     vec4 Position; // xyz = pos (point/spot), w = range
     vec4 Direction; // xyz = dir(direction/spot)
     vec4 Color; // xyz = color, w = intensity
-    vec4 Params; // x = range, y = innerCos, z = outerCos, w = type
+    vec4 Params; // x = range, y = innerCos, z = outerCos, w = 
+    int ShadowIndex;
 };
 
 layout(std140, binding = 2) uniform LightBlock
@@ -78,10 +80,13 @@ uniform vec3  u_AlbedoFactor;
 uniform float u_MetallicFactor;
 uniform float u_RoughnessFactor;
 uniform float u_AOStrength;
+uniform mat4 u_ShadowMatrices[MAX_SHADOW_LIGHTS];
 
 uniform samplerCube u_IrradianceMap;
 uniform samplerCube u_PrefilterMap;
 uniform sampler2D  u_BRDFLUT;
+uniform sampler2DArray  u_ShadowMaps; // slot 8
+
 
 // ============= PBR Functions =============
 float DistributionGGX(float NdotH, float roughness)
@@ -140,6 +145,29 @@ vec3 CalculateIBL(vec3 N, vec3 V, vec3 F0, vec3 albedo, float metallic, float ro
 
 
     return (kD * diffuse + specular) * occlusion;
+}
+
+// Shadow
+float CalculateShadow(vec4 shadowCoord, int layer)
+{
+    vec3 projCoords = shadowCoord.xyz / shadowCoord.w;  // perspective divide
+    projCoords = projCoords * 0.5 + 0.5;    // The prerequisite is that there is no offset in the bias.
+
+    float currentDepth = projCoords.z;
+    float shadow = 0.0;
+    float bias = 0.005;
+
+    vec2 texelSize = 1.0 / vec2(textureSize(u_ShadowMaps, 0).xy);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(u_ShadowMaps, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+
+    return shadow / 9.0;
 }
 
 void main()
@@ -216,14 +244,21 @@ void main()
 
         vec3 radiance = gl.Color.xyz * gl.Color.w * attenuation;
         Lo += (diffuseBRDF + specularBRDF) * radiance * NdotL;
+
+        if(gl.ShadowIndex >= 0)
+        {
+            vec4 shadowCoord = u_ShadowMatrices[gl.ShadowIndex] * vec4(v_FragPos, 1.0);
+
+            float shadow = CalculateShadow(shadowCoord, gl.ShadowIndex);
+            Lo *= (1.0 - shadow);
+        }
     }
 
     vec3 ambient = CalculateIBL(N, V, F0, albedo, metallic, roughness, occlusion);
-
     vec3 result = ambient + Lo;
     result = result / (result + vec3(1.0));
     color = vec4(result, 1.0);
 
     // === Test Color ==============
-    // color = vec4(N + 0.5 , 1.0);
+    // color = vec4(1.0, 0.0, 0.0, 1.0);
 }

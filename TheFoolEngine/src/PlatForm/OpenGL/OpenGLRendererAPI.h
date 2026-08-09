@@ -28,6 +28,8 @@ namespace TheFoolEngine
         virtual void SetBlend(bool flag) override;
         // === Draw ================================================
         virtual void DrawArrays(DrawMode mode, uint32_t count) override;
+        // === ArrayTexture ========================================
+        virtual void BindArrayTexture(uint32_t renderID, uint32_t slot) override;
         // =========================================================
 	};
 

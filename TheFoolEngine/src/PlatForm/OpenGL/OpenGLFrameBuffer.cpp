@@ -19,7 +19,9 @@ namespace TheFoolEngine
 	OpenGLFrameBuffer::~OpenGLFrameBuffer()
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
-        glDeleteTextures(1, &m_DepthAttachment);
+        m_DepthAttachment.reset();
+        if (m_DepthArrayTextureID)
+            glDeleteTextures(1, &m_DepthArrayTextureID);
 	}
 
 	void OpenGLFrameBuffer::Invalidate()
@@ -28,30 +30,68 @@ namespace TheFoolEngine
 		{
 			glDeleteFramebuffers(1, &m_RendererID);
             m_ColorAttachment.reset();
-            glDeleteTextures(1, &m_DepthAttachment);
+            m_DepthAttachment.reset();
+            if (m_DepthArrayTextureID)
+                glDeleteTextures(1, &m_DepthArrayTextureID);
 		}
 
 		glCreateFramebuffers(1, &m_RendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 
-        m_ColorAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, m_Specification.FrameBufferFormat);
-        m_ColorAttachment->Bind();
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        if (m_Specification.DepthOnly)
+        {
+            m_UseDepthArray = true;
+            m_LayerCount = m_Specification.LayerCount;
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColorAttachment->GetRendererID(), 0);
+            // GL_TEXTURE_2D_ARRAY
+            glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_DepthArrayTextureID);
+            glTextureStorage3D(m_DepthArrayTextureID, 1, GL_DEPTH_COMPONENT32F,
+                m_Specification.Width, m_Specification.Height, m_Specification.LayerCount);
+            glTextureParameteri(m_DepthArrayTextureID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTextureParameteri(m_DepthArrayTextureID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTextureParameteri(m_DepthArrayTextureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTextureParameteri(m_DepthArrayTextureID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            // border color set to 1.0 (when sampling at the boundary in the shader, it is considered "no shadow")
+            float border[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            glTextureParameterfv(m_DepthArrayTextureID, GL_TEXTURE_BORDER_COLOR, border);
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_DepthAttachment);
-		glBindTexture(GL_TEXTURE_2D, m_DepthAttachment);
-		glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, m_Specification.Width, m_Specification.Height);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_DepthAttachment, 0);
+            // Hang on the 0th layer
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthArrayTextureID, 0, 0);
+            m_CurrentLayer = 0;
+
+            // without color
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        }
+        else
+        {
+            m_ColorAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, m_Specification.FrameBufferFormat);
+            m_ColorAttachment->Bind();
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColorAttachment->GetRendererID(), 0);
+
+            m_DepthAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, AttachmentType::DepthStencil);
+            uint32_t depthID = m_DepthAttachment->GetRendererID();
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthID, 0);
+        }
 
 		TF_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "FrameBuffer is incomplite.")
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+
+    void OpenGLFrameBuffer::AttachLayer(uint32_t layer)
+    {
+        if (!m_UseDepthArray)
+            return;
+        m_CurrentLayer = layer;
+        glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_DepthArrayTextureID, 0, layer);
+    }
 
 	void OpenGLFrameBuffer::Bind()
 	{
