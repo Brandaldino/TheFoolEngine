@@ -305,6 +305,10 @@ namespace TheFoolEngine {
 
     void OpenGLShader::UploadUniformMat4Array(const std::string& name, const std::vector<glm::mat4>& values)
     {
+        // TF_ASSERT(values.empty(), "Mat4Array is empty!!");
+        if (values.empty())
+            return;
+
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         glUniformMatrix4fv(location, values.size(), GL_FALSE, glm::value_ptr(values[0]));
     }

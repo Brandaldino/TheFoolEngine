@@ -23,6 +23,8 @@ namespace TheFoolEngine
         const std::filesystem::path& GetPath() const { return m_FilePath; };
         const PBRMaterialData& GetModelData() const { return m_ModelData; };
         const std::vector<Ref<VertexArray>>& GetVertexArray() const { return m_VertexArray; };
+
+        void SetBaseColor(const glm::vec3& color);
     private:
         std::filesystem::path m_FilePath;
         PBRMaterialData m_ModelData;

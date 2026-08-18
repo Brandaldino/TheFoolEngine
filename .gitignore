@@ -43,4 +43,9 @@ TheFoolEngine.sln
 TheFoolEngineProfile-Runtime.json 
 TheFoolEngineProfile-Startup.json 
 imgui.ini 
-TheFoolEngineProfile-Shutdown.json 
+TheFoolEngineProfile-Shutdown.json
+
+# 资产：大文件不提交，但 shader 必须同步
+assets/cubemap/
+assets/model/
+assets/texture/

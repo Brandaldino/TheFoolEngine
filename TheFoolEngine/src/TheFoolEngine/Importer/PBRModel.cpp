@@ -26,6 +26,7 @@ namespace TheFoolEngine
             data.Textures.resize(1);*/
 
         m_ModelData = data;
+        m_FilePath = path;
     }
 
     void PBRModel::UpLoad()
@@ -84,6 +85,19 @@ namespace TheFoolEngine
                 texture.MetallicRoughnessMap = defaultTexture.MetallicRoughnessMap;
             if (!texture.AOMap)
                 texture.AOMap = defaultTexture.AOMap;
+        }
+    }
+
+    void PBRModel::SetBaseColor(const glm::vec3& color)
+    {
+        if (m_ModelData.Meshes.empty())
+            return;
+
+        for (auto& texSet : m_ModelData.Textures)
+        {
+            texSet.AlbedoFactor = color;
+            texSet.AlbedoMap.reset();
+            texSet.NormalMap.reset();
         }
     }
 

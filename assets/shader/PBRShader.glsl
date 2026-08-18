@@ -86,7 +86,8 @@ uniform samplerCube u_IrradianceMap;
 uniform samplerCube u_PrefilterMap;
 uniform sampler2D  u_BRDFLUT;
 uniform sampler2DArray  u_ShadowMaps; // slot 8
-
+uniform samplerCube u_PointShadowMap; // slot 9
+uniform float u_PointShadowFarPlane;
 
 // ============= PBR Functions =============
 float DistributionGGX(float NdotH, float roughness)
@@ -169,6 +170,32 @@ float CalculateShadow(vec4 shadowCoord, int layer)
 
     return shadow / 9.0;
 }
+// PointLightShadow
+vec3 samplerOffsetDirections[20] = vec3[]
+(
+    vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1),
+    vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+    vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+    vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+    vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);
+float CalculatePointShadow(vec3 fragPos, vec3 lightPos, vec3 N, float bias)
+{
+    vec3 fragToLight = fragPos - lightPos;
+    float currentDepth = length(fragToLight);
+    float closestDepth = texture(u_PointShadowMap, fragToLight).r * u_PointShadowFarPlane;
+
+    float shadow = 0.0;
+    float diskRadius = 0.05;
+    for (int i = 0; i < 20; ++i)
+    {
+        float closest = texture(u_PointShadowMap, fragToLight + samplerOffsetDirections[i] * diskRadius).r;
+        closest *= u_PointShadowFarPlane;
+        if (currentDepth - bias > closest)
+            shadow += 1.0;
+    }
+    return shadow / 20.0;
+}
 
 void main()
 {
@@ -199,7 +226,7 @@ void main()
         float attenuation = 1.0;
 
         if(type == LIGHT_TYPE_DIRECTION)
-            L = normalize(gl.Direction.xyz);
+            L = normalize(-gl.Direction.xyz);
         else if(type == LIGHT_TYPE_POINT)
         {
             vec3 delta = gl.Position.xyz - v_FragPos;
@@ -247,10 +274,19 @@ void main()
 
         if(gl.ShadowIndex >= 0)
         {
-            vec4 shadowCoord = u_ShadowMatrices[gl.ShadowIndex] * vec4(v_FragPos, 1.0);
-
-            float shadow = CalculateShadow(shadowCoord, gl.ShadowIndex);
-            Lo *= (1.0 - shadow);
+            if (type == LIGHT_TYPE_POINT)
+            {
+                vec3 L2 = normalize(gl.Position.xyz - v_FragPos);
+                float bias = max(0.05f * (1.0f - dot(N, L2)), 0.005f);
+                float shadow = CalculatePointShadow(v_FragPos, gl.Position.xyz, N, bias);
+                Lo *= (1.0 - shadow);
+            }
+            else
+            {
+                vec4 shadowCoord = u_ShadowMatrices[gl.ShadowIndex] * vec4(v_FragPos, 1.0);
+                float shadow = CalculateShadow(shadowCoord, gl.ShadowIndex);
+                Lo *= (1.0 - shadow);
+            }
         }
     }
 

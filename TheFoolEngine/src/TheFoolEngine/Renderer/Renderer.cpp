@@ -10,7 +10,8 @@ namespace TheFoolEngine
 
 	Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 
-	void Renderer::Init() {
+	void Renderer::Init() 
+    {
 		TF_PROFILE_FUNCTION();
 
 		RenderCommand::Init();

@@ -5,6 +5,7 @@
 #include "PerspectiveCameraController.h"
 #include "RenderCommand.h"
 #include "VertexArray.h"
+#include "PointShadowMap.h"
 
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,6 +15,7 @@ namespace TheFoolEngine
     constexpr uint32_t NR_LIGHTS = 10;
     constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
     constexpr uint32_t MAX_SHADOW_LIGHTS = 4;
+    constexpr uint32_t SHADOWMAP_SIZE = 1024;
 
     struct EnvironmentData
     {
@@ -30,6 +32,16 @@ namespace TheFoolEngine
         Ref<FrameBuffer> ShadowFBO;
         Ref<Shader> DepthOnlyShader;
         std::vector<glm::mat4> LightViewProjections;  // lightProj * lightView
+    };
+
+    struct PointShadowData
+    {
+        Ref<Shader> DepthShader;
+        Ref<PointShadowMap> DepthMap;
+        glm::vec3 LightPosition;
+        glm::mat4 ShadowViews[6];
+        glm::mat4 ShadowProj;
+        float FarPlane;
     };
 
     struct PBRRendererData
@@ -58,6 +70,8 @@ namespace TheFoolEngine
 
         // Shadow
         ShadowData Shadow;
+        // PointLightShadow
+        PointShadowData PointLightShadow;
     };
 
     struct LightGPUBlock
@@ -139,6 +153,9 @@ namespace TheFoolEngine
         shadowSpec.LayerCount = MAX_SHADOW_LIGHTS;
         s_Data.Shadow.ShadowFBO = FrameBuffer::Create(shadowSpec);
         s_Data.Shadow.DepthOnlyShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
+
+        s_Data.PointLightShadow.DepthShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
+        s_Data.PointLightShadow.DepthMap = PointShadowMap::Create(SHADOWMAP_SIZE);
     }
 
     void PBRRenderer::Shutdown()
@@ -191,14 +208,25 @@ namespace TheFoolEngine
 
     void PBRRenderer::AddLight(const PointLight& light)
     {
+        AddLight(light, -1);
+    }
+
+    void PBRRenderer::AddLight(const PointLight& light, int shadowIndex)
+    {
         GPULight& gpu = s_Data.GPULights.emplace_back();
         gpu.Position = glm::vec4(light.Position, light.Range);
         gpu.Direction = glm::vec4(0.0f);
         gpu.Color = glm::vec4(light.Color, light.Intensity);
         gpu.Params = glm::vec4(0.0f, 0.0f, 0.0f, (float)LightType::Point);
+        gpu.ShadowIndex = shadowIndex;
     }
 
     void PBRRenderer::AddLight(const SpotLight& light)
+    {
+        AddLight(light, -1);
+    }
+
+    void PBRRenderer::AddLight(const SpotLight& light, int shadowIndex)
     {
         float innerCos = glm::cos(light.InnerAngle);
         float outerCos = glm::cos(light.OuterAngle);
@@ -208,6 +236,7 @@ namespace TheFoolEngine
         gpu.Direction = glm::vec4(light.Direction, 0.0f);
         gpu.Color = glm::vec4(light.Color, light.Intensity);
         gpu.Params = glm::vec4(light.Range, innerCos, outerCos, (float)LightType::Spot);
+        gpu.ShadowIndex = shadowIndex;
     }
 
     void PBRRenderer::Render()
@@ -219,7 +248,13 @@ namespace TheFoolEngine
         // Shadow
         RenderCommand::BindArrayTexture(s_Data.Shadow.ShadowFBO->GetDepthArrayTextureID(), 8);
         s_Data.Shader->SetInt("u_ShadowMaps", 8);
-        
+        // PointLightShadow
+        if (s_Data.PointLightShadow.DepthMap)
+        {
+            glBindTextureUnit(9, s_Data.PointLightShadow.DepthMap->GetRendererID());
+            s_Data.Shader->SetInt("u_PointShadowMap", 9);
+            s_Data.Shader->SetFloat("u_PointShadowFarPlane", s_Data.PointLightShadow.FarPlane);
+        }
         std::vector<glm::mat4> shadowLightsViewProjs;
         for (int i = 0; i < (int)s_Data.Shadow.LightViewProjections.size() && i < MAX_SHADOW_LIGHTS; ++i)
             shadowLightsViewProjs.push_back(s_Data.Shadow.LightViewProjections[i]);
@@ -283,7 +318,7 @@ namespace TheFoolEngine
         }
 
         // Skybox
-        if (!s_Data.Environment.Skybox && s_Data.Environment.SkyboxCubeVAO)
+        if (s_Data.Environment.Skybox && s_Data.Environment.SkyboxCubeVAO)
         {
             s_Data.Environment.SkyboxShader->Bind();
             s_Data.Environment.SkyboxShader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
@@ -337,12 +372,42 @@ namespace TheFoolEngine
         glm::vec3 sceneCenter = glm::vec3(0.0f);    // TODO: Use the origin temporarily; the scene bounding box can be replaced later.
         glm::vec3 lightPos = sceneCenter - lightDir * 50.0f;
 
-        glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 0.0f, 1.0f));
         glm::mat4 lightProj = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, nearPlane, farPlane);
 
         int index = (int)s_Data.Shadow.LightViewProjections.size();
         s_Data.Shadow.LightViewProjections.push_back(lightProj * lightView);
         return index;
+    }
+
+    int PBRRenderer::SetSpotShadowLight(const glm::vec3& position, const glm::vec3& direction, float fovDeg, float nearPlane, float farPlane)
+    {
+        glm::vec3 up = (glm::abs(glm::dot(direction, glm::vec3(0.0f, 1.0f, 0.0f))) > 0.99f)
+            ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+
+        glm::mat4 lightView = glm::lookAt(position, position + direction, up);
+        glm::mat4 lightProj = glm::perspective(glm::radians(fovDeg), 1.0f, nearPlane, farPlane);
+
+        int index = (int)s_Data.Shadow.LightViewProjections.size();
+        s_Data.Shadow.LightViewProjections.push_back(lightProj * lightView);
+        return index;
+    }
+
+    int PBRRenderer::SetPointShadowLight(const glm::vec3& position, float nearPlane, float farPlane)
+    {
+        s_Data.PointLightShadow.LightPosition = position;
+        s_Data.PointLightShadow.FarPlane = farPlane;
+        s_Data.PointLightShadow.ShadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
+
+        glm::mat4* v = s_Data.PointLightShadow.ShadowViews;
+        v[0] = glm::lookAt(position, position + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        v[1] = glm::lookAt(position, position + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        v[2] = glm::lookAt(position, position + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        v[3] = glm::lookAt(position, position + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+        v[4] = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        v[5] = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+
+        return 0; // TODO: Fix the single point light source at index 0 first
     }
 
     void PBRRenderer::RenderShadowPass()
@@ -387,6 +452,50 @@ namespace TheFoolEngine
         }
 
         s_Data.Shadow.ShadowFBO->UnBind();
+    }
+
+    void PBRRenderer::RenderPointShadowPass()
+    {
+        if (!s_Data.PointLightShadow.DepthMap)
+            return;
+
+        s_Data.PointLightShadow.DepthMap->Bind();
+        s_Data.PointLightShadow.DepthShader->Bind();
+
+        RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
+        RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
+        RenderCommand::SetClearColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+        RenderCommand::Clear();
+
+        for (int face = 0; face < 6; ++face)
+        {
+            s_Data.PointLightShadow.DepthMap->BindFace(face);
+            RenderCommand::Clear();
+            s_Data.PointLightShadow.DepthShader->SetMat4("u_LightViewProjection",
+                s_Data.PointLightShadow.ShadowProj * s_Data.PointLightShadow.ShadowViews[face]);
+            s_Data.PointLightShadow.DepthShader->SetFloat3("u_LightPos", s_Data.PointLightShadow.LightPosition);
+            s_Data.PointLightShadow.DepthShader->SetFloat("u_FarPlane", s_Data.PointLightShadow.FarPlane);
+
+            // Traverse renderables to draw depth
+            for (auto& proxy : s_Data.Renderables)
+            {
+                if (!proxy.Visible)
+                    continue;
+
+                auto& modelData = proxy.Model->GetModelData();
+                auto& vas = proxy.Model->GetVertexArray();
+                auto& meshes = modelData.Meshes;
+                for (std::size_t i = 0; i < vas.size(); ++i)
+                {
+                    glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
+                    s_Data.PointLightShadow.DepthShader->SetMat4("u_Model", model);
+                    vas[i]->Bind();
+                    RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
+                }
+            }
+        }
+
+        s_Data.PointLightShadow.DepthMap->Unbind();
     }
 
 }

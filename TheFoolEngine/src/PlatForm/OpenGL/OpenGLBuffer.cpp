@@ -64,8 +64,10 @@ namespace TheFoolEngine {
 		TF_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+		// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+		// glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+
+        glNamedBufferStorage(m_RendererID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
 	}
 
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
@@ -74,8 +76,9 @@ namespace TheFoolEngine {
 		TF_PROFILE_FUNCTION();
 
 		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+        glNamedBufferStorage(m_RendererID, count * sizeof(uint32_t), indices, GL_DYNAMIC_STORAGE_BIT);
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
@@ -101,7 +104,9 @@ namespace TheFoolEngine {
 
 	void OpenGLIndexBuffer::SetData(const void* data, uint32_t size)
 	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+		//glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data);
+
+        glNamedBufferSubData(m_RendererID, 0, size, data);
 	}
 }

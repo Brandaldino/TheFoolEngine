@@ -15,6 +15,7 @@ namespace TheFoolEngine
 {
     struct PBRRenderProxy
     {
+        std::string Name;
         Ref<PBRModel> Model;
         glm::mat4 Transform = glm::mat4(1.0f);
         bool Visible = true;
@@ -45,7 +46,9 @@ namespace TheFoolEngine
         static void AddLight(const DirectionLight& light);
         static void AddLight(const DirectionLight& light, int shadowIndex);
         static void AddLight(const PointLight& light);
+        static void AddLight(const PointLight& light, int shadowIndex);
         static void AddLight(const SpotLight& light);
+        static void AddLight(const SpotLight& light, int shadowIndex);
 
         static void Render();
 
@@ -60,6 +63,10 @@ namespace TheFoolEngine
         static void SetEnvironmentMap(const Ref<CubeMap> irradiance, const Ref<CubeMap> prefilter, const Ref<Texture2D> brdfLUT);
 
         static int SetShadowLight(const glm::vec3& lightDir, float orthoSize = 10.0f, float nearPlane = 0.1f, float farPlane = 100.0f);
+        static int SetSpotShadowLight(const glm::vec3& position, const glm::vec3& direction, float fovDeg, float nearPlane = 0.1f, float farPlane = 100.0f);
+        static int SetPointShadowLight(const glm::vec3& position, float nearPlane = 0.1f, float farPlane = 100.0f);
+
         static void RenderShadowPass();
+        static void RenderPointShadowPass();
     };
 }
