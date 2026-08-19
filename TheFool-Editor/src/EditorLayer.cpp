@@ -57,17 +57,6 @@ namespace TheFoolEngine
         auto brdfLUT = IBLUtils::CreateBRDFLUT(512);
         PBRRenderer::SetEnvironmentMap(irradiance, prefilter, brdfLUT);
 
-        // Lights
-        //{
-        //    auto dirLight = m_ActiveScene->CreateEntity("DirLight");
-        //    dirLight.AddComponent<LightComponent>(LightComponent{ 0, {0,0,0}, {2,3,2}, {1,0.95f,0.9f}, 1.5f });
-
-        //    auto pointLight = m_ActiveScene->CreateEntity("PointLight");
-        //    pointLight.AddComponent<LightComponent>(LightComponent{ 1, {3,3,3}, {0,-1,0}, {1,0.3f,0.3f}, 2.0f, 15.0f });
-
-        //    auto spotLight = m_ActiveScene->CreateEntity("SpotLight");
-        //    spotLight.AddComponent<LightComponent>(LightComponent{ 2, {-3,2,0}, {1,-1,0}, {0.3f,1,0.3f}, 2.0f, 10.0f, glm::radians(10.0f), glm::radians(20.0f) });
-        //}
         {
             // === Main light: Sun (Directional) ===================
             auto sun = m_ActiveScene->CreateEntity("Sun");
@@ -284,6 +273,8 @@ namespace TheFoolEngine
         m_ActiveScene->OnUpdate(ts, !m_Is3DMode);
 
         // PBR pass (editor camera)
+        RenderContext context;
+        context.ViewportSize = m_ViewportSize;
         if (m_Is3DMode)
         {
             CameraData cameraData;
@@ -295,7 +286,7 @@ namespace TheFoolEngine
             }
 
             PBRRenderer::ResetRendererState();
-            PBRRenderer::SetCamera(cameraData);
+            context.Camera = cameraData;
 
             // Submit lights from ECS
             auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
@@ -307,13 +298,13 @@ namespace TheFoolEngine
                     case 0:
                     {
                         int shadowIndex = PBRRenderer::SetShadowLight(glm::normalize(lc.Direction));
-                        PBRRenderer::AddLight(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
+                        PBRRenderer::AddLight(context, DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
                         break;
                     }
                     case 1:
                     {
                         int shadowIndex = PBRRenderer::SetPointShadowLight(lc.Position, 0.1f, 50.0f);
-                        PBRRenderer::AddLight(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
+                        PBRRenderer::AddLight(context, PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
                         break;
                     }
                     case 2:
@@ -324,6 +315,7 @@ namespace TheFoolEngine
                             glm::degrees(lc.OuterAngle) * 2.0f
                         );
                         PBRRenderer::AddLight(
+                            context,
                             SpotLight{ lc.Position, glm::normalize(lc.Direction),
                             lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
                             shadowIndex);
@@ -343,12 +335,13 @@ namespace TheFoolEngine
                 proxy.Model = pbr.Model;
                 proxy.Transform = transform.Transform;
                 proxy.Name = tag.Tag;
-                PBRRenderer::Register(proxy);
+                context.Renderables.push_back(proxy);
             }
-            PBRRenderer::RenderShadowPass();
-            PBRRenderer::RenderPointShadowPass();
-            m_HDRFrameBuffer->Bind();
-            PBRRenderer::Render();
+            context.RenderTarget = m_HDRFrameBuffer;
+
+            PBRRenderer::RenderShadowPass(context);
+            PBRRenderer::RenderPointShadowPass(context);
+            PBRRenderer::Render(context);
         }
 
         // FlatColor

@@ -64,10 +64,7 @@ namespace TheFoolEngine
         PBRMaterialTextureSet DefaultTexture;
 
         // Frame state
-        std::vector<PBRRenderProxy> Renderables;
-        std::vector<GPULight> GPULights;
         GLuint LightUBO = 0;    // UBO handle
-        CameraData Camera;
 
         PBRRenderState State;
 
@@ -174,8 +171,6 @@ namespace TheFoolEngine
 
         ResetStats();
 
-        s_Data.Renderables.clear();
-        s_Data.GPULights.clear();
         s_Data.Shadow.LightViewProjections.clear();
         s_Data.PointLightShadow.Count = 0;
 
@@ -185,27 +180,15 @@ namespace TheFoolEngine
         s_Data.DefaultGray->Bind(3);
         s_Data.DefaultWhite->Bind(4);
     }
-
-    void PBRRenderer::Register(const PBRRenderProxy& proxy)
+    
+    void PBRRenderer::AddLight(RenderContext& context, const DirectionLight& light)
     {
-        s_Data.Renderables.push_back(proxy);
+        AddLight(context, light, -1);
     }
 
-    void PBRRenderer::SetCamera(const CameraData& camera)
+    void PBRRenderer::AddLight(RenderContext& context, const DirectionLight& light, int shadowIndex)
     {
-        s_Data.Camera.ViewMatrix = camera.ViewMatrix;
-        s_Data.Camera.ProjectionMatrix = camera.ProjectionMatrix;
-        s_Data.Camera.Position = camera.Position;
-    }
-
-    void PBRRenderer::AddLight(const DirectionLight& light)
-    {
-        AddLight(light, -1);
-    }
-
-    void PBRRenderer::AddLight(const DirectionLight& light, int shadowIndex)
-    {
-        GPULight& gpu = s_Data.GPULights.emplace_back();
+        GPULight& gpu = context.Lights.emplace_back();
         gpu.Position = glm::vec4(light.Direction * 1e6f, 0.0f);
         gpu.Direction = glm::vec4(light.Direction, 0.0f);
         gpu.Color = glm::vec4(light.Color, light.Intensity);
@@ -213,14 +196,14 @@ namespace TheFoolEngine
         gpu.ShadowIndex = shadowIndex;
     }
 
-    void PBRRenderer::AddLight(const PointLight& light)
+    void PBRRenderer::AddLight(RenderContext& context, const PointLight& light)
     {
-        AddLight(light, -1);
+        AddLight(context, light, -1);
     }
 
-    void PBRRenderer::AddLight(const PointLight& light, int shadowIndex)
+    void PBRRenderer::AddLight(RenderContext& context, const PointLight& light, int shadowIndex)
     {
-        GPULight& gpu = s_Data.GPULights.emplace_back();
+        GPULight& gpu = context.Lights.emplace_back();
         gpu.Position = glm::vec4(light.Position, light.Range);
         gpu.Direction = glm::vec4(0.0f);
         gpu.Color = glm::vec4(light.Color, light.Intensity);
@@ -228,17 +211,17 @@ namespace TheFoolEngine
         gpu.ShadowIndex = shadowIndex;
     }
 
-    void PBRRenderer::AddLight(const SpotLight& light)
+    void PBRRenderer::AddLight(RenderContext& context, const SpotLight& light)
     {
-        AddLight(light, -1);
+        AddLight(context, light, -1);
     }
 
-    void PBRRenderer::AddLight(const SpotLight& light, int shadowIndex)
+    void PBRRenderer::AddLight(RenderContext& context, const SpotLight& light, int shadowIndex)
     {
         float innerCos = glm::cos(light.InnerAngle);
         float outerCos = glm::cos(light.OuterAngle);
 
-        GPULight& gpu = s_Data.GPULights.emplace_back();
+        GPULight& gpu = context.Lights.emplace_back();
         gpu.Position = glm::vec4(light.Position, light.Range);
         gpu.Direction = glm::vec4(light.Direction, 0.0f);
         gpu.Color = glm::vec4(light.Color, light.Intensity);
@@ -246,9 +229,12 @@ namespace TheFoolEngine
         gpu.ShadowIndex = shadowIndex;
     }
 
-    void PBRRenderer::Render()
+    void PBRRenderer::Render(const RenderContext& context)
     {
         TF_PROFILE_FUNCTION();
+
+        if (context.RenderTarget)
+            context.RenderTarget->Bind();
 
         s_Data.Shader->Bind();
 
@@ -272,25 +258,25 @@ namespace TheFoolEngine
         s_Data.Shader->SetMat4Array("u_ShadowMatrices", shadowLightsViewProjs);
 
         // camera
-        s_Data.Shader->SetMat4("u_View", s_Data.Camera.ViewMatrix);
-        s_Data.Shader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
-        s_Data.Shader->SetFloat3("u_CameraPos", s_Data.Camera.Position);
+        s_Data.Shader->SetMat4("u_View", context.Camera.ViewMatrix);
+        s_Data.Shader->SetMat4("u_Projection", context.Camera.ProjectionMatrix);
+        s_Data.Shader->SetFloat3("u_CameraPos", context.Camera.Position);
 
         // light
         LightGPUBlock lightblock = {};
-        lightblock.LightCount = (int32_t)s_Data.GPULights.size();
+        lightblock.LightCount = (int32_t)context.Lights.size();
         for (int32_t i = 0; i < lightblock.LightCount && i < NR_LIGHTS; ++i)
         {
-            lightblock.Lights[i].Position = s_Data.GPULights[i].Position;
-            lightblock.Lights[i].Direction = s_Data.GPULights[i].Direction;
-            lightblock.Lights[i].Color = s_Data.GPULights[i].Color;
-            lightblock.Lights[i].Params = s_Data.GPULights[i].Params;
-            lightblock.Lights[i].ShadowIndex = s_Data.GPULights[i].ShadowIndex;
+            lightblock.Lights[i].Position = context.Lights[i].Position;
+            lightblock.Lights[i].Direction = context.Lights[i].Direction;
+            lightblock.Lights[i].Color = context.Lights[i].Color;
+            lightblock.Lights[i].Params = context.Lights[i].Params;
+            lightblock.Lights[i].ShadowIndex = context.Lights[i].ShadowIndex;
         }
         glNamedBufferSubData(s_Data.LightUBO, 0, sizeof(LightGPUBlock), &lightblock);
 
         // entity
-        for (auto& proxy : s_Data.Renderables)
+        for (auto& proxy : context.Renderables)
         {
             if (!proxy.Visible)
                 continue;
@@ -332,8 +318,8 @@ namespace TheFoolEngine
         if (s_Data.Environment.Skybox && s_Data.Environment.SkyboxCubeVAO)
         {
             s_Data.Environment.SkyboxShader->Bind();
-            s_Data.Environment.SkyboxShader->SetMat4("u_Projection", s_Data.Camera.ProjectionMatrix);
-            glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(s_Data.Camera.ViewMatrix));
+            s_Data.Environment.SkyboxShader->SetMat4("u_Projection", context.Camera.ProjectionMatrix);
+            glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(context.Camera.ViewMatrix));
             s_Data.Environment.SkyboxShader->SetMat4("u_View", viewNoTranslate);
             s_Data.Environment.Skybox->Bind(0);
             s_Data.Environment.SkyboxShader->SetInt("u_Skybox", 0);
@@ -356,9 +342,9 @@ namespace TheFoolEngine
         return s_Data.State;
     }
 
-    std::int32_t PBRRenderer::GetLightsCount()
+    std::int32_t PBRRenderer::GetLightsCount(const RenderContext& context)
     {
-        return (std::int32_t)s_Data.GPULights.size();
+        return (std::int32_t)context.Lights.size();
     }
 
     void PBRRenderer::DefaultTextureFill(Ref<PBRModel> model)
@@ -379,6 +365,19 @@ namespace TheFoolEngine
     }
 
     int PBRRenderer::SetShadowLight(const glm::vec3& lightDir, float orthoSize, float nearPlane, float farPlane)
+    {
+        glm::vec3 sceneCenter = glm::vec3(0.0f);    // TODO: Use the origin temporarily; the scene bounding box can be replaced later.
+        glm::vec3 lightPos = sceneCenter - lightDir * 50.0f;
+
+        glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 lightProj = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, nearPlane, farPlane);
+
+        int index = (int)s_Data.Shadow.LightViewProjections.size();
+        s_Data.Shadow.LightViewProjections.push_back(lightProj * lightView);
+        return index;
+    }
+
+    int PBRRenderer::SetShadowLight(RenderContext& context, const glm::vec3& lightDir, float orthoSize, float nearPlane, float farPlane)
     {
         glm::vec3 sceneCenter = glm::vec3(0.0f);    // TODO: Use the origin temporarily; the scene bounding box can be replaced later.
         glm::vec3 lightPos = sceneCenter - lightDir * 50.0f;
@@ -426,7 +425,7 @@ namespace TheFoolEngine
         return (int)index;
     }
 
-    void PBRRenderer::RenderShadowPass()
+    void PBRRenderer::RenderShadowPass(const RenderContext& context)
     {
         uint32_t layerCount = (uint32_t)s_Data.Shadow.LightViewProjections.size();
         if (layerCount == 0)
@@ -448,7 +447,7 @@ namespace TheFoolEngine
             RenderCommand::Clear();
             s_Data.Shadow.DepthOnlyShader->SetMat4("u_LightViewProjection", s_Data.Shadow.LightViewProjections[layer]);
 
-            for (auto& proxy : s_Data.Renderables)
+            for (auto& proxy : context.Renderables)
             {
                 if (!proxy.Visible)
                     continue;
@@ -470,7 +469,7 @@ namespace TheFoolEngine
         s_Data.Shadow.ShadowFBO->UnBind();
     }
 
-    void PBRRenderer::RenderPointShadowPass()
+    void PBRRenderer::RenderPointShadowPass(const RenderContext& context)
     {
         if (!s_Data.PointLightShadow.DepthMap)
             return;
@@ -497,7 +496,7 @@ namespace TheFoolEngine
                 s_Data.PointLightShadow.DepthShader->SetFloat("u_FarPlane", light.FarPlane);
 
                 // Traverse renderables to draw depth
-                for (auto& proxy : s_Data.Renderables)
+                for (auto& proxy : context.Renderables)
                 {
                     if (!proxy.Visible)
                         continue;
