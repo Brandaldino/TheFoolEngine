@@ -14,7 +14,7 @@ namespace TheFoolEngine
 {
     constexpr uint32_t NR_LIGHTS = 10;
     constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
-    constexpr uint32_t MAX_SHADOW_LIGHTS = 4;
+    constexpr uint32_t MAX_SHADOW_LIGHTS = 8;
     constexpr uint32_t SHADOWMAP_SIZE = 1024;
 
     struct EnvironmentData
@@ -34,14 +34,20 @@ namespace TheFoolEngine
         std::vector<glm::mat4> LightViewProjections;  // lightProj * lightView
     };
 
-    struct PointShadowData
+    struct PointLightShadowData
     {
-        Ref<Shader> DepthShader;
-        Ref<PointShadowMap> DepthMap;
         glm::vec3 LightPosition;
         glm::mat4 ShadowViews[6];
         glm::mat4 ShadowProj;
         float FarPlane;
+    };
+
+    struct PointShadowData
+    {
+        Ref<Shader> DepthShader;
+        Ref<PointShadowMap> DepthMap;
+        PointLightShadowData Lights[MAX_SHADOW_LIGHTS];
+        uint32_t Count = 0;
     };
 
     struct PBRRendererData
@@ -155,7 +161,7 @@ namespace TheFoolEngine
         s_Data.Shadow.DepthOnlyShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
 
         s_Data.PointLightShadow.DepthShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
-        s_Data.PointLightShadow.DepthMap = PointShadowMap::Create(SHADOWMAP_SIZE);
+        s_Data.PointLightShadow.DepthMap = PointShadowMap::Create(SHADOWMAP_SIZE, MAX_SHADOW_LIGHTS);
     }
 
     void PBRRenderer::Shutdown()
@@ -171,6 +177,7 @@ namespace TheFoolEngine
         s_Data.Renderables.clear();
         s_Data.GPULights.clear();
         s_Data.Shadow.LightViewProjections.clear();
+        s_Data.PointLightShadow.Count = 0;
 
         s_Data.Shader->Bind();
         s_Data.DefaultWhite->Bind(1);
@@ -252,8 +259,12 @@ namespace TheFoolEngine
         if (s_Data.PointLightShadow.DepthMap)
         {
             glBindTextureUnit(9, s_Data.PointLightShadow.DepthMap->GetRendererID());
-            s_Data.Shader->SetInt("u_PointShadowMap", 9);
-            s_Data.Shader->SetFloat("u_PointShadowFarPlane", s_Data.PointLightShadow.FarPlane);
+            s_Data.Shader->SetInt("u_PointShadowMaps", 9);
+
+            std::vector<float> farPlanes(MAX_SHADOW_LIGHTS, 100.0f);
+            for (uint32_t i = 0; i < s_Data.PointLightShadow.Count; ++i)
+                farPlanes[i] = s_Data.PointLightShadow.Lights[i].FarPlane;
+            s_Data.Shader->SetFloatArray("u_PointShadowFarPlanes", farPlanes);
         }
         std::vector<glm::mat4> shadowLightsViewProjs;
         for (int i = 0; i < (int)s_Data.Shadow.LightViewProjections.size() && i < MAX_SHADOW_LIGHTS; ++i)
@@ -395,11 +406,16 @@ namespace TheFoolEngine
 
     int PBRRenderer::SetPointShadowLight(const glm::vec3& position, float nearPlane, float farPlane)
     {
-        s_Data.PointLightShadow.LightPosition = position;
-        s_Data.PointLightShadow.FarPlane = farPlane;
-        s_Data.PointLightShadow.ShadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
+        if (s_Data.PointLightShadow.Count >= MAX_SHADOW_LIGHTS)
+            return -1;   // Shadow slot limit reached
 
-        glm::mat4* v = s_Data.PointLightShadow.ShadowViews;
+        uint32_t index = s_Data.PointLightShadow.Count++;
+        auto& light = s_Data.PointLightShadow.Lights[index];
+        light.LightPosition = position;
+        light.FarPlane = farPlane;
+        light.ShadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
+
+        glm::mat4* v = light.ShadowViews;
         v[0] = glm::lookAt(position, position + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
         v[1] = glm::lookAt(position, position + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
         v[2] = glm::lookAt(position, position + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -407,7 +423,7 @@ namespace TheFoolEngine
         v[4] = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
         v[5] = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 
-        return 0; // TODO: Fix the single point light source at index 0 first
+        return (int)index;
     }
 
     void PBRRenderer::RenderShadowPass()
@@ -467,30 +483,35 @@ namespace TheFoolEngine
         RenderCommand::SetClearColor({ 1.0f, 1.0f, 1.0f, 1.0f });
         RenderCommand::Clear();
 
-        for (int face = 0; face < 6; ++face)
+        for (uint32_t lightIndex = 0; lightIndex < s_Data.PointLightShadow.Count; ++lightIndex)
         {
-            s_Data.PointLightShadow.DepthMap->BindFace(face);
-            RenderCommand::Clear();
-            s_Data.PointLightShadow.DepthShader->SetMat4("u_LightViewProjection",
-                s_Data.PointLightShadow.ShadowProj * s_Data.PointLightShadow.ShadowViews[face]);
-            s_Data.PointLightShadow.DepthShader->SetFloat3("u_LightPos", s_Data.PointLightShadow.LightPosition);
-            s_Data.PointLightShadow.DepthShader->SetFloat("u_FarPlane", s_Data.PointLightShadow.FarPlane);
+            const auto& light = s_Data.PointLightShadow.Lights[lightIndex];
 
-            // Traverse renderables to draw depth
-            for (auto& proxy : s_Data.Renderables)
+            for (int face = 0; face < 6; ++face)
             {
-                if (!proxy.Visible)
-                    continue;
+                s_Data.PointLightShadow.DepthMap->BindFace(lightIndex, face);
+                RenderCommand::Clear();
+                s_Data.PointLightShadow.DepthShader->SetMat4("u_LightViewProjection",
+                    light.ShadowProj * light.ShadowViews[face]);
+                s_Data.PointLightShadow.DepthShader->SetFloat3("u_LightPos", light.LightPosition);
+                s_Data.PointLightShadow.DepthShader->SetFloat("u_FarPlane", light.FarPlane);
 
-                auto& modelData = proxy.Model->GetModelData();
-                auto& vas = proxy.Model->GetVertexArray();
-                auto& meshes = modelData.Meshes;
-                for (std::size_t i = 0; i < vas.size(); ++i)
+                // Traverse renderables to draw depth
+                for (auto& proxy : s_Data.Renderables)
                 {
-                    glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                    s_Data.PointLightShadow.DepthShader->SetMat4("u_Model", model);
-                    vas[i]->Bind();
-                    RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
+                    if (!proxy.Visible)
+                        continue;
+
+                    auto& modelData = proxy.Model->GetModelData();
+                    auto& vas = proxy.Model->GetVertexArray();
+                    auto& meshes = modelData.Meshes;
+                    for (std::size_t i = 0; i < vas.size(); ++i)
+                    {
+                        glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
+                        s_Data.PointLightShadow.DepthShader->SetMat4("u_Model", model);
+                        vas[i]->Bind();
+                        RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
+                    }
                 }
             }
         }

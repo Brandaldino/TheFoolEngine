@@ -29,5 +29,5 @@ void main()
 {
     float dist = length(v_FragPos - u_LightPos);
     color = vec4(dist / u_FarPlane, 0.0, 0.0, 1.0); // Linear distance normalization
-    // color = vec4(1.0, 1.0, 1.0, 1.0);
+    // color = vec4(0.5, 0.5, 0.5, 1.0);
 }

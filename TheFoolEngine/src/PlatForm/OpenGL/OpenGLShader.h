@@ -28,6 +28,7 @@ namespace TheFoolEngine
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
+        virtual void SetFloatArray(const std::string& name, const std::vector<float>& values) override;
         virtual void SetMat4Array(const std::string& name, const std::vector<glm::mat4>& values) override;
 
 		virtual const std::string& GetName() const override { return m_Name; }
@@ -40,9 +41,10 @@ namespace TheFoolEngine
 		void UploadUniformFloat3(const std::string& name, const glm::vec3& values);
 		void UploadUniformFloat4(const std::string& name, const glm::vec4& values);
 
-		void UploadUniformMat3(const std::string& name, const glm::mat3& matrix);
-		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
+        void UploadUniformMat3(const std::string& name, const glm::mat3& matrix);
+        void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
 
+        void UploadUniformFloatArray(const std::string& name, const std::vector<float>& values);
         void UploadUniformMat4Array(const std::string& name, const std::vector<glm::mat4>& values);
 	private:
 		std::string ReadFile(const std::string& filepath);

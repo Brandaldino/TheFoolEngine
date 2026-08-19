@@ -25,6 +25,7 @@ namespace TheFoolEngine{
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
         // === array ========================================================
+        virtual void SetFloatArray(const std::string& name, const std::vector<float>& values) = 0;
         virtual void SetMat4Array(const std::string& name, const std::vector<glm::mat4>& values) = 0;
 
 		virtual const std::string& GetName() const = 0;

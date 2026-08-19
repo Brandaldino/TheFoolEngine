@@ -252,7 +252,14 @@ namespace TheFoolEngine {
 		UploadUniformMat4(name, value);
 	}
 
-	void OpenGLShader::SetMat4Array(const std::string& name, const std::vector<glm::mat4>& values)
+    void OpenGLShader::SetFloatArray(const std::string& name, const std::vector<float>& values)
+    {
+        TF_PROFILE_FUNCTION();
+
+        UploadUniformFloatArray(name, values);
+    }
+
+    void OpenGLShader::SetMat4Array(const std::string& name, const std::vector<glm::mat4>& values)
 	{
         TF_PROFILE_FUNCTION();
 
@@ -302,6 +309,15 @@ namespace TheFoolEngine {
 		// 4 * 4 float vector
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
+
+    void OpenGLShader::UploadUniformFloatArray(const std::string& name, const std::vector<float>& values)
+    {
+        if (values.empty())
+            return;
+
+        GLint location = glGetUniformLocation(m_RendererID, name.c_str());
+        glUniform1fv(location, values.size(), values.data());
+    }
 
     void OpenGLShader::UploadUniformMat4Array(const std::string& name, const std::vector<glm::mat4>& values)
     {

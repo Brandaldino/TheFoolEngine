@@ -69,57 +69,102 @@ namespace TheFoolEngine
         //    spotLight.AddComponent<LightComponent>(LightComponent{ 2, {-3,2,0}, {1,-1,0}, {0.3f,1,0.3f}, 2.0f, 10.0f, glm::radians(10.0f), glm::radians(20.0f) });
         //}
         {
-            // === sun =========================
-            //auto sun = m_ActiveScene->CreateEntity("Sun");
-            //sun.AddComponent<LightComponent>(LightComponent{
-            //    0,                          // Type: Directional
-            //    {0.0f, 0.0f, 0.0f},                    // Position
-            //    // glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f)),   // Direction:
-            //    glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f)),   // Direction:
-            //    {1.0f, 0.95f, 0.9f},        // Color: 
-            //    1.5f                        // Intensity
-            //    });
-
-            //auto fill1 = m_ActiveScene->CreateEntity("FillLight1");
-            //fill1.AddComponent<LightComponent>(LightComponent{
-            //    0,
-            //    {0,0,0},
-            //    glm::normalize(glm::vec3(0.8f, -0.4f, 0.4f)),    //
-            //    {0.6f, 0.7f, 1.0f},         // Color:
-            //    0.4f
-            //    });
-
-            //auto fill2 = m_ActiveScene->CreateEntity("FillLight2");
-            //fill2.AddComponent<LightComponent>(LightComponent{
-            //    0,
-            //    {0,0,0},
-            //    glm::normalize(glm::vec3(0.2f, -0.3f, -0.9f)),   //
-            //    {1.0f, 0.8f, 0.6f},         // Color
-            //    0.3f
-            //    });
-
-            auto pointLight = m_ActiveScene->CreateEntity("PointLight");
-            pointLight.AddComponent<LightComponent>(LightComponent{
-                1,                          // Type: Point
-                // {3.0f, 2.0f, 3.0f},         // Position
-                {0.0f, 4.0f, 0.0f},         // Position
-                {0, -1, 0},                 // Direction
-                {1.0f, 1.0f, 1.0f},         // Color: 
-                200.0f,
-                25.0f                       // Range
+            // === Main light: Sun (Directional) ===================
+            auto sun = m_ActiveScene->CreateEntity("Sun");
+            sun.AddComponent<LightComponent>(LightComponent{
+                0,                              // Type: Directional
+                {0.0f, 0.0f, 0.0f},             // Position: Ignored for directional light
+                glm::normalize(glm::vec3(-0.5f, -1.0f, -0.3f)),   // Direction: from upper right front
+                {1.0f, 0.95f, 0.9f},            // Color: warm white (key light)
+                1.5f                            // Intensity
                 });
 
-            //auto spotLight = m_ActiveScene->CreateEntity("SpotLight");
-            //spotLight.AddComponent<LightComponent>(LightComponent{
-            //    2,                              // Type: Spot
-            //    { -4.0f, 5.0f, -3.0f },         // Position:
-            //    glm::normalize(glm::vec3(0.4f, -0.7f, 0.3f)),   // Direction:
-            //    { 1.0f, 0.9f, 0.6f },           // Color:
-            //    55.0f,                           // Intensity:
-            //    30.0f,                          // Range:
-            //    glm::radians(15.0f),            // InnerAngle
-            //    glm::radians(35.0f)             // OuterAngle
+            // === Point light: local accent (lighting focus) ======
+            //auto pointLight = m_ActiveScene->CreateEntity("PointLight");
+            //pointLight.AddComponent<LightComponent>(LightComponent{
+            //    1,                              // Type: Point
+            //    {0.0f, 4.0f, 0.0f},             // Position: above the model
+            //    {0, -1, 0},                     // Direction: ignored for point light
+            //    {1.0f, 0.8f, 0.6f},             // Color: warm orange (accent)
+            //    300.0f,                         // Intensity: high for 1/d^2 falloff
+            //    25.0f                           // Range: > distance to ground (14.5)
             //    });
+
+            // === Point Light 1: main accent (above model) ==========
+            auto pl1 = m_ActiveScene->CreateEntity("PointLight1");
+            pl1.AddComponent<LightComponent>(LightComponent{
+                1,
+                {0.0f, 4.0f, 0.0f},              // Position:
+                {0, -1, 0},                      // Direction: ignored
+                {1.0f, 0.8f, 0.6f},              // Color: warm orange
+                300.0f,                          // Intensity
+                25.0f                            // Range
+                });
+
+            // === Point Light 2: front-left ========================
+            auto pl2 = m_ActiveScene->CreateEntity("PointLight2");
+            pl2.AddComponent<LightComponent>(LightComponent{
+                1,
+                {-2.0f, 3.0f, 1.0f},             // Position:
+                {0, -1, 0},
+                {0.6f, 0.8f, 1.0f},              // Color: cool blue (contrast)
+                200.0f,                          // Intensity
+                25.0f                            // Range
+                });
+
+            // === Point Light 3: front-right =======================
+            //auto pl3 = m_ActiveScene->CreateEntity("PointLight3");
+            //pl3.AddComponent<LightComponent>(LightComponent{
+            //    1,
+            //    {6.0f, 2.5f, 3.0f},              // Position:
+            //    {0, -1, 0},
+            //    {0.8f, 1.0f, 0.7f},              // Color: greenish
+            //    200.0f,                          // Intensity
+            //    25.0f                            // Range
+            //    });
+
+            //// === Point Light 4: rear, higher ======================
+            //auto pl4 = m_ActiveScene->CreateEntity("PointLight4");
+            //pl4.AddComponent<LightComponent>(LightComponent{
+            //    1,
+            //    {0.0f, 6.0f, -5.0f},             // Position:
+            //    {0, -1, 0},
+            //    {1.0f, 0.9f, 0.9f},              // Color: warm white
+            //    250.0f,                          // Intensity
+            //    30.0f                            // Range
+            //    });
+
+            // === Spot light: side fill for depth =================
+            auto spotLight = m_ActiveScene->CreateEntity("SpotLight");
+            spotLight.AddComponent<LightComponent>(LightComponent{
+                2,                              // Type: Spot
+                {-4.0f, 6.0f, -3.0f},           // Position: upper left side
+                glm::normalize(glm::vec3(0.4f, -0.7f, 0.3f)),   // Direction: toward lower right
+                {1.0f, 0.9f, 0.6f},             // Color: warm yellow
+                55.0f,                          // Intensity
+                30.0f,                          // Range: > distance to ground
+                glm::radians(15.0f),            // InnerAngle
+                glm::radians(35.0f)             // OuterAngle
+                });
+
+            // === Fill lights: brighten shadow areas (no shadow) ==
+            auto fill1 = m_ActiveScene->CreateEntity("FillLight1");
+            fill1.AddComponent<LightComponent>(LightComponent{
+                0,
+                {0,0,0},
+                glm::normalize(glm::vec3(0.8f, -0.4f, 0.4f)),    // opposite fill
+                {0.6f, 0.7f, 1.0f},             // Color: cool blue (contrast)
+                0.4f
+                });
+
+            auto fill2 = m_ActiveScene->CreateEntity("FillLight2");
+            fill2.AddComponent<LightComponent>(LightComponent{
+                0,
+                {0,0,0},
+                glm::normalize(glm::vec3(0.2f, -0.3f, -0.9f)),   // rear fill
+                {1.0f, 0.8f, 0.6f},             // Color: warm orange
+                0.3f
+                });
         }
 
         // Model
