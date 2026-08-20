@@ -26,7 +26,7 @@
 #include "TheFoolEngine/Scene/ScriptableEntity.h"
 #include "TheFoolEngine/Scene/Components.h"
 
-// --Renderer------------------------
+// -- Renderer ------------------------
 #include "TheFoolEngine/Renderer/Renderer.h"
 #include "TheFoolEngine/Renderer/Renderer2D.h"
 #include "TheFoolEngine/Renderer/PBRRenderer.h"
@@ -41,7 +41,11 @@
 #include "TheFoolEngine/Renderer/VertexArray.h"
 #include "TheFoolEngine/Renderer/CubeMap.h"
 #include "TheFoolEngine/Renderer/IBLUtils.h"
+#include "TheFoolEngine/Renderer/RenderGraph.h"
 
 #include "TheFoolEngine/Renderer/OrthographicCamera.h"
 #include "TheFoolEngine/Renderer/PerspectiveCameraController.h"
+// -- Pass ----------------------------
+#include "TheFoolEngine/Renderer/Pass/MainPass.h"
+#include "TheFoolEngine/Renderer/Pass/ShadowPass.h"
 // ------------------------------------

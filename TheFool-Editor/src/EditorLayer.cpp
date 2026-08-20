@@ -235,6 +235,16 @@ namespace TheFoolEngine
             });
         m_OutlineVAO = VertexArray::Create();
         m_OutlineVAO->AddVertexBuffer(m_OutlineVBO);
+
+        // Pass init
+        m_ShadowPass = CreateScope<ShadowPass>();
+        m_PointShadowPass = CreateScope<PointShadowPass>();
+        m_MainPass = CreateScope<MainPass>();
+        m_MainPass->SetTarget(m_HDRFrameBuffer, PBRRenderer::GetPBRShader());
+
+        m_RenderGraph.AddPass(std::move(m_MainPass));
+        m_RenderGraph.AddPass(std::move(m_PointShadowPass));
+        m_RenderGraph.AddPass(std::move(m_ShadowPass));
     }
 
     void EditorLayer::OnDetach()
@@ -337,11 +347,8 @@ namespace TheFoolEngine
                 proxy.Name = tag.Tag;
                 context.Renderables.push_back(proxy);
             }
-            context.RenderTarget = m_HDRFrameBuffer;
 
-            PBRRenderer::RenderShadowPass(context);
-            PBRRenderer::RenderPointShadowPass(context);
-            PBRRenderer::Render(context);
+            m_RenderGraph.Execute(context);
         }
 
         // FlatColor

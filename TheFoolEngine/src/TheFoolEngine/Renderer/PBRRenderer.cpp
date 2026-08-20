@@ -5,50 +5,13 @@
 #include "PerspectiveCameraController.h"
 #include "RenderCommand.h"
 #include "VertexArray.h"
-#include "PointShadowMap.h"
+#include "Pass/Pass.h"
 
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace TheFoolEngine
 {
-    constexpr uint32_t NR_LIGHTS = 10;
-    constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
-    constexpr uint32_t MAX_SHADOW_LIGHTS = 8;
-    constexpr uint32_t SHADOWMAP_SIZE = 1024;
-
-    struct EnvironmentData
-    {
-        Ref<CubeMap> Skybox;
-        Ref<Shader> SkyboxShader;
-        Ref<VertexArray> SkyboxCubeVAO;
-        Ref<CubeMap> IrradianceMap;
-        Ref<CubeMap> PrefilterMap;
-        Ref<Texture2D> BRDFLUT;
-    };
-
-    struct ShadowData
-    {
-        Ref<FrameBuffer> ShadowFBO;
-        Ref<Shader> DepthOnlyShader;
-        std::vector<glm::mat4> LightViewProjections;  // lightProj * lightView
-    };
-
-    struct PointLightShadowData
-    {
-        glm::vec3 LightPosition;
-        glm::mat4 ShadowViews[6];
-        glm::mat4 ShadowProj;
-        float FarPlane;
-    };
-
-    struct PointShadowData
-    {
-        Ref<Shader> DepthShader;
-        Ref<PointShadowMap> DepthMap;
-        PointLightShadowData Lights[MAX_SHADOW_LIGHTS];
-        uint32_t Count = 0;
-    };
 
     struct PBRRendererData
     {
@@ -75,12 +38,6 @@ namespace TheFoolEngine
         ShadowData Shadow;
         // PointLightShadow
         PointShadowData PointLightShadow;
-    };
-
-    struct LightGPUBlock
-    {
-        GPULight Lights[NR_LIGHTS];
-        int32_t LightCount;
     };
 
     static PBRRendererData s_Data;
@@ -232,9 +189,6 @@ namespace TheFoolEngine
     void PBRRenderer::Render(const RenderContext& context)
     {
         TF_PROFILE_FUNCTION();
-
-        if (context.RenderTarget)
-            context.RenderTarget->Bind();
 
         s_Data.Shader->Bind();
 
@@ -518,4 +472,56 @@ namespace TheFoolEngine
         s_Data.PointLightShadow.DepthMap->Unbind();
     }
 
+    // =====================================================================================
+    Ref<Shader> PBRRenderer::GetPBRShader()
+    {
+        return s_Data.Shader;
+    }
+
+    const PBRMaterialTextureSet& PBRRenderer::GetDefaultTexture()
+    {
+        return s_Data.DefaultTexture;
+    }
+
+    uint32_t PBRRenderer::GetLightUBO()
+    {
+        return s_Data.LightUBO;
+    }
+
+    const EnvironmentData& PBRRenderer::GetEnvironment()
+    {
+        return s_Data.Environment;
+    }
+
+    Ref<FrameBuffer> PBRRenderer::GetShadowFBO()
+    {
+        return s_Data.Shadow.ShadowFBO;
+    }
+
+    Ref<Shader> PBRRenderer::GetDepthOnlyShader()
+    {
+        return s_Data.Shadow.DepthOnlyShader;
+    }
+
+    const std::vector<glm::mat4>& PBRRenderer::GetShadowViewProjections()
+    {
+        return s_Data.Shadow.LightViewProjections;
+    }
+
+    Ref<Shader> PBRRenderer::GetPointShadowDepthShader()
+    {
+        return s_Data.PointLightShadow.DepthShader;
+    }
+
+    Ref<PointShadowMap> PBRRenderer::GetPointShadowMap()
+    {
+        return s_Data.PointLightShadow.DepthMap;
+    }
+
+    const PointShadowData& PBRRenderer::GetPointShadowData()
+    {
+        return s_Data.PointLightShadow;
+    }
+
+    // =====================================================================================
 }

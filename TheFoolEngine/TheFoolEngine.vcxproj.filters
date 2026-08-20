@@ -1535,6 +1535,14 @@
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\PointShadowMap.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\Pass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\RenderGraph.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\MainPass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\RenderGraphTypes.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\TextureHandle.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\ResourcePool.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1686,5 +1694,9 @@
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\PointShadowMap.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\RenderGraph.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\ResourcePool.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\MainPass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.cpp" />
   </ItemGroup>
 </Project>

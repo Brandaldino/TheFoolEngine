@@ -6,41 +6,58 @@
 #include "Light.h"
 #include "CubeMap.h"
 
-#include "FrameBuffer.h"
+#include "PointShadowMap.h"
 
-class Shader;
-class PerspectiveCamera;
+#include "FrameBuffer.h"
+#include "Pass/Pass.h"
 
 namespace TheFoolEngine
 {
-    struct PBRRenderProxy
+    class Shader;
+    class PerspectiveCamera;
+
+    constexpr uint32_t MAX_SHADOW_LIGHTS = 8;
+    constexpr uint32_t NR_LIGHTS = 10;
+    constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
+    constexpr uint32_t SHADOWMAP_SIZE = 1024;
+
+    struct LightGPUBlock
     {
-        std::string Name;
-        Ref<PBRModel> Model;
-        glm::mat4 Transform = glm::mat4(1.0f);
-        bool Visible = true;
+        GPULight Lights[NR_LIGHTS];
+        int32_t LightCount;
     };
 
-    struct CameraData
+    struct EnvironmentData
     {
-        glm::mat4 ViewMatrix;
-        glm::mat4 ProjectionMatrix;
-        glm::vec3 Position;
+        Ref<CubeMap> Skybox;
+        Ref<Shader> SkyboxShader;
+        Ref<VertexArray> SkyboxCubeVAO;
+        Ref<CubeMap> IrradianceMap;
+        Ref<CubeMap> PrefilterMap;
+        Ref<Texture2D> BRDFLUT;
     };
 
-    struct PBRRenderState
+    struct ShadowData
     {
-        uint32_t DrawCalls = 0;
-        uint32_t MeshCount = 0;
+        Ref<FrameBuffer> ShadowFBO;
+        Ref<Shader> DepthOnlyShader;
+        std::vector<glm::mat4> LightViewProjections;  // lightProj * lightView
     };
 
-    struct RenderContext
+    struct PointLightShadowData
     {
-        CameraData Camera;      // camera
-        glm::vec2 ViewportSize; // viewport
-        std::vector<PBRRenderProxy> Renderables; // from register. TODO: Is it feasible to automatically manage whether the entities are rendered or not in each frame?
-        std::vector<GPULight> Lights;   // lights
-        Ref<FrameBuffer> RenderTarget;
+        glm::vec3 LightPosition;
+        glm::mat4 ShadowViews[6];
+        glm::mat4 ShadowProj;
+        float FarPlane;
+    };
+
+    struct PointShadowData
+    {
+        Ref<Shader> DepthShader;
+        Ref<PointShadowMap> DepthMap;
+        PointLightShadowData Lights[MAX_SHADOW_LIGHTS];
+        uint32_t Count = 0;
     };
 
     class PBRRenderer
@@ -77,5 +94,19 @@ namespace TheFoolEngine
 
         static void RenderShadowPass(const RenderContext& context);
         static void RenderPointShadowPass(const RenderContext& context);
+
+        // ============= MainPass ==================================
+        static Ref<Shader> GetPBRShader();
+        static const PBRMaterialTextureSet& GetDefaultTexture();
+        static uint32_t GetLightUBO();
+        static const EnvironmentData& GetEnvironment();
+        // ============= ShadowPass ================================
+        static Ref<FrameBuffer>  GetShadowFBO();
+        static Ref<Shader> GetDepthOnlyShader();
+        static const std::vector<glm::mat4>& GetShadowViewProjections();
+        // ============= PointShadowPass ===========================
+        static Ref<Shader> GetPointShadowDepthShader();
+        static Ref<PointShadowMap> GetPointShadowMap();
+        static const PointShadowData& GetPointShadowData();
     };
 }

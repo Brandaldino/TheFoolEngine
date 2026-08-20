@@ -49,6 +49,11 @@ namespace TheFoolEngine
 
 		glm::vec2 m_ViewportSize = { 0.0f ,0.0f };
 
+        RenderGraph m_RenderGraph;
+        Scope<MainPass> m_MainPass;
+        Scope<ShadowPass> m_ShadowPass;
+        Scope<PointShadowPass> m_PointShadowPass;
+
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
         PerspectiveCameraController m_PerspectiveCameraController;
