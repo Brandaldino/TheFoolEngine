@@ -24,6 +24,54 @@ namespace TheFoolEngine
         return handle;
     }
 
+    TextureHandle RenderGraph::CreateRenderTarget(const TextureDesc& desc, const char* name)
+    {
+        FrameBufferSpecification spec;
+        spec.Width = desc.Width;
+        spec.Height = desc.Height;
+        spec.FrameBufferFormat = desc.Format;
+        m_FrameBuffers.push_back(FrameBuffer::Create(spec));
+        m_Descs.push_back(desc);
+
+        TextureHandle handle;
+        handle.Desc = desc;
+        handle.PoolIndex = (uint32_t)m_FrameBuffers.size() - 1;
+        handle.Name = name ? name : "";
+        m_Resources.push_back(handle);
+
+        return handle;
+    }
+
+    Ref<FrameBuffer> RenderGraph::GetRenderTarget(const TextureHandle& handle) const
+    {
+        if (handle.PoolIndex >= m_FrameBuffers.size())
+            return nullptr;
+
+        return m_FrameBuffers[handle.PoolIndex];
+    }
+
+    Ref<Texture2D> RenderGraph::GetTexture(const TextureHandle& handle) const
+    {
+        auto target = GetRenderTarget(handle);
+        if (!target)
+            return nullptr;
+
+        return target->GetColorAttachment();
+    }
+
+    void RenderGraph::Resize(uint32_t width, uint32_t height)
+    {
+        for (auto& desc : m_Descs)
+        {
+            desc.Width = width;
+            desc.Height = height;
+        }
+
+        for (auto& fbo : m_FrameBuffers)
+            fbo->Resize(width, height);
+
+    }
+
     void RenderGraph::AddPass(Scope<Pass> pass)
     {
         m_Passes.emplace_back(std::move(pass));
@@ -31,6 +79,8 @@ namespace TheFoolEngine
 
     void RenderGraph::Execute(RenderContext& context)
     {
+        context.RenderGraph = this;
+
         // Resource Allocation: Allocate pool slots for each output
         for (auto& pass : m_Passes)
         {

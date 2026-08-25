@@ -1543,6 +1543,9 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\RenderGraphTypes.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\TextureHandle.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\ResourcePool.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1698,5 +1701,9 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\ResourcePool.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Pass\MainPass.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.cpp" />
   </ItemGroup>
 </Project>

@@ -198,10 +198,13 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\Light.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\OrthographicCameraController.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Pass\MainPass.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Pass\Pass.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\PBRRenderer.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\PerspectiveCamera.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\PerspectiveCameraController.h" />
@@ -680,8 +683,12 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\IBLUtils.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCameraController.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Pass\MainPass.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\PBRRenderer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\PerspectiveCamera.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\PerspectiveCameraController.cpp" />

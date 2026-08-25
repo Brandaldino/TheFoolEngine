@@ -48,4 +48,8 @@
 // -- Pass ----------------------------
 #include "TheFoolEngine/Renderer/Pass/MainPass.h"
 #include "TheFoolEngine/Renderer/Pass/ShadowPass.h"
+#include "TheFoolEngine/Renderer/Pass/BloomExtractPass.h"
+#include "TheFoolEngine/Renderer/Pass/BloomBlurPass.h"
+#include "TheFoolEngine/Renderer/Pass/BloomCombinePass.h"
+#include "TheFoolEngine/Renderer/Pass/ToneMappingPass.h"
 // ------------------------------------

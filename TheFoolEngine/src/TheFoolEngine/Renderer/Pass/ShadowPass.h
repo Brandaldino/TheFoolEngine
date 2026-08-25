@@ -9,8 +9,10 @@ namespace TheFoolEngine
     {
     public:
         virtual void Execute(RenderContext& context) override;
+        virtual std::string& GetPassName() { return m_PassName; };
+    public:
+        std::string m_PassName = "ShadowPass"; // for debug
     private:
-
     };
 
     // ====================== Point Light Shadow =============================
@@ -18,5 +20,8 @@ namespace TheFoolEngine
     {
     public:
         virtual void Execute(RenderContext& context) override;
+        virtual std::string& GetPassName() { return m_PassName; };
+    public:
+        std::string m_PassName = "PointShadowPass"; // for debug
     };
 }

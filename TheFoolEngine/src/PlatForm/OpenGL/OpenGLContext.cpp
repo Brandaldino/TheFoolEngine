@@ -20,9 +20,9 @@ namespace TheFoolEngine{
 		TF_CORE_ASSERT(status, "Failed to initialize Glad!");
 
 		TF_CORE_INFO("OpenGL Renderer:");
-		TF_CORE_INFO("  Vendor:	{0}", (void*)glGetString(GL_VENDOR));
-		TF_CORE_INFO("  Renderer:	{0}", (void*)glGetString(GL_RENDERER));
-		TF_CORE_INFO("  Version:	{0}", (void*)glGetString(GL_VERSION));
+		TF_CORE_INFO("Vendor: {0}", (char*)glGetString(GL_VENDOR));
+		TF_CORE_INFO("Renderer: {0}", (char*)glGetString(GL_RENDERER));
+		TF_CORE_INFO("Version: {0}", (char*)glGetString(GL_VERSION));
 	}
 
 	void OpenGLContext::SwapBuffers()

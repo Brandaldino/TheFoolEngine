@@ -25,12 +25,15 @@ namespace TheFoolEngine
         void ImportModel();
         void ImportSkybox();
 	private:
-		Ref<FrameBuffer> m_HDRFrameBuffer;
+		// Ref<FrameBuffer> m_HDRFrameBuffer;
 		Ref<FrameBuffer> m_LDRFrameBuffer;
-
 		Ref<FrameBuffer> m_BloomFBO_A;
 		Ref<FrameBuffer> m_BloomFBO_B;
-		Ref<Shader> m_BloomExtractShader;
+
+        TextureHandle m_HDRHandle;
+        TextureHandle m_LDRHandle;
+
+        Ref<Shader> m_BloomExtractShader;
 		Ref<Shader> m_BloomBlurShader;
 		Ref<Shader> m_BloomCombineShader;
 
@@ -53,6 +56,9 @@ namespace TheFoolEngine
         Scope<MainPass> m_MainPass;
         Scope<ShadowPass> m_ShadowPass;
         Scope<PointShadowPass> m_PointShadowPass;
+
+        // Post-rendering processing
+        Scope<ToneMappingPass> m_ToneMappingPass;
 
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
