@@ -25,17 +25,16 @@ namespace TheFoolEngine
         void ImportModel();
         void ImportSkybox();
 	private:
-		// Ref<FrameBuffer> m_HDRFrameBuffer;
-		Ref<FrameBuffer> m_LDRFrameBuffer;
-		Ref<FrameBuffer> m_BloomFBO_A;
-		Ref<FrameBuffer> m_BloomFBO_B;
-
         TextureHandle m_HDRHandle;
         TextureHandle m_LDRHandle;
+        TextureHandle m_BloomAHandle;
+        TextureHandle m_BloomBHandle;
+        TextureHandle m_BloomCHandle;
 
         Ref<Shader> m_BloomExtractShader;
 		Ref<Shader> m_BloomBlurShader;
 		Ref<Shader> m_BloomCombineShader;
+        Ref<Shader> m_ToneMappingShader;
 
         Ref<VertexArray> m_OutlineVAO;
         Ref<VertexBuffer> m_OutlineVBO;
@@ -58,6 +57,10 @@ namespace TheFoolEngine
         Scope<PointShadowPass> m_PointShadowPass;
 
         // Post-rendering processing
+        Scope<BloomExtractPass> m_BloomExtractPass;
+        Scope<BloomBlurPass> m_BloomBurPassH;
+        Scope<BloomBlurPass> m_BloomBurPassV;
+        Scope<BloomCombinePass> m_BloomCombinePass;
         Scope<ToneMappingPass> m_ToneMappingPass;
 
         // === PBR TEST ===============================================
@@ -68,8 +71,6 @@ namespace TheFoolEngine
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
         bool m_Is3DMode = true;
-
-		Ref<Shader> m_ToneMappingShader;
 		// ============================================================
 	};
 }

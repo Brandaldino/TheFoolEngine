@@ -28,15 +28,6 @@ namespace TheFoolEngine
         m_BloomCombineShader = Shader::Create("assets/shader/BloomCombine.glsl");
         m_FlatShader = Shader::Create("assets/shader/FlatColor.glsl");
 
-        FrameBufferSpecification fbSpec;
-        fbSpec.Width = 1280;
-        fbSpec.Height = 720;
-        // HDR FrameBuffer
-        fbSpec.FrameBufferFormat = TextureFormat::RGBA16F;
-        // LDR FrameBuffer
-        fbSpec.FrameBufferFormat = TextureFormat::RGBA8;
-        m_LDRFrameBuffer = FrameBuffer::Create(fbSpec);
-
         // Handle Create
         TextureDesc desc;
         desc.Width = 1280;
@@ -48,10 +39,10 @@ namespace TheFoolEngine
         m_LDRHandle = m_RenderGraph.CreateRenderTarget(desc, "LDR");
 
         // Bloom
-        FrameBufferSpecification bloomSpec = fbSpec;
-        bloomSpec.FrameBufferFormat = TextureFormat::RGBA16F;
-        m_BloomFBO_A = FrameBuffer::Create(bloomSpec);
-        m_BloomFBO_B = FrameBuffer::Create(bloomSpec);
+        desc.Format = TextureFormat::RGBA16F;
+        m_BloomAHandle = m_RenderGraph.CreateRenderTarget(desc, "BloomA");
+        m_BloomBHandle = m_RenderGraph.CreateRenderTarget(desc, "BloomB");
+        m_BloomCHandle = m_RenderGraph.CreateRenderTarget(desc, "BloomC");
 
         m_ActiveScene = CreateRef<Scene>();
 
@@ -246,15 +237,42 @@ namespace TheFoolEngine
         m_OutlineVAO->AddVertexBuffer(m_OutlineVBO);
 
         // Pass init
+        m_MainPass = CreateScope<MainPass>(PBRRenderer::GetPBRShader());
+        m_MainPass->SetOutput(m_HDRHandle);
+        
         m_ShadowPass = CreateScope<ShadowPass>();
         m_PointShadowPass = CreateScope<PointShadowPass>();
-        m_MainPass = CreateScope<MainPass>(PBRRenderer::GetPBRShader());
 
-        m_MainPass->SetOutput(m_HDRHandle);
+        m_BloomExtractPass = CreateScope<BloomExtractPass>(m_BloomExtractShader);
+        m_BloomExtractPass->SetInput(m_HDRHandle);
+        m_BloomExtractPass->SetOutput(m_BloomAHandle);
+
+        m_BloomBurPassH = CreateScope<BloomBlurPass>(m_BloomBlurShader);
+        m_BloomBurPassV = CreateScope<BloomBlurPass>(m_BloomBlurShader);
+
+        m_BloomBurPassH->SetInput(m_BloomAHandle);
+        m_BloomBurPassH->SetOutput(m_BloomBHandle);
+
+        m_BloomBurPassV->SetInput(m_BloomBHandle);
+        m_BloomBurPassV->SetOutput(m_BloomCHandle);
+
+        m_BloomCombinePass = CreateScope<BloomCombinePass>(m_BloomCombineShader);
+
+        m_BloomCombinePass->SetInputHDR(m_HDRHandle);
+        m_BloomCombinePass->SetInputBloom(m_BloomCHandle);
+        m_BloomCombinePass->SetOutput(m_LDRHandle);
+
+        m_ToneMappingPass = CreateScope<ToneMappingPass>(m_ToneMappingShader);
+
+        m_ToneMappingPass->SetInput(m_HDRHandle);
+        m_ToneMappingPass->SetOutput(m_LDRHandle);
 
         m_RenderGraph.AddPass(std::move(m_MainPass));
         m_RenderGraph.AddPass(std::move(m_PointShadowPass));
         m_RenderGraph.AddPass(std::move(m_ShadowPass));
+        m_RenderGraph.AddPass(std::move(m_BloomExtractPass));
+        m_RenderGraph.AddPass(std::move(m_BloomCombinePass));
+        m_RenderGraph.AddPass(std::move(m_ToneMappingPass));
     }
 
     void EditorLayer::OnDetach()
@@ -269,18 +287,11 @@ namespace TheFoolEngine
         m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         // Resize
-        if (FrameBufferSpecification spec = m_LDRFrameBuffer->GetSpecification();
+        if (FrameBufferSpecification spec = m_RenderGraph.GetRenderTarget(m_LDRHandle)->GetSpecification();
             m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
             (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
-        //if (FrameBufferSpecification spec = m_RenderGraph.GetRenderTarget(m_LDRHandle)->GetSpecification();
-        //    m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
-        //    (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y))
         {
-            m_LDRFrameBuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_BloomFBO_A->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_BloomFBO_B->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_PerspectiveCameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
-
             m_RenderGraph.Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         }
 
@@ -290,15 +301,11 @@ namespace TheFoolEngine
         // Render
         Renderer2D::ResetStats();
 
-        RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
-        RenderCommand::Clear();
-
         // Update Scene
         m_ActiveScene->OnUpdate(ts, !m_Is3DMode);
 
         // PBR pass (editor camera)
         RenderContext context;
-        context.ViewportSize = m_ViewportSize;
         if (m_Is3DMode)
         {
             CameraData cameraData;
@@ -415,65 +422,7 @@ namespace TheFoolEngine
         }
 
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
-
-        // Pass
-        {
-            TF_PROFILE_SCOPE("PostProcess");
-            auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
-
-            // Bloom Pass: Extract highlight
-            m_BloomFBO_A->Bind();
-            m_BloomExtractShader->Bind();
-            m_BloomExtractShader->SetFloat("u_Threshold", 1.0f);
-            m_RenderGraph.GetTexture(m_HDRHandle)->Bind(0);
-            // Draw
-            quadVAO->Bind();
-            RenderCommand::DrawIndexed(quadVAO, 6);
-
-            // Bloom Pass: Horizontal blur
-            m_BloomFBO_B->Bind();
-            m_BloomBlurShader->Bind();
-            m_BloomBlurShader->SetFloat2("u_Direction", { 1.0f, 0.0f });
-            m_BloomFBO_A->GetColorAttachment()->Bind(0);
-            // Draw
-            quadVAO->Bind();
-            RenderCommand::DrawIndexed(quadVAO, 6);
-
-            // Bloom Pass: Vertical blur
-            m_BloomFBO_A->Bind();
-            m_BloomBlurShader->SetFloat2("u_Direction", { 0.0f, 1.0f });
-            m_BloomFBO_B->GetColorAttachment()->Bind(0);
-            // Draw
-            quadVAO->Bind();
-            RenderCommand::DrawIndexed(quadVAO, 6);
-
-            // Bloom Pass: HDR + Bloom -> Combine -> LDR FBO
-            m_LDRFrameBuffer->Bind();
-            // m_RenderGraph.GetRenderTarget(m_LDRHandle)->Bind();
-            m_BloomCombineShader->Bind();
-            m_RenderGraph.GetTexture(m_HDRHandle)->Bind(0);
-            m_BloomFBO_A->GetColorAttachment()->Bind(1);
-            m_BloomCombineShader->SetInt("u_HDRColor", 0);
-            m_BloomCombineShader->SetInt("u_BloomBlur", 1);
-            m_BloomCombineShader->SetFloat("u_Intensity", 1.0f);
-            // Draw
-            quadVAO->Bind();
-            RenderCommand::DrawIndexed(quadVAO, 6);
-
-            // ToneMapping Pass
-            m_LDRFrameBuffer->Bind();
-            // m_RenderGraph.GetRenderTarget(m_LDRHandle)->Bind();
-            m_ToneMappingShader->Bind();
-            m_ToneMappingShader->SetFloat("u_Exposure", 1.0f);
-            m_ToneMappingShader->SetInt("u_HDRColor", 0);
-            m_RenderGraph.GetTexture(m_HDRHandle)->Bind(0);
-            // Draw
-            quadVAO->Bind();
-            RenderCommand::DrawIndexed(quadVAO, 6);
-        }
-
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
-        m_LDRFrameBuffer->UnBind();
     }
 
     void EditorLayer::OnImGuiRender() 
@@ -603,17 +552,11 @@ namespace TheFoolEngine
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         if (m_ViewportSize != *((glm::vec2*)&viewportPanelSize) && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
         {
-            m_LDRFrameBuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
-            m_BloomFBO_A->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            m_BloomFBO_B->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_PerspectiveCameraController.OnResize(viewportPanelSize.x, viewportPanelSize.y);
             m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-
             m_RenderGraph.Resize(viewportPanelSize.x, viewportPanelSize.y);
         }
-        uint32_t textureID = m_LDRFrameBuffer->GetColorAttachment()->GetRendererID();
-        // textureID = m_RenderGraph.GetTexture(m_LDRHandle)->GetRendererID();
-        TF_ASSERT(textureID, "get texture failed!");
+        uint32_t textureID = m_RenderGraph.GetTexture(m_LDRHandle)->GetRendererID();
         ImGui::Image((void*)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
         // Converting screen coordinates back to local coordinates

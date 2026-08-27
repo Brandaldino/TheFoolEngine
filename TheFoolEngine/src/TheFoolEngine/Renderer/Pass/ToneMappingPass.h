@@ -8,7 +8,7 @@ namespace TheFoolEngine
     class ToneMappingPass : public Pass
     {
     public:
-        ToneMappingPass(Ref<Shader> shader, Ref<FrameBuffer> output);
+        ToneMappingPass(Ref<Shader> shader);
 
         virtual void SetInput(TextureHandle input) override;
         virtual void SetOutput(TextureHandle output) override;
@@ -22,7 +22,6 @@ namespace TheFoolEngine
         std::string m_PassName = "ToneMappingPass"; // for debug
     private:
         Ref<Shader> m_Shader;
-        Ref<FrameBuffer> m_OutputFBO;
         TextureHandle m_Input, m_Output;
         std::vector<TextureHandle> m_Inputs, m_Outputs;
 

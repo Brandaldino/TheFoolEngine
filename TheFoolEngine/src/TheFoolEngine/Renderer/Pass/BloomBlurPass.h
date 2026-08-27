@@ -9,7 +9,7 @@ namespace TheFoolEngine
     class BloomBlurPass : public Pass
     {
     public:
-        BloomBlurPass(Ref<Shader> shader, Ref<FrameBuffer> output);
+        BloomBlurPass(Ref<Shader> shader);
 
         void SetDirection(const glm::vec2& dir);
 
@@ -25,7 +25,6 @@ namespace TheFoolEngine
         std::string m_PassName = "BloomBlurPass"; // for debug
     private:
         Ref<Shader> m_Shader;
-        Ref<FrameBuffer> m_OutputFBO;
         TextureHandle m_Input, m_Output;
         std::vector<TextureHandle> m_Inputs, m_Outputs;
 

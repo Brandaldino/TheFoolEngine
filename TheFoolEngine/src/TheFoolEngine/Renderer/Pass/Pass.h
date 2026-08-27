@@ -5,7 +5,6 @@
 #include "../TextureHandle.h"
 #include "../Light.h"
 #include "../../Importer/PBRModel.h"
-#include "../ResourcePool.h"
 
 namespace TheFoolEngine
 {
@@ -35,10 +34,8 @@ namespace TheFoolEngine
     struct RenderContext
     {
         CameraData Camera;      // camera
-        glm::vec2 ViewportSize; // viewport
         std::vector<PBRRenderProxy> Renderables; // from register. TODO: Is it feasible to automatically manage whether the entities are rendered or not in each frame?
         std::vector<GPULight> Lights;   // lights
-        ResourcePool* ResourcePool = nullptr;
         RenderGraph* RenderGraph = nullptr;
     };
 

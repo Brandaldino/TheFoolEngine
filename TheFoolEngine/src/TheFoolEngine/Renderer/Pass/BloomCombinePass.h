@@ -9,7 +9,7 @@ namespace TheFoolEngine
     class BloomCombinePass : public Pass
     {
     public:
-        BloomCombinePass(Ref<Shader> shader, Ref<FrameBuffer> output);
+        BloomCombinePass(Ref<Shader> shader);
 
         void SetInputHDR(TextureHandle hdr);
         void SetInputBloom(TextureHandle bloom);
@@ -24,7 +24,6 @@ namespace TheFoolEngine
         std::string m_PassName = "BloomCombinePass"; // for debug
     private:
         Ref<Shader> m_Shader;
-        Ref<FrameBuffer> m_OutputFBO;
         TextureHandle m_HDR, m_Bloom, m_Output;
         std::vector<TextureHandle> m_Inputs, m_Outputs;
 

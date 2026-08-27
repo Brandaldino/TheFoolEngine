@@ -8,7 +8,7 @@ namespace TheFoolEngine
     class BloomExtractPass : public Pass
     {
     public:
-        BloomExtractPass(Ref<Shader> shader, Ref<FrameBuffer> output);
+        BloomExtractPass(Ref<Shader> shader);
 
         virtual void SetInput(TextureHandle input) override; // HDR Handle
         virtual void SetOutput(TextureHandle output) override;   // BloomA Handle
@@ -21,7 +21,6 @@ namespace TheFoolEngine
         std::string m_PassName = "BloomExtractPass"; // for debug
     private:
         Ref<Shader> m_Shader;
-        Ref<FrameBuffer> m_OutputFBO;
         TextureHandle m_Input, m_Output;
         std::vector<TextureHandle> m_Inputs, m_Outputs;
 

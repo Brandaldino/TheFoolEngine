@@ -139,8 +139,8 @@ namespace TheFoolEngine
                 RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::Less);
             }
 
+            ctx.RenderGraph->GetRenderTarget(output)->UnBind();
         }
-
 
     }
 

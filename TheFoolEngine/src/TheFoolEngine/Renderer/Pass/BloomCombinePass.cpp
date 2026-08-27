@@ -3,12 +3,13 @@
 
 #include "../RenderCommand.h"
 #include "../RenderUtil.h"
+#include "../RenderGraph.h"
 
 namespace TheFoolEngine
 {
 
-    BloomCombinePass::BloomCombinePass(Ref<Shader> shader, Ref<FrameBuffer> output)
-        :m_Shader(shader), m_OutputFBO(output)
+    BloomCombinePass::BloomCombinePass(Ref<Shader> shader)
+        :m_Shader(shader)
     {
     }
 
@@ -42,21 +43,26 @@ namespace TheFoolEngine
     void BloomCombinePass::Execute(RenderContext& ctx)
     {
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
-        RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::Off);
 
-        m_OutputFBO->Bind();
         m_Shader->Bind();
 
-        ctx.ResourcePool->GetTexture(m_HDR.PoolIndex)->Bind(0);
-        ctx.ResourcePool->GetTexture(m_Bloom.PoolIndex)->Bind(1);
+        for (auto& output : m_Outputs)
+        {
+            ctx.RenderGraph->GetRenderTarget(output)->Bind();
 
-        m_Shader->SetInt("u_HDRColor", m_HDRColor);
-        m_Shader->SetInt("u_BloomBlur", m_BloomBlur);
-        m_Shader->SetFloat("u_Intensity", m_Intensity);
+            ctx.RenderGraph->GetTexture(m_HDR)->Bind(0);
+            ctx.RenderGraph->GetTexture(m_Bloom)->Bind(1);
 
-        auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
-        quadVAO->Bind();
-        RenderCommand::DrawIndexed(quadVAO, 6);
+            m_Shader->SetInt("u_HDRColor", m_HDRColor);
+            m_Shader->SetInt("u_BloomBlur", m_BloomBlur);
+            m_Shader->SetFloat("u_Intensity", m_Intensity);
+
+            auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
+
+            ctx.RenderGraph->GetRenderTarget(output)->UnBind();
+        }
     }
 
 }

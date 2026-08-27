@@ -3,12 +3,13 @@
 
 #include "../RenderUtil.h"
 #include "../RenderCommand.h"
+#include "../RenderGraph.h"
 
 namespace TheFoolEngine
 {
 
-    ToneMappingPass::ToneMappingPass(Ref<Shader> shader, Ref<FrameBuffer> output)
-        : m_Shader(shader), m_OutputFBO(output)
+    ToneMappingPass::ToneMappingPass(Ref<Shader> shader)
+        : m_Shader(shader)
     {
     }
 
@@ -37,19 +38,24 @@ namespace TheFoolEngine
     void ToneMappingPass::Execute(RenderContext& ctx)
     {
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
-        RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::Off);
 
-        m_OutputFBO->Bind();
         m_Shader->Bind();
 
-        ctx.ResourcePool->GetTexture(m_Input.PoolIndex)->Bind(0);
-        
-        m_Shader->SetFloat("u_Exposure", m_Exposure);
-        m_Shader->SetInt("u_HDRColor", m_HDRColor);
+        for (auto& output : m_Outputs)
+        {
+            ctx.RenderGraph->GetRenderTarget(output)->Bind();
 
-        auto quadVAO =  RenderUtil::Get()->CreateFullscreenQuadVAO();
-        quadVAO->Bind();
-        RenderCommand::DrawIndexed(quadVAO, 6);
+            ctx.RenderGraph->GetTexture(m_Input)->Bind(0);
+
+            m_Shader->SetFloat("u_Exposure", m_Exposure);
+            m_Shader->SetInt("u_HDRColor", m_HDRColor);
+
+            auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
+
+            ctx.RenderGraph->GetRenderTarget(output)->UnBind();
+        }
     }
 
 }

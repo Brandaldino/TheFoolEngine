@@ -3,12 +3,13 @@
 
 #include "../RenderUtil.h"
 #include "../RenderCommand.h"
+#include "../RenderGraph.h"
 
 namespace TheFoolEngine
 {
 
-    BloomExtractPass::BloomExtractPass(Ref<Shader> shader, Ref<FrameBuffer> output)
-        :m_Shader(shader), m_OutputFBO(output)
+    BloomExtractPass::BloomExtractPass(Ref<Shader> shader)
+        :m_Shader(shader)
     {
     }
 
@@ -37,16 +38,21 @@ namespace TheFoolEngine
     void BloomExtractPass::Execute(RenderContext& ctx)
     {
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
-        RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::Off);
 
-        m_OutputFBO->Bind();
         m_Shader->Bind();
 
-        m_Shader->SetFloat("u_Threshold", m_Threshold);
-        ctx.ResourcePool->GetTexture(m_Input.PoolIndex)->Bind(0);
-        auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
-        quadVAO->Bind();
-        RenderCommand::DrawIndexed(quadVAO, 6);
+        for(auto& output : m_Outputs)
+        {
+            ctx.RenderGraph->GetRenderTarget(output)->Bind();
+            ctx.RenderGraph->GetTexture(m_Input)->Bind(0);
+
+            m_Shader->SetFloat("u_Threshold", m_Threshold);
+            auto quadVAO = RenderUtil::Get()->CreateFullscreenQuadVAO();
+            quadVAO->Bind();
+            RenderCommand::DrawIndexed(quadVAO, 6);
+
+            ctx.RenderGraph->GetRenderTarget(output)->UnBind();
+        }
     }
 
 }
