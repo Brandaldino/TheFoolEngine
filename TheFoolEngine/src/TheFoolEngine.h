@@ -52,4 +52,6 @@
 #include "TheFoolEngine/Renderer/Pass/BloomBlurPass.h"
 #include "TheFoolEngine/Renderer/Pass/BloomCombinePass.h"
 #include "TheFoolEngine/Renderer/Pass/ToneMappingPass.h"
+// -- test ----------------------------
+#include "TheFoolEngine/Renderer/ShadowRenderer.h"
 // ------------------------------------

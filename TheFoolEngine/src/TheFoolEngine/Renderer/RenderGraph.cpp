@@ -1,36 +1,73 @@
 #include "tfpch.h"
 #include "RenderGraph.h"
 
+#include "PointShadowMap.h"
+
 namespace TheFoolEngine
 {
 
     TextureHandle RenderGraph::CreateRenderTarget(const TextureDesc& desc, const char* name)
     {
-        FrameBufferSpecification spec;
-        spec.Width = desc.Width;
-        spec.Height = desc.Height;
-        spec.FrameBufferFormat = desc.Format;
-        m_FrameBuffers.push_back(FrameBuffer::Create(spec));
+        RenderTargetResource res;
+        res.Desc = desc;
+
+        switch (desc.Type)
+        {
+            case RenderTargetType::Color:
+            {
+                FrameBufferSpecification spec;
+                spec.Width = desc.Width;
+                spec.Height = desc.Height;
+                spec.FrameBufferFormat = desc.Format;
+                res.FrameBuffer = FrameBuffer::Create(spec);
+                break;
+            }
+            case RenderTargetType::DepthArray:
+            {
+                FrameBufferSpecification spec;
+                spec.Width = desc.Width;
+                spec.Height = desc.Height;
+                spec.DepthOnly = true;
+                spec.LayerCount = desc.LayerCount;
+                res.FrameBuffer = FrameBuffer::Create(spec);
+                break;
+            }
+            case RenderTargetType::CubeMapArray:
+            {
+                res.PointShadowMap = PointShadowMap::Create(desc.Width, desc.LayerCount);
+                break;
+            }
+        }
+
+        m_Resources.push_back(std::move(res));
 
         TextureHandle handle;
         handle.Desc = desc;
-        handle.PoolIndex = (uint32_t)m_FrameBuffers.size() - 1;
+        handle.PoolIndex = (uint32_t)m_Resources.size() - 1;
         handle.Name = name ? name : "";
 
         return handle;
     }
 
-    Ref<FrameBuffer> RenderGraph::GetRenderTarget(const TextureHandle& handle) const
+    Ref<FrameBuffer> RenderGraph::GetFrameBuffer(const TextureHandle& handle) const
     {
-        if (handle.PoolIndex >= m_FrameBuffers.size())
+        if (handle.PoolIndex >= m_Resources.size())
             return nullptr;
 
-        return m_FrameBuffers[handle.PoolIndex];
+        return m_Resources[handle.PoolIndex].FrameBuffer;
+    }
+
+    Ref<PointShadowMap> RenderGraph::GetPointShadowMap(const TextureHandle& handle) const
+    {
+        if (handle.PoolIndex >= m_Resources.size())
+            return nullptr;
+
+        return m_Resources[handle.PoolIndex].PointShadowMap;
     }
 
     Ref<Texture2D> RenderGraph::GetTexture(const TextureHandle& handle) const
     {
-        auto target = GetRenderTarget(handle);
+        auto target = GetFrameBuffer(handle);
         if (!target)
             return nullptr;
 
@@ -39,8 +76,11 @@ namespace TheFoolEngine
 
     void RenderGraph::Resize(uint32_t width, uint32_t height)
     {
-        for (auto& fbo : m_FrameBuffers)
-            fbo->Resize(width, height);
+        for (auto& res : m_Resources)
+        {
+            if (res.FrameBuffer)
+                res.FrameBuffer->Resize(width, height);
+        }
     }
 
     void RenderGraph::AddPass(Scope<Pass> pass)

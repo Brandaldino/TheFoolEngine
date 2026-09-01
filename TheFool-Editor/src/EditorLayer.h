@@ -71,6 +71,8 @@ namespace TheFoolEngine
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
         bool m_Is3DMode = true;
+        // === ShadowRenderer =========================================
+        Ref<ShadowRenderer> m_ShadowRenderer;
 		// ============================================================
 	};
 }

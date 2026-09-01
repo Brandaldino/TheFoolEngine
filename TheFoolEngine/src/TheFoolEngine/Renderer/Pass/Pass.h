@@ -9,6 +9,7 @@
 namespace TheFoolEngine
 {
     class RenderGraph;
+    class ShadowRenderer;
 
     struct PBRRenderProxy
     {
@@ -37,6 +38,7 @@ namespace TheFoolEngine
         std::vector<PBRRenderProxy> Renderables; // from register. TODO: Is it feasible to automatically manage whether the entities are rendered or not in each frame?
         std::vector<GPULight> Lights;   // lights
         RenderGraph* RenderGraph = nullptr;
+        ShadowRenderer* ShadowRenderer = nullptr;
     };
 
     class Pass

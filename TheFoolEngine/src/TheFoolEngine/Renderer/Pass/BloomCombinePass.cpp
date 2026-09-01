@@ -48,7 +48,7 @@ namespace TheFoolEngine
 
         for (auto& output : m_Outputs)
         {
-            ctx.RenderGraph->GetRenderTarget(output)->Bind();
+            ctx.RenderGraph->GetFrameBuffer(output)->Bind();
 
             ctx.RenderGraph->GetTexture(m_HDR)->Bind(0);
             ctx.RenderGraph->GetTexture(m_Bloom)->Bind(1);
@@ -61,7 +61,7 @@ namespace TheFoolEngine
             quadVAO->Bind();
             RenderCommand::DrawIndexed(quadVAO, 6);
 
-            ctx.RenderGraph->GetRenderTarget(output)->UnBind();
+            ctx.RenderGraph->GetFrameBuffer(output)->UnBind();
         }
     }
 

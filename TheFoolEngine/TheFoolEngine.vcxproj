@@ -219,6 +219,8 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\RendererAPI.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\ResourcePool.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Shader.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\ShadowRenderer.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\ShadowTypes.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Texture.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\TextureHandle.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\VertexArray.h" />
@@ -702,6 +704,7 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\ResourcePool.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Shader.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\ShadowRenderer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Texture.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\TheFoolEngine\Scene\Entity.cpp" />

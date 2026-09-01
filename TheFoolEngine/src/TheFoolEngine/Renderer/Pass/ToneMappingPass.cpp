@@ -43,7 +43,7 @@ namespace TheFoolEngine
 
         for (auto& output : m_Outputs)
         {
-            ctx.RenderGraph->GetRenderTarget(output)->Bind();
+            ctx.RenderGraph->GetFrameBuffer(output)->Bind();
 
             ctx.RenderGraph->GetTexture(m_Input)->Bind(0);
 
@@ -54,7 +54,7 @@ namespace TheFoolEngine
             quadVAO->Bind();
             RenderCommand::DrawIndexed(quadVAO, 6);
 
-            ctx.RenderGraph->GetRenderTarget(output)->UnBind();
+            ctx.RenderGraph->GetFrameBuffer(output)->UnBind();
         }
     }
 

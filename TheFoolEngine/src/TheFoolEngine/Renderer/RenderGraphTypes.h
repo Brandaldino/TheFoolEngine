@@ -3,6 +3,12 @@
 
 namespace TheFoolEngine
 {
+    enum class RenderTargetType : uint8_t
+    {
+        Color,
+        DepthArray,
+        CubeMapArray
+    };
 
     struct TextureDesc
     {
@@ -11,6 +17,7 @@ namespace TheFoolEngine
         uint32_t LayerCount = 1;
         uint32_t MipLevels = 1;
         uint32_t Samples = 1;
+        RenderTargetType Type = RenderTargetType::Color;
         bool IsDepth = false;   // depth attachment
         bool IsCubemap = false; // skybox
         bool IsArray = false; // shadow array

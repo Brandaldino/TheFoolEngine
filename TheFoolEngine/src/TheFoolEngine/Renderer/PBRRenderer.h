@@ -11,21 +11,14 @@
 #include "FrameBuffer.h"
 #include "Pass/Pass.h"
 
+#include "ShadowTypes.h"
+
 namespace TheFoolEngine
 {
     class Shader;
     class PerspectiveCamera;
 
-    constexpr uint32_t MAX_SHADOW_LIGHTS = 8;
-    constexpr uint32_t NR_LIGHTS = 10;
     constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
-    constexpr uint32_t SHADOWMAP_SIZE = 1024;
-
-    struct LightGPUBlock
-    {
-        GPULight Lights[NR_LIGHTS];
-        int32_t LightCount;
-    };
 
     struct EnvironmentData
     {
@@ -35,29 +28,6 @@ namespace TheFoolEngine
         Ref<CubeMap> IrradianceMap;
         Ref<CubeMap> PrefilterMap;
         Ref<Texture2D> BRDFLUT;
-    };
-
-    struct ShadowData
-    {
-        Ref<FrameBuffer> ShadowFBO;
-        Ref<Shader> DepthOnlyShader;
-        std::vector<glm::mat4> LightViewProjections;  // lightProj * lightView
-    };
-
-    struct PointLightShadowData
-    {
-        glm::vec3 LightPosition;
-        glm::mat4 ShadowViews[6];
-        glm::mat4 ShadowProj;
-        float FarPlane;
-    };
-
-    struct PointShadowData
-    {
-        Ref<Shader> DepthShader;
-        Ref<PointShadowMap> DepthMap;
-        PointLightShadowData Lights[MAX_SHADOW_LIGHTS];
-        uint32_t Count = 0;
     };
 
     class PBRRenderer
