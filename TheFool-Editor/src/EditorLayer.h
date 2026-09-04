@@ -25,6 +25,9 @@ namespace TheFoolEngine
         void ImportModel();
         void ImportSkybox();
 	private:
+        TextureHandle m_ShadowFBOHandle;
+        TextureHandle m_PointShadowHandle;
+
         TextureHandle m_HDRHandle;
         TextureHandle m_LDRHandle;
         TextureHandle m_BloomAHandle;

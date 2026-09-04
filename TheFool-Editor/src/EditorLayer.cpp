@@ -29,6 +29,22 @@ namespace TheFoolEngine
         m_FlatShader = Shader::Create("assets/shader/FlatColor.glsl");
 
         // Handle Create
+        TextureDesc dirSpotDesc;
+        dirSpotDesc.Width = SHADOWMAP_SIZE;
+        dirSpotDesc.Height = SHADOWMAP_SIZE;
+        dirSpotDesc.Type = RenderTargetType::DepthArray;
+        dirSpotDesc.LayerCount = MAX_SHADOW_LIGHTS;
+        dirSpotDesc.IsTransient = true;
+        m_ShadowFBOHandle = m_RenderGraph.CreateRenderTarget(dirSpotDesc, "Dir&SpotShadow");
+
+        TextureDesc pointDesc;
+        pointDesc.Width = SHADOWMAP_SIZE;
+        pointDesc.Height = SHADOWMAP_SIZE;
+        pointDesc.Type = RenderTargetType::CubeMapArray;
+        pointDesc.LayerCount = MAX_SHADOW_LIGHTS;
+        pointDesc.IsTransient = true;
+        m_PointShadowHandle = m_RenderGraph.CreateRenderTarget(pointDesc, "PointShadow");
+
         TextureDesc desc;
         desc.Width = 1280;
         desc.Height = 720;
@@ -49,7 +65,7 @@ namespace TheFoolEngine
         PBRRenderer::Init();
 
         m_ShadowRenderer = CreateRef<ShadowRenderer>();
-        m_ShadowRenderer->Init(&m_RenderGraph);
+        m_ShadowRenderer->Init();
 
         // SkyBox
         auto skybox = CubeMap::Create("assets/cubemap/space.hdr");
@@ -241,12 +257,14 @@ namespace TheFoolEngine
 
         // Pass init
         m_MainPass = CreateScope<MainPass>(PBRRenderer::GetPBRShader());
-        m_MainPass->SetInputShadow(m_ShadowRenderer->GetShadowFBOHandle());
+        m_MainPass->SetInputShadow(m_ShadowFBOHandle);
+        m_MainPass->SetInputPointShadow(m_PointShadowHandle);
         m_MainPass->SetOutput(m_HDRHandle);
         
         m_ShadowPass = CreateScope<ShadowPass>();
-        m_ShadowPass->SetOutput(m_ShadowRenderer->GetShadowFBOHandle());
+        m_ShadowPass->SetOutput(m_ShadowFBOHandle);
         m_PointShadowPass = CreateScope<PointShadowPass>();
+        m_PointShadowPass->SetOutput(m_PointShadowHandle);
 
         m_BloomExtractPass = CreateScope<BloomExtractPass>(m_BloomExtractShader);
         m_BloomExtractPass->SetInput(m_HDRHandle);
@@ -332,36 +350,6 @@ namespace TheFoolEngine
             for (auto entity : lightView)
             {
                 auto& lc = lightView.get<LightComponent>(entity);
-
-                //switch (lc.Type)
-                //{
-                //    case 0:
-                //    {
-                //        int shadowIndex = context.ShadowRenderer->SetDirectionalLight(glm::normalize(lc.Direction));
-                //        context.ShadowRenderer->AddDirectionalLight(context, DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
-                //        break;
-                //    }
-                //    case 1:
-                //    {
-                //        int shadowIndex = context.ShadowRenderer->SetPointLight(lc.Position, 0.1f, 50.0f);
-                //        context.ShadowRenderer->AddPointLight(context, PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
-                //        break;
-                //    }
-                //    case 2:
-                //    {
-                //        int shadowIndex = context.ShadowRenderer->SetSpotLight(
-                //            lc.Position,
-                //            glm::normalize(lc.Direction),
-                //            glm::degrees(lc.OuterAngle) * 2.0f
-                //        );
-                //        context.ShadowRenderer->AddSpotLight(
-                //            context,
-                //            SpotLight{ lc.Position, glm::normalize(lc.Direction),
-                //            lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
-                //            shadowIndex);
-                //        break;
-                //    }
-                //}
 
                 switch (lc.Type)
                 {

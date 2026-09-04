@@ -43,7 +43,6 @@ namespace TheFoolEngine
         std::vector<Scope<Pass>> m_Passes;
         
         Ref<TransientResourcePool> m_TransientPool;
-        // std::vector<Ref<FrameBuffer>> m_FrameBuffers;
     };
 
 }

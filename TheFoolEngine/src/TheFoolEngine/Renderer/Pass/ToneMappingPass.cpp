@@ -13,12 +13,12 @@ namespace TheFoolEngine
     {
     }
 
-    void ToneMappingPass::SetInput(TextureHandle input)
+    void ToneMappingPass::SetInput(TextureHandle& input)
     {
         m_Input = input;
     }
 
-    void ToneMappingPass::SetOutput(TextureHandle output)
+    void ToneMappingPass::SetOutput(TextureHandle& output)
     {
         m_Output = output;
     }

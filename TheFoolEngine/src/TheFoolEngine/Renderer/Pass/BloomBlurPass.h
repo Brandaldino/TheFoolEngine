@@ -13,8 +13,8 @@ namespace TheFoolEngine
 
         void SetDirection(const glm::vec2& dir);
 
-        virtual void SetInput(TextureHandle input) override;
-        virtual void SetOutput(TextureHandle output) override;
+        virtual void SetInput(TextureHandle& input) override;
+        virtual void SetOutput(TextureHandle& output) override;
 
         virtual std::vector<TextureHandle>& GetInputs() override;
         virtual std::vector<TextureHandle>& GetOutputs() override;

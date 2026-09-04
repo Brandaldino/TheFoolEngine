@@ -49,8 +49,8 @@ namespace TheFoolEngine
     public:
         virtual ~Pass() = default;
 
-        virtual void SetInput(TextureHandle input) {};
-        virtual void SetOutput(TextureHandle output) {};
+        virtual void SetInput(TextureHandle& input) {};
+        virtual void SetOutput(TextureHandle& output) {};
 
         virtual std::vector<TextureHandle>& GetInputs() { return m_Inputs; };
         virtual std::vector<TextureHandle>& GetOutputs() { return m_Outputs; };

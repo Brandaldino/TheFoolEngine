@@ -11,9 +11,9 @@ namespace TheFoolEngine
     public:
         BloomCombinePass(Ref<Shader> shader);
 
-        void SetInputHDR(TextureHandle hdr);
-        void SetInputBloom(TextureHandle bloom);
-        virtual void SetOutput(TextureHandle output) override;
+        void SetInputHDR(TextureHandle& hdr);
+        void SetInputBloom(TextureHandle& bloom);
+        virtual void SetOutput(TextureHandle& output) override;
 
         virtual std::vector<TextureHandle>& GetInputs() override;
         virtual std::vector<TextureHandle>& GetOutputs() override;

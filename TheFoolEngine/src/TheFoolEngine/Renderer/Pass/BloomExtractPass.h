@@ -10,8 +10,8 @@ namespace TheFoolEngine
     public:
         BloomExtractPass(Ref<Shader> shader);
 
-        virtual void SetInput(TextureHandle input) override; // HDR Handle
-        virtual void SetOutput(TextureHandle output) override;   // BloomA Handle
+        virtual void SetInput(TextureHandle& input) override; // HDR Handle
+        virtual void SetOutput(TextureHandle& output) override;   // BloomA Handle
 
         virtual std::vector<TextureHandle>& GetInputs() override;
         virtual std::vector<TextureHandle>& GetOutputs() override;

@@ -13,12 +13,12 @@ namespace TheFoolEngine
     {
     }
 
-    void BloomExtractPass::SetInput(TextureHandle input)
+    void BloomExtractPass::SetInput(TextureHandle& input)
     {
         m_Input = input;
     }
 
-    void BloomExtractPass::SetOutput(TextureHandle output)
+    void BloomExtractPass::SetOutput(TextureHandle& output)
     {
         m_Output = output;
     }

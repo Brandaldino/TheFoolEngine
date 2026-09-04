@@ -9,12 +9,6 @@ namespace TheFoolEngine
     constexpr uint32_t SHADOWMAP_SIZE = 1024;
     constexpr uint32_t NR_LIGHTS = 10;
 
-    //struct ShadowData
-    //{
-    //    Ref<Shader> DepthOnlyShader;
-    //    std::vector<glm::mat4> LightViewProjections;
-    //};
-
     struct PointLightShadowData
     {
         glm::vec3 LightPosition;
@@ -25,7 +19,6 @@ namespace TheFoolEngine
 
     struct PointShadowData
     {
-        // Ref<Shader> DepthShader;
         PointLightShadowData Lights[MAX_SHADOW_LIGHTS];
         uint32_t Count = 0;
     };

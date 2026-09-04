@@ -26,9 +26,6 @@ namespace TheFoolEngine
 
         PBRMaterialTextureSet DefaultTexture;
 
-        // Frame state
-        GLuint LightUBO = 0;    // UBO handle
-
         PBRRenderState State;
 
         // Environment
@@ -68,11 +65,6 @@ namespace TheFoolEngine
 
         s_Data.Shader->Bind();
         s_Data.Shader->SetIntArray("u_Textures", samplers, MAX_TEXTURE_SLOTS);
-
-        // Light UBO
-        glCreateBuffers(1, &s_Data.LightUBO);
-        glNamedBufferStorage(s_Data.LightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 2, s_Data.LightUBO); // binding = 2
 
         // SkyBox
         s_Data.Environment.SkyboxShader = Shader::Create("assets/shader/SkyBoxShader.glsl");
@@ -118,54 +110,6 @@ namespace TheFoolEngine
         s_Data.DefaultWhite->Bind(4);
     }
     
-    void PBRRenderer::AddLight(RenderContext& context, const DirectionLight& light)
-    {
-        AddLight(context, light, -1);
-    }
-
-    void PBRRenderer::AddLight(RenderContext& context, const DirectionLight& light, int shadowIndex)
-    {
-        GPULight& gpu = context.Lights.emplace_back();
-        gpu.Position = glm::vec4(light.Direction * 1e6f, 0.0f);
-        gpu.Direction = glm::vec4(light.Direction, 0.0f);
-        gpu.Color = glm::vec4(light.Color, light.Intensity);
-        gpu.Params = glm::vec4(0.0f, 0.0f, 0.0f, (float)LightType::Directional);
-        gpu.ShadowIndex = shadowIndex;
-    }
-
-    void PBRRenderer::AddLight(RenderContext& context, const PointLight& light)
-    {
-        AddLight(context, light, -1);
-    }
-
-    void PBRRenderer::AddLight(RenderContext& context, const PointLight& light, int shadowIndex)
-    {
-        GPULight& gpu = context.Lights.emplace_back();
-        gpu.Position = glm::vec4(light.Position, light.Range);
-        gpu.Direction = glm::vec4(0.0f);
-        gpu.Color = glm::vec4(light.Color, light.Intensity);
-        gpu.Params = glm::vec4(0.0f, 0.0f, 0.0f, (float)LightType::Point);
-        gpu.ShadowIndex = shadowIndex;
-    }
-
-    void PBRRenderer::AddLight(RenderContext& context, const SpotLight& light)
-    {
-        AddLight(context, light, -1);
-    }
-
-    void PBRRenderer::AddLight(RenderContext& context, const SpotLight& light, int shadowIndex)
-    {
-        float innerCos = glm::cos(light.InnerAngle);
-        float outerCos = glm::cos(light.OuterAngle);
-
-        GPULight& gpu = context.Lights.emplace_back();
-        gpu.Position = glm::vec4(light.Position, light.Range);
-        gpu.Direction = glm::vec4(light.Direction, 0.0f);
-        gpu.Color = glm::vec4(light.Color, light.Intensity);
-        gpu.Params = glm::vec4(light.Range, innerCos, outerCos, (float)LightType::Spot);
-        gpu.ShadowIndex = shadowIndex;
-    }
-
     void PBRRenderer::Render(const RenderContext& context)
     {
         TF_PROFILE_FUNCTION();
@@ -176,19 +120,6 @@ namespace TheFoolEngine
         s_Data.Shader->SetMat4("u_View", context.Camera.ViewMatrix);
         s_Data.Shader->SetMat4("u_Projection", context.Camera.ProjectionMatrix);
         s_Data.Shader->SetFloat3("u_CameraPos", context.Camera.Position);
-
-        // light
-        LightGPUBlock lightblock = {};
-        lightblock.LightCount = (int32_t)context.Lights.size();
-        for (int32_t i = 0; i < lightblock.LightCount && i < NR_LIGHTS; ++i)
-        {
-            lightblock.Lights[i].Position = context.Lights[i].Position;
-            lightblock.Lights[i].Direction = context.Lights[i].Direction;
-            lightblock.Lights[i].Color = context.Lights[i].Color;
-            lightblock.Lights[i].Params = context.Lights[i].Params;
-            lightblock.Lights[i].ShadowIndex = context.Lights[i].ShadowIndex;
-        }
-        glNamedBufferSubData(s_Data.LightUBO, 0, sizeof(LightGPUBlock), &lightblock);
 
         // entity
         for (auto& proxy : context.Renderables)
@@ -257,11 +188,6 @@ namespace TheFoolEngine
         return s_Data.State;
     }
 
-    std::int32_t PBRRenderer::GetLightsCount(const RenderContext& context)
-    {
-        return (std::int32_t)context.Lights.size();
-    }
-
     void PBRRenderer::DefaultTextureFill(Ref<PBRModel> model)
     {
         model->CheckTexture(s_Data.DefaultTexture);
@@ -288,11 +214,6 @@ namespace TheFoolEngine
     const PBRMaterialTextureSet& PBRRenderer::GetDefaultTexture()
     {
         return s_Data.DefaultTexture;
-    }
-
-    uint32_t PBRRenderer::GetLightUBO()
-    {
-        return s_Data.LightUBO;
     }
 
     const EnvironmentData& PBRRenderer::GetEnvironment()

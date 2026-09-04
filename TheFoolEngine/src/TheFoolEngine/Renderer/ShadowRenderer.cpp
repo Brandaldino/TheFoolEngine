@@ -1,14 +1,12 @@
 #include "tfpch.h"
 #include "ShadowRenderer.h"
 
-#include "RenderGraph.h"
-
 #include <glad/glad.h>
 
 namespace TheFoolEngine
 {
 
-    void ShadowRenderer::Init(RenderGraph* graph)
+    void ShadowRenderer::Init()
     {
         m_DepthOnlyShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
         m_PointDepthShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
@@ -18,22 +16,6 @@ namespace TheFoolEngine
         glCreateBuffers(1, &m_GPULightUBO);
         glNamedBufferStorage(m_GPULightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_GPULightUBO); // binding = 2
-
-        TextureDesc dirSpotDesc;
-        dirSpotDesc.Width = SHADOWMAP_SIZE;
-        dirSpotDesc.Height = SHADOWMAP_SIZE;
-        dirSpotDesc.Type = RenderTargetType::DepthArray;
-        dirSpotDesc.LayerCount = MAX_SHADOW_LIGHTS;
-        dirSpotDesc.IsTransient = true;
-        m_ShadowFBOHandle = graph->CreateRenderTarget(dirSpotDesc, "DirectionalShadow");
-
-        TextureDesc pointDesc;
-        pointDesc.Width = 1024;
-        pointDesc.Height = 1024;
-        pointDesc.Type = RenderTargetType::CubeMapArray;
-        pointDesc.LayerCount = MAX_SHADOW_LIGHTS;
-        pointDesc.IsTransient = true;
-        m_PointShadowHandle = graph->CreateRenderTarget(pointDesc, "PointShadow");
     }
 
     void ShadowRenderer::AddDirectionalLight(RenderContext& context, const DirectionLight& light, int shadowIndex)
@@ -94,15 +76,4 @@ namespace TheFoolEngine
     {
         return m_PointDepthShader;
     }
-
-    TextureHandle ShadowRenderer::GetShadowFBOHandle()
-    {
-        return m_ShadowFBOHandle;
-    }
-
-    TextureHandle ShadowRenderer::GetPointShadowHandle()
-    {
-        return m_PointShadowHandle;
-    }
-
 }

@@ -18,14 +18,14 @@ namespace TheFoolEngine
     {
     }
 
-    void MainPass::SetOutput(TextureHandle output)
+    void MainPass::SetOutput(TextureHandle& output)
     {
         m_Output = output;
     }
 
     std::vector<TextureHandle>& MainPass::GetInputs()
     {
-        m_Inputs = { m_InputShadow };
+        m_Inputs = { m_InputShadow, m_InputPointShadow };
         return m_Inputs;
     }
 
@@ -48,12 +48,12 @@ namespace TheFoolEngine
             RenderCommand::Clear();
 
             // Shadow
-            RenderCommand::BindArrayTexture(ctx.RenderGraph->GetFrameBuffer(ctx.ShadowRenderer->GetShadowFBOHandle())->GetDepthArrayTextureID(), 8);
+            RenderCommand::BindArrayTexture(ctx.RenderGraph->GetFrameBuffer(m_InputShadow)->GetDepthArrayTextureID(), 8);
             m_Shader->SetInt("u_ShadowMaps", 8);
             // PointLightShadow
-            if (ctx.RenderGraph->GetPointShadowMap(ctx.ShadowRenderer->GetPointShadowHandle()))
+            if (ctx.RenderGraph->GetPointShadowMap(m_InputPointShadow))
             {
-                glBindTextureUnit(9, ctx.RenderGraph->GetPointShadowMap(ctx.ShadowRenderer->GetPointShadowHandle())->GetRendererID());
+                glBindTextureUnit(9, ctx.RenderGraph->GetPointShadowMap(m_InputPointShadow)->GetRendererID());
                 m_Shader->SetInt("u_PointShadowMaps", 9);
 
                 std::vector<float> farPlanes(MAX_SHADOW_LIGHTS, 100.0f);
@@ -128,9 +128,14 @@ namespace TheFoolEngine
 
     }
 
-    void MainPass::SetInputShadow(TextureHandle handle)
+    void MainPass::SetInputShadow(TextureHandle& handle)
     {
         m_InputShadow = handle;
+    }
+
+    void MainPass::SetInputPointShadow(TextureHandle& handle)
+    {
+        m_InputPointShadow = handle;
     }
 
 }

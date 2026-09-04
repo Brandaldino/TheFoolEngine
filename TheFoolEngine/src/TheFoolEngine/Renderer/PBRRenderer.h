@@ -36,19 +36,10 @@ namespace TheFoolEngine
 
         static void ResetRendererState();
 
-        static void AddLight(RenderContext& context, const DirectionLight& light);
-        static void AddLight(RenderContext& context, const DirectionLight& light, int shadowIndex);
-        static void AddLight(RenderContext& context, const PointLight& light);
-        static void AddLight(RenderContext& context, const PointLight& light, int shadowIndex);
-        static void AddLight(RenderContext& context, const SpotLight& light);
-        static void AddLight(RenderContext& context, const SpotLight& light, int shadowIndex);
-
         static void Render(const RenderContext& context);
 
         static void ResetStats();
         static PBRRenderState GetStats();
-
-        static std::int32_t GetLightsCount(const RenderContext& context);
 
         static void DefaultTextureFill(Ref<PBRModel> model);
 
@@ -58,7 +49,6 @@ namespace TheFoolEngine
         // ============= MainPass ==================================
         static Ref<Shader> GetPBRShader();
         static const PBRMaterialTextureSet& GetDefaultTexture();
-        static uint32_t GetLightUBO();
         static const EnvironmentData& GetEnvironment();
     };
 }

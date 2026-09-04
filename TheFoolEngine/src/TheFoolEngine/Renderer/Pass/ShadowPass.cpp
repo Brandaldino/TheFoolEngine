@@ -68,9 +68,20 @@ namespace TheFoolEngine
     }
     // ====================================================================== //
 
+    void PointShadowPass::SetOutput(TextureHandle& handle)
+    {
+        m_Output = handle;
+    }
+
+    std::vector<TextureHandle>& PointShadowPass::GetOutputs()
+    {
+        m_Outputs = { m_Output };
+        return m_Outputs;
+    }
+
     void PointShadowPass::Execute(RenderContext& context)
     {
-        auto shadowMap = context.RenderGraph->GetPointShadowMap(context.ShadowRenderer->GetPointShadowHandle());
+        auto shadowMap = context.RenderGraph->GetPointShadowMap(m_Output);
         if (!shadowMap)
             return;
 

@@ -13,17 +13,17 @@ namespace TheFoolEngine
     {
     }
 
-    void BloomCombinePass::SetOutput(TextureHandle output)
+    void BloomCombinePass::SetOutput(TextureHandle& output)
     {
         m_Output = output;
     }
 
-    void BloomCombinePass::SetInputHDR(TextureHandle hdr)
+    void BloomCombinePass::SetInputHDR(TextureHandle& hdr)
     {
         m_HDR = hdr;
     }
 
-    void BloomCombinePass::SetInputBloom(TextureHandle bloom)
+    void BloomCombinePass::SetInputBloom(TextureHandle& bloom)
     {
         m_Bloom = bloom;
     }

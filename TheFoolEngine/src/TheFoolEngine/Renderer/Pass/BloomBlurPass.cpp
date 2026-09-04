@@ -18,12 +18,12 @@ namespace TheFoolEngine
         m_Direction = dir;
     }
 
-    void BloomBlurPass::SetInput(TextureHandle input)
+    void BloomBlurPass::SetInput(TextureHandle& input)
     {
         m_Input = input;
     }
 
-    void BloomBlurPass::SetOutput(TextureHandle output)
+    void BloomBlurPass::SetOutput(TextureHandle& output)
     {
         m_Output = output;
     }
