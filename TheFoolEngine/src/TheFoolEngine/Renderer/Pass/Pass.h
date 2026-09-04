@@ -4,6 +4,7 @@
 #include "../FrameBuffer.h"
 #include "../TextureHandle.h"
 #include "../Light.h"
+#include "../ShadowTypes.h"
 #include "../../Importer/PBRModel.h"
 
 namespace TheFoolEngine
@@ -37,6 +38,8 @@ namespace TheFoolEngine
         CameraData Camera;      // camera
         std::vector<PBRRenderProxy> Renderables; // from register. TODO: Is it feasible to automatically manage whether the entities are rendered or not in each frame?
         std::vector<GPULight> Lights;   // lights
+        std::vector<glm::mat4> ShadowViewProjections; // direction | spot
+        PointShadowData PointShadow; // pointshadow
         RenderGraph* RenderGraph = nullptr;
         ShadowRenderer* ShadowRenderer = nullptr;
     };

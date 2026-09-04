@@ -6,8 +6,6 @@
 #include "Light.h"
 #include "CubeMap.h"
 
-#include "PointShadowMap.h"
-
 #include "FrameBuffer.h"
 #include "Pass/Pass.h"
 
@@ -57,26 +55,10 @@ namespace TheFoolEngine
         static void SetSkybox(const Ref<CubeMap> skybox);
         static void SetEnvironmentMap(const Ref<CubeMap> irradiance, const Ref<CubeMap> prefilter, const Ref<Texture2D> brdfLUT);
 
-        static int SetShadowLight(const glm::vec3& lightDir, float orthoSize = 10.0f, float nearPlane = 0.1f, float farPlane = 100.0f);
-        static int SetShadowLight(RenderContext& context, const glm::vec3& lightDir, float orthoSize = 10.0f, float nearPlane = 0.1f, float farPlane = 100.0f);
-        static int SetSpotShadowLight(const glm::vec3& position, const glm::vec3& direction, float fovDeg, float nearPlane = 0.1f, float farPlane = 100.0f);
-        static int SetPointShadowLight(const glm::vec3& position, float nearPlane = 0.1f, float farPlane = 100.0f);
-
-        static void RenderShadowPass(const RenderContext& context);
-        static void RenderPointShadowPass(const RenderContext& context);
-
         // ============= MainPass ==================================
         static Ref<Shader> GetPBRShader();
         static const PBRMaterialTextureSet& GetDefaultTexture();
         static uint32_t GetLightUBO();
         static const EnvironmentData& GetEnvironment();
-        // ============= ShadowPass ================================
-        static Ref<FrameBuffer>  GetShadowFBO();
-        static Ref<Shader> GetDepthOnlyShader();
-        static const std::vector<glm::mat4>& GetShadowViewProjections();
-        // ============= PointShadowPass ===========================
-        static Ref<Shader> GetPointShadowDepthShader();
-        static Ref<PointShadowMap> GetPointShadowMap();
-        static const PointShadowData& GetPointShadowData();
     };
 }

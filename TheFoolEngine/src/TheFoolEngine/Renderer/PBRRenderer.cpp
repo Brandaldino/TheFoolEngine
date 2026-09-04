@@ -33,11 +33,6 @@ namespace TheFoolEngine
 
         // Environment
         EnvironmentData Environment;
-
-        // Shadow
-        ShadowData Shadow;
-        // PointLightShadow
-        PointShadowData PointLightShadow;
     };
 
     static PBRRendererData s_Data;
@@ -104,18 +99,6 @@ namespace TheFoolEngine
                 { ShaderDataType::Float3, "a_Position" }
             });
         s_Data.Environment.SkyboxCubeVAO->AddVertexBuffer(skyVBO);
-
-        // Shadow
-        FrameBufferSpecification shadowSpec;
-        shadowSpec.Width = 1024;
-        shadowSpec.Height = 1024;
-        shadowSpec.DepthOnly = true;
-        shadowSpec.LayerCount = MAX_SHADOW_LIGHTS;
-        s_Data.Shadow.ShadowFBO = FrameBuffer::Create(shadowSpec);
-        s_Data.Shadow.DepthOnlyShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
-
-        s_Data.PointLightShadow.DepthShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
-        s_Data.PointLightShadow.DepthMap = PointShadowMap::Create(SHADOWMAP_SIZE, MAX_SHADOW_LIGHTS);
     }
 
     void PBRRenderer::Shutdown()
@@ -127,9 +110,6 @@ namespace TheFoolEngine
         TF_PROFILE_FUNCTION();
 
         ResetStats();
-
-        s_Data.Shadow.LightViewProjections.clear();
-        s_Data.PointLightShadow.Count = 0;
 
         s_Data.Shader->Bind();
         s_Data.DefaultWhite->Bind(1);
@@ -191,25 +171,6 @@ namespace TheFoolEngine
         TF_PROFILE_FUNCTION();
 
         s_Data.Shader->Bind();
-
-        // Shadow
-        RenderCommand::BindArrayTexture(s_Data.Shadow.ShadowFBO->GetDepthArrayTextureID(), 8);
-        s_Data.Shader->SetInt("u_ShadowMaps", 8);
-        // PointLightShadow
-        if (s_Data.PointLightShadow.DepthMap)
-        {
-            glBindTextureUnit(9, s_Data.PointLightShadow.DepthMap->GetRendererID());
-            s_Data.Shader->SetInt("u_PointShadowMaps", 9);
-
-            std::vector<float> farPlanes(MAX_SHADOW_LIGHTS, 100.0f);
-            for (uint32_t i = 0; i < s_Data.PointLightShadow.Count; ++i)
-                farPlanes[i] = s_Data.PointLightShadow.Lights[i].FarPlane;
-            s_Data.Shader->SetFloatArray("u_PointShadowFarPlanes", farPlanes);
-        }
-        std::vector<glm::mat4> shadowLightsViewProjs;
-        for (int i = 0; i < (int)s_Data.Shadow.LightViewProjections.size() && i < MAX_SHADOW_LIGHTS; ++i)
-            shadowLightsViewProjs.push_back(s_Data.Shadow.LightViewProjections[i]);
-        s_Data.Shader->SetMat4Array("u_ShadowMatrices", shadowLightsViewProjs);
 
         // camera
         s_Data.Shader->SetMat4("u_View", context.Camera.ViewMatrix);
@@ -318,160 +279,6 @@ namespace TheFoolEngine
         s_Data.Environment.BRDFLUT = brdfLUT;
     }
 
-    int PBRRenderer::SetShadowLight(const glm::vec3& lightDir, float orthoSize, float nearPlane, float farPlane)
-    {
-        glm::vec3 sceneCenter = glm::vec3(0.0f);    // TODO: Use the origin temporarily; the scene bounding box can be replaced later.
-        glm::vec3 lightPos = sceneCenter - lightDir * 50.0f;
-
-        glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 lightProj = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, nearPlane, farPlane);
-
-        int index = (int)s_Data.Shadow.LightViewProjections.size();
-        s_Data.Shadow.LightViewProjections.push_back(lightProj * lightView);
-        return index;
-    }
-
-    int PBRRenderer::SetShadowLight(RenderContext& context, const glm::vec3& lightDir, float orthoSize, float nearPlane, float farPlane)
-    {
-        glm::vec3 sceneCenter = glm::vec3(0.0f);    // TODO: Use the origin temporarily; the scene bounding box can be replaced later.
-        glm::vec3 lightPos = sceneCenter - lightDir * 50.0f;
-
-        glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 lightProj = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, nearPlane, farPlane);
-
-        int index = (int)s_Data.Shadow.LightViewProjections.size();
-        s_Data.Shadow.LightViewProjections.push_back(lightProj * lightView);
-        return index;
-    }
-
-    int PBRRenderer::SetSpotShadowLight(const glm::vec3& position, const glm::vec3& direction, float fovDeg, float nearPlane, float farPlane)
-    {
-        glm::vec3 up = (glm::abs(glm::dot(direction, glm::vec3(0.0f, 1.0f, 0.0f))) > 0.99f)
-            ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-
-        glm::mat4 lightView = glm::lookAt(position, position + direction, up);
-        glm::mat4 lightProj = glm::perspective(glm::radians(fovDeg), 1.0f, nearPlane, farPlane);
-
-        int index = (int)s_Data.Shadow.LightViewProjections.size();
-        s_Data.Shadow.LightViewProjections.push_back(lightProj * lightView);
-        return index;
-    }
-
-    int PBRRenderer::SetPointShadowLight(const glm::vec3& position, float nearPlane, float farPlane)
-    {
-        if (s_Data.PointLightShadow.Count >= MAX_SHADOW_LIGHTS)
-            return -1;   // Shadow slot limit reached
-
-        uint32_t index = s_Data.PointLightShadow.Count++;
-        auto& light = s_Data.PointLightShadow.Lights[index];
-        light.LightPosition = position;
-        light.FarPlane = farPlane;
-        light.ShadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
-
-        glm::mat4* v = light.ShadowViews;
-        v[0] = glm::lookAt(position, position + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        v[1] = glm::lookAt(position, position + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        v[2] = glm::lookAt(position, position + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        v[3] = glm::lookAt(position, position + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-        v[4] = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        v[5] = glm::lookAt(position, position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-
-        return (int)index;
-    }
-
-    void PBRRenderer::RenderShadowPass(const RenderContext& context)
-    {
-        uint32_t layerCount = (uint32_t)s_Data.Shadow.LightViewProjections.size();
-        if (layerCount == 0)
-            return;
-
-        s_Data.Shadow.ShadowFBO->Bind();
-        s_Data.Shadow.DepthOnlyShader->Bind();
-
-        RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
-        RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
-
-        for (uint32_t layer = 0; layer < layerCount; ++layer)
-        {
-            if (layer >= MAX_SHADOW_LIGHTS)
-                break;
-
-            s_Data.Shadow.ShadowFBO->AttachLayer(layer);
-            RenderCommand::SetClearColor({ 1.0f,1.0f, 1.0f, 1.0f });
-            RenderCommand::Clear();
-            s_Data.Shadow.DepthOnlyShader->SetMat4("u_LightViewProjection", s_Data.Shadow.LightViewProjections[layer]);
-
-            for (auto& proxy : context.Renderables)
-            {
-                if (!proxy.Visible)
-                    continue;
-
-                auto& modelData = proxy.Model->GetModelData();
-                auto& vas = proxy.Model->GetVertexArray();
-                auto& meshes = modelData.Meshes;
-
-                for (std::size_t i = 0; i < vas.size(); ++i)
-                {
-                    glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                    s_Data.Shadow.DepthOnlyShader->SetMat4("u_Model", model);
-                    vas[i]->Bind();
-                    RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
-                }
-            }
-        }
-
-        s_Data.Shadow.ShadowFBO->UnBind();
-    }
-
-    void PBRRenderer::RenderPointShadowPass(const RenderContext& context)
-    {
-        if (!s_Data.PointLightShadow.DepthMap)
-            return;
-
-        s_Data.PointLightShadow.DepthMap->Bind();
-        s_Data.PointLightShadow.DepthShader->Bind();
-
-        RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
-        RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
-        RenderCommand::SetClearColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-        RenderCommand::Clear();
-
-        for (uint32_t lightIndex = 0; lightIndex < s_Data.PointLightShadow.Count; ++lightIndex)
-        {
-            const auto& light = s_Data.PointLightShadow.Lights[lightIndex];
-
-            for (int face = 0; face < 6; ++face)
-            {
-                s_Data.PointLightShadow.DepthMap->BindFace(lightIndex, face);
-                RenderCommand::Clear();
-                s_Data.PointLightShadow.DepthShader->SetMat4("u_LightViewProjection",
-                    light.ShadowProj * light.ShadowViews[face]);
-                s_Data.PointLightShadow.DepthShader->SetFloat3("u_LightPos", light.LightPosition);
-                s_Data.PointLightShadow.DepthShader->SetFloat("u_FarPlane", light.FarPlane);
-
-                // Traverse renderables to draw depth
-                for (auto& proxy : context.Renderables)
-                {
-                    if (!proxy.Visible)
-                        continue;
-
-                    auto& modelData = proxy.Model->GetModelData();
-                    auto& vas = proxy.Model->GetVertexArray();
-                    auto& meshes = modelData.Meshes;
-                    for (std::size_t i = 0; i < vas.size(); ++i)
-                    {
-                        glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                        s_Data.PointLightShadow.DepthShader->SetMat4("u_Model", model);
-                        vas[i]->Bind();
-                        RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
-                    }
-                }
-            }
-        }
-
-        s_Data.PointLightShadow.DepthMap->Unbind();
-    }
-
     // =====================================================================================
     Ref<Shader> PBRRenderer::GetPBRShader()
     {
@@ -491,36 +298,6 @@ namespace TheFoolEngine
     const EnvironmentData& PBRRenderer::GetEnvironment()
     {
         return s_Data.Environment;
-    }
-
-    Ref<FrameBuffer> PBRRenderer::GetShadowFBO()
-    {
-        return s_Data.Shadow.ShadowFBO;
-    }
-
-    Ref<Shader> PBRRenderer::GetDepthOnlyShader()
-    {
-        return s_Data.Shadow.DepthOnlyShader;
-    }
-
-    const std::vector<glm::mat4>& PBRRenderer::GetShadowViewProjections()
-    {
-        return s_Data.Shadow.LightViewProjections;
-    }
-
-    Ref<Shader> PBRRenderer::GetPointShadowDepthShader()
-    {
-        return s_Data.PointLightShadow.DepthShader;
-    }
-
-    Ref<PointShadowMap> PBRRenderer::GetPointShadowMap()
-    {
-        return s_Data.PointLightShadow.DepthMap;
-    }
-
-    const PointShadowData& PBRRenderer::GetPointShadowData()
-    {
-        return s_Data.PointLightShadow;
     }
 
     // =====================================================================================

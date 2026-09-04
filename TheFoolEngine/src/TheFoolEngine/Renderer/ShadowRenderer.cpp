@@ -10,16 +10,8 @@ namespace TheFoolEngine
 
     void ShadowRenderer::Init(RenderGraph* graph)
     {
-        FrameBufferSpecification shadowSpec;
-        shadowSpec.Width = 1024;
-        shadowSpec.Height = 1024;
-        shadowSpec.DepthOnly = true;
-        shadowSpec.LayerCount = MAX_SHADOW_LIGHTS;
-        m_ShadowData.ShadowFBO = FrameBuffer::Create(shadowSpec);
-        m_ShadowData.DepthOnlyShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
-
-        // m_PointShadowData.DepthMap = PointShadowMap::Create(SHADOWMAP_SIZE, MAX_SHADOW_LIGHTS);
-        m_PointShadowData.DepthShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
+        m_DepthOnlyShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
+        m_PointDepthShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
 
         // Light UBO
         m_GPULightUBO = 0;
@@ -27,12 +19,12 @@ namespace TheFoolEngine
         glNamedBufferStorage(m_GPULightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_GPULightUBO); // binding = 2
 
-        // Texture Handle
         TextureDesc dirSpotDesc;
-        dirSpotDesc.Width = 1024;
-        dirSpotDesc.Height = 1024;
+        dirSpotDesc.Width = SHADOWMAP_SIZE;
+        dirSpotDesc.Height = SHADOWMAP_SIZE;
         dirSpotDesc.Type = RenderTargetType::DepthArray;
         dirSpotDesc.LayerCount = MAX_SHADOW_LIGHTS;
+        dirSpotDesc.IsTransient = true;
         m_ShadowFBOHandle = graph->CreateRenderTarget(dirSpotDesc, "DirectionalShadow");
 
         TextureDesc pointDesc;
@@ -40,77 +32,8 @@ namespace TheFoolEngine
         pointDesc.Height = 1024;
         pointDesc.Type = RenderTargetType::CubeMapArray;
         pointDesc.LayerCount = MAX_SHADOW_LIGHTS;
+        pointDesc.IsTransient = true;
         m_PointShadowHandle = graph->CreateRenderTarget(pointDesc, "PointShadow");
-    }
-
-    void ShadowRenderer::Reset()
-    {
-        m_ShadowData.LightViewProjections.clear();
-        m_PointShadowData.Count = 0;
-    }
-
-    int ShadowRenderer::SetDirectionalLight(const glm::vec3& dir, float ortho, float nearPlane, float farPlane)
-    {
-        glm::vec3 sceneCenter = glm::vec3(0.0f);    // TODO: Use the origin temporarily; the scene bounding box can be replaced later.
-        glm::vec3 lightPos = sceneCenter - dir * 50.0f;
-
-        glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 0.0f, 1.0f));
-        glm::mat4 lightProj = glm::ortho(-ortho, ortho, -ortho, ortho, nearPlane, farPlane);
-
-        int index = (int)m_ShadowData.LightViewProjections.size();
-        m_ShadowData.LightViewProjections.push_back(lightProj * lightView);
-        return index;
-    }
-
-    int ShadowRenderer::SetSpotLight(const glm::vec3& pos, const glm::vec3& dir, float fov, float nearPlane, float farPlane)
-    {
-        glm::vec3 up = (glm::abs(glm::dot(dir, glm::vec3(0.0f, 1.0f, 0.0f))) > 0.99f)
-            ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-
-        glm::mat4 lightView = glm::lookAt(pos, pos + dir, up);
-        glm::mat4 lightProj = glm::perspective(glm::radians(fov), 1.0f, nearPlane, farPlane);
-
-        int index = (int)m_ShadowData.LightViewProjections.size();
-        m_ShadowData.LightViewProjections.push_back(lightProj * lightView);
-        return index;
-    }
-
-    int ShadowRenderer::SetPointLight(const glm::vec3& pos, float nearPlane, float farPlane)
-    {
-        if (m_PointShadowData.Count >= MAX_SHADOW_LIGHTS)
-            return -1;   // Shadow slot limit reached
-
-        uint32_t index = m_PointShadowData.Count++;
-        auto& light = m_PointShadowData.Lights[index];
-        light.LightPosition = pos;
-        light.FarPlane = farPlane;
-        light.ShadowProj = glm::perspective(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
-
-        glm::mat4* v = light.ShadowViews;
-        v[0] = glm::lookAt(pos, pos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        v[1] = glm::lookAt(pos, pos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        v[2] = glm::lookAt(pos, pos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        v[3] = glm::lookAt(pos, pos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-        v[4] = glm::lookAt(pos, pos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        v[5] = glm::lookAt(pos, pos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-
-        return (int)index;
-    }
-
-    void ShadowRenderer::SetGPULightFBO(RenderContext& context)
-    {
-        // light
-        LightGPUBlock lightblock = {};
-        lightblock.LightCount = (int32_t)context.Lights.size();
-        for (int32_t i = 0; i < lightblock.LightCount && i < NR_LIGHTS; ++i)
-        {
-            lightblock.Lights[i].Position = context.Lights[i].Position;
-            lightblock.Lights[i].Direction = context.Lights[i].Direction;
-            lightblock.Lights[i].Color = context.Lights[i].Color;
-            lightblock.Lights[i].Params = context.Lights[i].Params;
-            lightblock.Lights[i].ShadowIndex = context.Lights[i].ShadowIndex;
-        }
-        glNamedBufferSubData(m_GPULightUBO, 0, sizeof(LightGPUBlock), &lightblock);
     }
 
     void ShadowRenderer::AddDirectionalLight(RenderContext& context, const DirectionLight& light, int shadowIndex)
@@ -146,24 +69,30 @@ namespace TheFoolEngine
         gpu.ShadowIndex = shadowIndex;
     }
 
+    void ShadowRenderer::SetGPULightFBO(RenderContext& context)
+    {
+        // light
+        LightGPUBlock lightblock = {};
+        lightblock.LightCount = (int32_t)context.Lights.size();
+        for (int32_t i = 0; i < lightblock.LightCount && i < NR_LIGHTS; ++i)
+        {
+            lightblock.Lights[i].Position = context.Lights[i].Position;
+            lightblock.Lights[i].Direction = context.Lights[i].Direction;
+            lightblock.Lights[i].Color = context.Lights[i].Color;
+            lightblock.Lights[i].Params = context.Lights[i].Params;
+            lightblock.Lights[i].ShadowIndex = context.Lights[i].ShadowIndex;
+        }
+        glNamedBufferSubData(m_GPULightUBO, 0, sizeof(LightGPUBlock), &lightblock);
+    }
+
     Ref<Shader> ShadowRenderer::GetDepthShader()
     {
-        return m_ShadowData.DepthOnlyShader;
+        return m_DepthOnlyShader;
     }
 
     Ref<Shader> ShadowRenderer::GetPointDepthShader()
     {
-        return m_PointShadowData.DepthShader;
-    }
-
-    const std::vector<glm::mat4>& ShadowRenderer::GetViewProjections()
-    {
-        return m_ShadowData.LightViewProjections;
-    }
-
-    const PointShadowData& ShadowRenderer::GetPointShadowData()
-    {
-        return m_PointShadowData;
+        return m_PointDepthShader;
     }
 
     TextureHandle ShadowRenderer::GetShadowFBOHandle()

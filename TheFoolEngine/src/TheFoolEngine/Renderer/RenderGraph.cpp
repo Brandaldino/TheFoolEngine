@@ -2,40 +2,53 @@
 #include "RenderGraph.h"
 
 #include "PointShadowMap.h"
+#include "TransientResourcePool.h"
 
 namespace TheFoolEngine
 {
+    RenderGraph::RenderGraph()
+    {
+        m_TransientPool = CreateRef<TransientResourcePool>();
+    }
 
     TextureHandle RenderGraph::CreateRenderTarget(const TextureDesc& desc, const char* name)
     {
         RenderTargetResource res;
         res.Desc = desc;
 
-        switch (desc.Type)
+        if (desc.IsTransient)
         {
-            case RenderTargetType::Color:
+            res.IsTransient = true;
+            res.PoolIndex = UINT32_MAX;
+        }
+        else
+        {
+            switch (desc.Type)
             {
-                FrameBufferSpecification spec;
-                spec.Width = desc.Width;
-                spec.Height = desc.Height;
-                spec.FrameBufferFormat = desc.Format;
-                res.FrameBuffer = FrameBuffer::Create(spec);
-                break;
-            }
-            case RenderTargetType::DepthArray:
-            {
-                FrameBufferSpecification spec;
-                spec.Width = desc.Width;
-                spec.Height = desc.Height;
-                spec.DepthOnly = true;
-                spec.LayerCount = desc.LayerCount;
-                res.FrameBuffer = FrameBuffer::Create(spec);
-                break;
-            }
-            case RenderTargetType::CubeMapArray:
-            {
-                res.PointShadowMap = PointShadowMap::Create(desc.Width, desc.LayerCount);
-                break;
+                case RenderTargetType::Color:
+                {
+                    FrameBufferSpecification spec;
+                    spec.Width = desc.Width;
+                    spec.Height = desc.Height;
+                    spec.FrameBufferFormat = desc.Format;
+                    res.FrameBuffer = FrameBuffer::Create(spec);
+                    break;
+                }
+                case RenderTargetType::DepthArray:
+                {
+                    FrameBufferSpecification spec;
+                    spec.Width = desc.Width;
+                    spec.Height = desc.Height;
+                    spec.DepthOnly = true;
+                    spec.LayerCount = desc.LayerCount;
+                    res.FrameBuffer = FrameBuffer::Create(spec);
+                    break;
+                }
+                case RenderTargetType::CubeMapArray:
+                {
+                    res.PointShadowMap = PointShadowMap::Create(desc.Width, desc.LayerCount);
+                    break;
+                }
             }
         }
 
@@ -54,7 +67,10 @@ namespace TheFoolEngine
         if (handle.PoolIndex >= m_Resources.size())
             return nullptr;
 
-        return m_Resources[handle.PoolIndex].FrameBuffer;
+        const auto& res = m_Resources[handle.PoolIndex];
+        if (res.IsTransient)
+            return m_TransientPool->GetFrameBuffer(res.PoolIndex);
+        return res.FrameBuffer;
     }
 
     Ref<PointShadowMap> RenderGraph::GetPointShadowMap(const TextureHandle& handle) const
@@ -62,7 +78,10 @@ namespace TheFoolEngine
         if (handle.PoolIndex >= m_Resources.size())
             return nullptr;
 
-        return m_Resources[handle.PoolIndex].PointShadowMap;
+        const auto& res = m_Resources[handle.PoolIndex];
+        if (res.IsTransient)
+            return m_TransientPool->GetPointShadowMap(res.PoolIndex);
+        return res.PointShadowMap;
     }
 
     Ref<Texture2D> RenderGraph::GetTexture(const TextureHandle& handle) const
@@ -92,12 +111,36 @@ namespace TheFoolEngine
     {
         context.RenderGraph = this;
 
+        // Clear all transient pool assignments before reuse across frames
+        for (auto& res : m_Resources)
+            if (res.IsTransient)
+                res.PoolIndex = UINT32_MAX;
+
+        // ===== Declaration Phase: Allocate Transient Resources =====
+        // Allocate by desc; identical desc share the same pool slot
+        std::unordered_map<TextureDesc, uint32_t, TextureDescHash> poolAssignment;
+        for (auto& res : m_Resources)
+        {
+            if (!res.IsTransient)
+                continue;
+            auto it = poolAssignment.find(res.Desc);
+            if (it != poolAssignment.end())
+                res.PoolIndex = it->second;
+            else
+            {
+                res.PoolIndex = m_TransientPool->Allocate(res.Desc);
+                poolAssignment[res.Desc] = res.PoolIndex;
+            }
+        }
+
         // Re-sorting: At this point, PoolIndex is ready and the dependency graph is correct.
         auto order = TopologicalSort();
 
         // Execute in topological order
         for (auto idx : order)
             m_Passes[idx]->Execute(context);
+
+        m_TransientPool->ResetFrame();
     }
 
     std::vector<uint32_t> RenderGraph::TopologicalSort()

@@ -42,6 +42,7 @@
 #include "TheFoolEngine/Renderer/CubeMap.h"
 #include "TheFoolEngine/Renderer/IBLUtils.h"
 #include "TheFoolEngine/Renderer/RenderGraph.h"
+#include "TheFoolEngine/Renderer/ShadowMath.h"
 
 #include "TheFoolEngine/Renderer/OrthographicCamera.h"
 #include "TheFoolEngine/Renderer/PerspectiveCameraController.h"

@@ -2,6 +2,7 @@
 #include "ShadowPass.h"
 
 #include "../PBRRenderer.h"
+#include "../PointShadowMap.h"
 #include "../RenderCommand.h"
 #include "../Shader.h"
 #include "../ShadowRenderer.h"
@@ -9,49 +10,6 @@
 
 namespace TheFoolEngine
 {
-    //void ShadowPass::Execute(RenderContext& context)
-    //{
-    //    uint32_t layerCount = (uint32_t)PBRRenderer::GetShadowViewProjections().size();
-    //    if (layerCount == 0)
-    //        return;
-
-    //    PBRRenderer::GetShadowFBO()->Bind();
-    //    PBRRenderer::GetDepthOnlyShader()->Bind();
-
-    //    RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
-    //    RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
-
-    //    for (uint32_t layer = 0; layer < layerCount; ++layer)
-    //    {
-    //        if (layer >= MAX_SHADOW_LIGHTS)
-    //            break;
-
-    //        PBRRenderer::GetShadowFBO()->AttachLayer(layer);
-    //        RenderCommand::SetClearColor({ 1.0f,1.0f, 1.0f, 1.0f });
-    //        RenderCommand::Clear();
-    //        PBRRenderer::GetDepthOnlyShader()->SetMat4("u_LightViewProjection", PBRRenderer::GetShadowViewProjections()[layer]);
-
-    //        for (auto& proxy : context.Renderables)
-    //        {
-    //            if (!proxy.Visible)
-    //                continue;
-
-    //            auto& modelData = proxy.Model->GetModelData();
-    //            auto& vas = proxy.Model->GetVertexArray();
-    //            auto& meshes = modelData.Meshes;
-
-    //            for (std::size_t i = 0; i < vas.size(); ++i)
-    //            {
-    //                glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-    //                PBRRenderer::GetDepthOnlyShader()->SetMat4("u_Model", model);
-    //                vas[i]->Bind();
-    //                RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
-    //            }
-    //        }
-    //    }
-
-    //    PBRRenderer::GetDepthOnlyShader()->Unbind();
-    //}
 
     void ShadowPass::SetOutput(TextureHandle& handle)
     {
@@ -66,12 +24,11 @@ namespace TheFoolEngine
 
     void ShadowPass::Execute(RenderContext& context)
     {
-        uint32_t layerCount = (uint32_t)context.ShadowRenderer->GetViewProjections().size();
+        uint32_t layerCount = (uint32_t)context.ShadowViewProjections.size();
         if (layerCount == 0)
             return;
 
-        // context.ShadowRenderer->GetShadowFBO()->Bind();
-        context.RenderGraph->GetFrameBuffer(context.ShadowRenderer->GetShadowFBOHandle())->Bind();
+        context.RenderGraph->GetFrameBuffer(m_Output)->Bind();
         context.ShadowRenderer->GetDepthShader()->Bind();
 
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
@@ -82,10 +39,10 @@ namespace TheFoolEngine
             if (layer >= MAX_SHADOW_LIGHTS)
                 break;
 
-            context.RenderGraph->GetFrameBuffer(context.ShadowRenderer->GetShadowFBOHandle())->AttachLayer(layer);
+            context.RenderGraph->GetFrameBuffer(m_Output)->AttachLayer(layer);
             RenderCommand::SetClearColor({ 1.0f,1.0f, 1.0f, 1.0f });
             RenderCommand::Clear();
-            context.ShadowRenderer->GetDepthShader()->SetMat4("u_LightViewProjection", context.ShadowRenderer->GetViewProjections()[layer]);
+            context.ShadowRenderer->GetDepthShader()->SetMat4("u_LightViewProjection", context.ShadowViewProjections[layer]);
 
             for (auto& proxy : context.Renderables)
             {
@@ -106,59 +63,10 @@ namespace TheFoolEngine
             }
         }
 
-        context.RenderGraph->GetFrameBuffer(context.ShadowRenderer->GetShadowFBOHandle())->UnBind();
+        context.RenderGraph->GetFrameBuffer(m_Output)->UnBind();
         context.ShadowRenderer->GetDepthShader()->Unbind();
     }
     // ====================================================================== //
-
-    //void PointShadowPass::Execute(RenderContext& context)
-    //{
-    //    if (!PBRRenderer::GetPointShadowData().DepthMap)
-    //        return;
-
-    //    PBRRenderer::GetPointShadowData().DepthMap->Bind();
-    //    PBRRenderer::GetPointShadowData().DepthShader->Bind();
-
-    //    RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
-    //    RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
-    //    RenderCommand::SetClearColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-    //    RenderCommand::Clear();
-
-    //    for (uint32_t lightIndex = 0; lightIndex < PBRRenderer::GetPointShadowData().Count; ++lightIndex)
-    //    {
-    //        const auto& light = PBRRenderer::GetPointShadowData().Lights[lightIndex];
-
-    //        for (int face = 0; face < 6; ++face)
-    //        {
-    //            PBRRenderer::GetPointShadowData().DepthMap->BindFace(lightIndex, face);
-    //            RenderCommand::Clear();
-    //            PBRRenderer::GetPointShadowData().DepthShader->SetMat4("u_LightViewProjection",
-    //                light.ShadowProj * light.ShadowViews[face]);
-    //            PBRRenderer::GetPointShadowData().DepthShader->SetFloat3("u_LightPos", light.LightPosition);
-    //            PBRRenderer::GetPointShadowData().DepthShader->SetFloat("u_FarPlane", light.FarPlane);
-
-    //            // Traverse renderables to draw depth
-    //            for (auto& proxy : context.Renderables)
-    //            {
-    //                if (!proxy.Visible)
-    //                    continue;
-
-    //                auto& modelData = proxy.Model->GetModelData();
-    //                auto& vas = proxy.Model->GetVertexArray();
-    //                auto& meshes = modelData.Meshes;
-    //                for (std::size_t i = 0; i < vas.size(); ++i)
-    //                {
-    //                    glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-    //                    PBRRenderer::GetPointShadowData().DepthShader->SetMat4("u_Model", model);
-    //                    vas[i]->Bind();
-    //                    RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
-    //                }
-    //            }
-    //        }
-    //    }
-
-    //    PBRRenderer::GetPointShadowData().DepthMap->Unbind();
-    //}
 
     void PointShadowPass::Execute(RenderContext& context)
     {
@@ -176,9 +84,9 @@ namespace TheFoolEngine
         RenderCommand::SetClearColor({ 1.0f, 1.0f, 1.0f, 1.0f });
         RenderCommand::Clear();
 
-        for (uint32_t lightIndex = 0; lightIndex < context.ShadowRenderer->GetPointShadowData().Count; ++lightIndex)
+        for (uint32_t lightIndex = 0; lightIndex < context.PointShadow.Count; ++lightIndex)
         {
-            const auto& light = context.ShadowRenderer->GetPointShadowData().Lights[lightIndex];
+            const auto& light = context.PointShadow.Lights[lightIndex];
 
             for (int face = 0; face < 6; ++face)
             {

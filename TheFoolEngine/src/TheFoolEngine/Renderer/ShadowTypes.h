@@ -1,7 +1,6 @@
 #pragma once
 
-#include "PointShadowMap.h"
-#include "FrameBuffer.h"
+#include "Light.h"
 #include "Shader.h"
 
 namespace TheFoolEngine
@@ -10,12 +9,11 @@ namespace TheFoolEngine
     constexpr uint32_t SHADOWMAP_SIZE = 1024;
     constexpr uint32_t NR_LIGHTS = 10;
 
-    struct ShadowData
-    {
-        Ref<FrameBuffer> ShadowFBO;
-        Ref<Shader> DepthOnlyShader;
-        std::vector<glm::mat4> LightViewProjections;
-    };
+    //struct ShadowData
+    //{
+    //    Ref<Shader> DepthOnlyShader;
+    //    std::vector<glm::mat4> LightViewProjections;
+    //};
 
     struct PointLightShadowData
     {
@@ -27,8 +25,7 @@ namespace TheFoolEngine
 
     struct PointShadowData
     {
-        Ref<Shader> DepthShader;
-        Ref<PointShadowMap> DepthMap;
+        // Ref<Shader> DepthShader;
         PointLightShadowData Lights[MAX_SHADOW_LIGHTS];
         uint32_t Count = 0;
     };

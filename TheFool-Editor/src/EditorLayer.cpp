@@ -241,9 +241,11 @@ namespace TheFoolEngine
 
         // Pass init
         m_MainPass = CreateScope<MainPass>(PBRRenderer::GetPBRShader());
+        m_MainPass->SetInputShadow(m_ShadowRenderer->GetShadowFBOHandle());
         m_MainPass->SetOutput(m_HDRHandle);
         
         m_ShadowPass = CreateScope<ShadowPass>();
+        m_ShadowPass->SetOutput(m_ShadowRenderer->GetShadowFBOHandle());
         m_PointShadowPass = CreateScope<PointShadowPass>();
 
         m_BloomExtractPass = CreateScope<BloomExtractPass>(m_BloomExtractShader);
@@ -290,7 +292,6 @@ namespace TheFoolEngine
         TF_PROFILE_FUNCTION();
 
         m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-        m_ShadowRenderer->Reset();
 
         // Resize
         if (FrameBufferSpecification spec = m_RenderGraph.GetFrameBuffer(m_LDRHandle)->GetSpecification();
@@ -331,28 +332,29 @@ namespace TheFoolEngine
             for (auto entity : lightView)
             {
                 auto& lc = lightView.get<LightComponent>(entity);
+
                 //switch (lc.Type)
                 //{
                 //    case 0:
                 //    {
-                //        int shadowIndex = PBRRenderer::SetShadowLight(glm::normalize(lc.Direction));
-                //        PBRRenderer::AddLight(context, DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
+                //        int shadowIndex = context.ShadowRenderer->SetDirectionalLight(glm::normalize(lc.Direction));
+                //        context.ShadowRenderer->AddDirectionalLight(context, DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
                 //        break;
                 //    }
                 //    case 1:
                 //    {
-                //        int shadowIndex = PBRRenderer::SetPointShadowLight(lc.Position, 0.1f, 50.0f);
-                //        PBRRenderer::AddLight(context, PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
+                //        int shadowIndex = context.ShadowRenderer->SetPointLight(lc.Position, 0.1f, 50.0f);
+                //        context.ShadowRenderer->AddPointLight(context, PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
                 //        break;
                 //    }
                 //    case 2:
                 //    {
-                //        int shadowIndex = PBRRenderer::SetSpotShadowLight(
+                //        int shadowIndex = context.ShadowRenderer->SetSpotLight(
                 //            lc.Position,
                 //            glm::normalize(lc.Direction),
                 //            glm::degrees(lc.OuterAngle) * 2.0f
                 //        );
-                //        PBRRenderer::AddLight(
+                //        context.ShadowRenderer->AddSpotLight(
                 //            context,
                 //            SpotLight{ lc.Position, glm::normalize(lc.Direction),
                 //            lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
@@ -363,32 +365,47 @@ namespace TheFoolEngine
 
                 switch (lc.Type)
                 {
-                case 0:
-                {
-                    int shadowIndex = context.ShadowRenderer->SetDirectionalLight(glm::normalize(lc.Direction));
-                    context.ShadowRenderer->AddDirectionalLight(context, DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
-                    break;
-                }
-                case 1:
-                {
-                    int shadowIndex = context.ShadowRenderer->SetPointLight(lc.Position, 0.1f, 50.0f);
-                    context.ShadowRenderer->AddPointLight(context, PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
-                    break;
-                }
-                case 2:
-                {
-                    int shadowIndex = context.ShadowRenderer->SetSpotLight(
-                        lc.Position,
-                        glm::normalize(lc.Direction),
-                        glm::degrees(lc.OuterAngle) * 2.0f
-                    );
-                    context.ShadowRenderer->AddSpotLight(
-                        context,
-                        SpotLight{ lc.Position, glm::normalize(lc.Direction),
-                        lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
-                        shadowIndex);
-                    break;
-                }
+                    case 0:
+                    {
+                        if (context.ShadowViewProjections.size() >= MAX_SHADOW_LIGHTS)
+                            break;
+
+                        int shadowIndex = (int)context.ShadowViewProjections.size(); 
+                        context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
+                        context.ShadowRenderer->AddDirectionalLight(context, DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
+                        break;
+                    }
+                    case 1:
+                    {
+                        if (context.ShadowViewProjections.size() >= MAX_SHADOW_LIGHTS)
+                            break;
+
+                        int shadowIndex = context.PointShadow.Count;
+                        context.PointShadow.Lights[shadowIndex] = ShadowMath::ComputePointLightShadowData(lc.Position, 0.1f, 50.0f);
+                        context.PointShadow.Count++;
+                        context.ShadowRenderer->AddPointLight(context, PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
+                        break;
+                    }
+                    case 2:
+                    {
+                        if (context.ShadowViewProjections.size() >= MAX_SHADOW_LIGHTS)
+                            break;
+
+                        int shadowIndex = (int)context.ShadowViewProjections.size();
+                        context.ShadowViewProjections.push_back(
+                            ShadowMath::ComputeSpotLightVP(
+                                lc.Position,
+                                glm::normalize(lc.Direction),
+                                glm::degrees(lc.OuterAngle) * 2.0f
+                            )
+                        );
+                        context.ShadowRenderer->AddSpotLight(
+                            context,
+                            SpotLight{ lc.Position, glm::normalize(lc.Direction),
+                            lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
+                            shadowIndex);
+                        break;
+                    }
                 }
             }
 

@@ -8,10 +8,13 @@
 namespace TheFoolEngine
 {
     class PointShadowMap;
+    class TransientResourcePool;
 
     class RenderGraph
     {
     public:
+        RenderGraph();
+
         // === manage FBO resource =====================
         TextureHandle CreateRenderTarget(const TextureDesc& desc, const char* name);
         Ref<FrameBuffer> GetFrameBuffer(const TextureHandle& handle) const;    // Color | DepthArray
@@ -30,13 +33,16 @@ namespace TheFoolEngine
         struct RenderTargetResource
         {
             TextureDesc Desc;
-            Ref<FrameBuffer> FrameBuffer;   // Color / DepthArray
+            Ref<FrameBuffer> FrameBuffer;   // Color / DepthArray // Permanent: directly held, not recycled
             Ref<PointShadowMap> PointShadowMap; // CubeMapArray
-            uint32_t PoolIndex = 0;
+            bool IsTransient = false;
+            uint32_t PoolIndex = 0; // Transient: owned by the pool and recycled after use
         };
         std::vector<RenderTargetResource> m_Resources;
 
         std::vector<Scope<Pass>> m_Passes;
+        
+        Ref<TransientResourcePool> m_TransientPool;
         // std::vector<Ref<FrameBuffer>> m_FrameBuffers;
     };
 
