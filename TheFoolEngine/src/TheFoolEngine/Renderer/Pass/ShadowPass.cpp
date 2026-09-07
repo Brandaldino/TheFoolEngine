@@ -5,11 +5,14 @@
 #include "../PointShadowMap.h"
 #include "../RenderCommand.h"
 #include "../Shader.h"
-#include "../ShadowRenderer.h"
 #include "../RenderGraph.h"
 
 namespace TheFoolEngine
 {
+    ShadowPass::ShadowPass(Ref<Shader> shader)
+        :m_Shader(shader)
+    {
+    }
 
     void ShadowPass::SetOutput(TextureHandle& handle)
     {
@@ -29,7 +32,7 @@ namespace TheFoolEngine
             return;
 
         context.RenderGraph->GetFrameBuffer(m_Output)->Bind();
-        context.ShadowRenderer->GetDepthShader()->Bind();
+        m_Shader->Bind();
 
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
         RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
@@ -42,7 +45,7 @@ namespace TheFoolEngine
             context.RenderGraph->GetFrameBuffer(m_Output)->AttachLayer(layer);
             RenderCommand::SetClearColor({ 1.0f,1.0f, 1.0f, 1.0f });
             RenderCommand::Clear();
-            context.ShadowRenderer->GetDepthShader()->SetMat4("u_LightViewProjection", context.ShadowViewProjections[layer]);
+            m_Shader->SetMat4("u_LightViewProjection", context.ShadowViewProjections[layer]);
 
             for (auto& proxy : context.Renderables)
             {
@@ -56,7 +59,7 @@ namespace TheFoolEngine
                 for (std::size_t i = 0; i < vas.size(); ++i)
                 {
                     glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                    context.ShadowRenderer->GetDepthShader()->SetMat4("u_Model", model);
+                    m_Shader->SetMat4("u_Model", model);
                     vas[i]->Bind();
                     RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
                 }
@@ -64,9 +67,14 @@ namespace TheFoolEngine
         }
 
         context.RenderGraph->GetFrameBuffer(m_Output)->UnBind();
-        context.ShadowRenderer->GetDepthShader()->Unbind();
+        m_Shader->Unbind();
     }
     // ====================================================================== //
+
+    PointShadowPass::PointShadowPass(Ref<Shader> shader)
+        :m_Shader(shader)
+    {
+    }
 
     void PointShadowPass::SetOutput(TextureHandle& handle)
     {
@@ -85,10 +93,8 @@ namespace TheFoolEngine
         if (!shadowMap)
             return;
 
-        auto shader = context.ShadowRenderer->GetPointDepthShader();
-
         shadowMap->Bind();
-        shader->Bind();
+        m_Shader->Bind();
 
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
         RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
@@ -103,10 +109,10 @@ namespace TheFoolEngine
             {
                 shadowMap->BindFace(lightIndex, face);
                 RenderCommand::Clear();
-                shader->SetMat4("u_LightViewProjection",
+                m_Shader->SetMat4("u_LightViewProjection",
                     light.ShadowProj * light.ShadowViews[face]);
-                shader->SetFloat3("u_LightPos", light.LightPosition);
-                shader->SetFloat("u_FarPlane", light.FarPlane);
+                m_Shader->SetFloat3("u_LightPos", light.LightPosition);
+                m_Shader->SetFloat("u_FarPlane", light.FarPlane);
 
                 // Traverse renderables to draw depth
                 for (auto& proxy : context.Renderables)
@@ -120,7 +126,7 @@ namespace TheFoolEngine
                     for (std::size_t i = 0; i < vas.size(); ++i)
                     {
                         glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                        shader->SetMat4("u_Model", model);
+                        m_Shader->SetMat4("u_Model", model);
                         vas[i]->Bind();
                         RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
                     }
@@ -129,7 +135,7 @@ namespace TheFoolEngine
         }
 
         shadowMap->Unbind();
-        shader->Unbind();
+        m_Shader->Unbind();
     }
 
 }

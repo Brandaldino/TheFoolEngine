@@ -6,7 +6,7 @@
 #include "../RenderCommand.h"
 #include "../Shader.h"
 #include "../RenderGraph.h"
-#include "../ShadowRenderer.h"
+#include "../LightPacker.h"
 
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,6 +16,11 @@ namespace TheFoolEngine
     MainPass::MainPass(Ref<Shader> shader)
         :m_Shader(shader)
     {
+        m_GPULightUBO = 0;
+
+        glCreateBuffers(1, &m_GPULightUBO);
+        glNamedBufferStorage(m_GPULightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_GPULightUBO);
     }
 
     void MainPass::SetOutput(TextureHandle& output)
@@ -38,6 +43,9 @@ namespace TheFoolEngine
     void MainPass::Execute(RenderContext& ctx)
     {
         TF_PROFILE_FUNCTION();
+
+        // light update
+        LightPacker::SetGPULightFBO(m_GPULightUBO, ctx.Lights);
 
         m_Shader->Bind();
 

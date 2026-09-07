@@ -34,6 +34,8 @@ namespace TheFoolEngine
         TextureHandle m_BloomBHandle;
         TextureHandle m_BloomCHandle;
 
+        Ref<Shader> m_ShadowShader;
+        Ref<Shader> m_PointShadowShader;
         Ref<Shader> m_BloomExtractShader;
 		Ref<Shader> m_BloomBlurShader;
 		Ref<Shader> m_BloomCombineShader;
@@ -74,8 +76,6 @@ namespace TheFoolEngine
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
         bool m_Is3DMode = true;
-        // === ShadowRenderer =========================================
-        Ref<ShadowRenderer> m_ShadowRenderer;
 		// ============================================================
 	};
 }

@@ -43,6 +43,9 @@
     <Filter Include="src\TheFoolEngine\Renderer">
       <UniqueIdentifier>{697EBF40-558E-6B11-BE47-D02FAA765AAA}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\TheFoolEngine\Renderer\Pass">
+      <UniqueIdentifier>{EFF18B72-5BD5-9AB2-64D8-C8EED03A6103}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\TheFoolEngine\Scene">
       <UniqueIdentifier>{C0E6D942-2C1E-22DA-3528-86FDA1DE48D3}</UniqueIdentifier>
     </Filter>
@@ -88,6 +91,9 @@
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.h">
+      <Filter>src\PlatForm\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.h">
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLRenderUtil.h">
@@ -207,6 +213,9 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\Light.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\LightPacker.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\OrthographicCamera.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
@@ -216,16 +225,46 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\PBRRenderer.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.h">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.h">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.h">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\MainPass.h">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\Pass.h">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.h">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.h">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\PerspectiveCamera.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\PerspectiveCameraController.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\PointShadowMap.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Ray.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\RenderCommand.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\RenderGraph.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\RenderGraphTypes.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\RenderUtil.h">
@@ -240,10 +279,25 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\RendererAPI.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\ResourcePool.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Shader.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\ShadowMath.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\ShadowTypes.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Texture.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\TextureHandle.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\TransientResourcePool.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\VertexArray.h">
@@ -1533,23 +1587,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\TheFoolEngine\Renderer\PointShadowMap.h" />
-    <ClInclude Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\Pass.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\RenderGraph.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\MainPass.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\RenderGraphTypes.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\TextureHandle.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\ResourcePool.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\ShadowRenderer.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\ShadowTypes.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\TransientResourcePool.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\ShadowMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1562,6 +1599,9 @@
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.cpp">
+      <Filter>src\PlatForm\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.cpp">
       <Filter>src\PlatForm\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLRenderUtil.cpp">
@@ -1636,6 +1676,9 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\IBLUtils.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\LightPacker.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCamera.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
@@ -1645,16 +1688,40 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\PBRRenderer.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.cpp">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.cpp">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.cpp">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\MainPass.cpp">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.cpp">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.cpp">
+      <Filter>src\TheFoolEngine\Renderer\Pass</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\PerspectiveCamera.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\PerspectiveCameraController.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\PointShadowMap.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\Ray.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\RenderCommand.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\RenderGraph.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\RenderUtil.cpp">
@@ -1669,10 +1736,16 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\RendererAPI.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\ResourcePool.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\Shader.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\Texture.cpp">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\TransientResourcePool.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\VertexArray.cpp">
@@ -1699,17 +1772,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\TheFoolEngine\Renderer\PointShadowMap.cpp" />
-    <ClCompile Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\RenderGraph.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\ResourcePool.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\MainPass.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ShadowPass.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomBlurPass.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomCombinePass.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\BloomExtractPass.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\ToneMappingPass.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\ShadowRenderer.cpp" />
-    <ClCompile Include="src\TheFoolEngine\Renderer\TransientResourcePool.cpp" />
   </ItemGroup>
 </Project>

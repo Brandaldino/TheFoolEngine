@@ -10,6 +10,8 @@ namespace TheFoolEngine
     class ShadowPass : public Pass
     {
     public:
+        ShadowPass(Ref<Shader> shader);
+
         virtual void SetOutput(TextureHandle& handle);
         virtual std::vector<TextureHandle>& GetOutputs();
 
@@ -27,6 +29,8 @@ namespace TheFoolEngine
     class PointShadowPass : public Pass
     {
     public:
+        PointShadowPass(Ref<Shader> shader);
+
         virtual void SetOutput(TextureHandle& handle);
         virtual std::vector<TextureHandle>& GetOutputs();
 

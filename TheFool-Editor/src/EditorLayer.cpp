@@ -22,6 +22,8 @@ namespace TheFoolEngine
         TF_PROFILE_FUNCTION();
 
         // Shader
+        m_ShadowShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
+        m_PointShadowShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
         m_ToneMappingShader = Shader::Create("assets/shader/ToneMapping.glsl");
         m_BloomExtractShader = Shader::Create("assets/shader/BloomExtract.glsl");
         m_BloomBlurShader = Shader::Create("assets/shader/GaussianBlur.glsl");
@@ -63,9 +65,6 @@ namespace TheFoolEngine
         m_ActiveScene = CreateRef<Scene>();
 
         PBRRenderer::Init();
-
-        m_ShadowRenderer = CreateRef<ShadowRenderer>();
-        m_ShadowRenderer->Init();
 
         // SkyBox
         auto skybox = CubeMap::Create("assets/cubemap/space.hdr");
@@ -261,9 +260,9 @@ namespace TheFoolEngine
         m_MainPass->SetInputPointShadow(m_PointShadowHandle);
         m_MainPass->SetOutput(m_HDRHandle);
         
-        m_ShadowPass = CreateScope<ShadowPass>();
+        m_ShadowPass = CreateScope<ShadowPass>(m_ShadowShader);
         m_ShadowPass->SetOutput(m_ShadowFBOHandle);
-        m_PointShadowPass = CreateScope<PointShadowPass>();
+        m_PointShadowPass = CreateScope<PointShadowPass>(m_PointShadowShader);
         m_PointShadowPass->SetOutput(m_PointShadowHandle);
 
         m_BloomExtractPass = CreateScope<BloomExtractPass>(m_BloomExtractShader);
@@ -331,7 +330,6 @@ namespace TheFoolEngine
 
         // PBR pass (editor camera)
         RenderContext context;
-        context.ShadowRenderer = m_ShadowRenderer.get();
         if (m_Is3DMode)
         {
             CameraData cameraData;
@@ -360,7 +358,9 @@ namespace TheFoolEngine
 
                         int shadowIndex = (int)context.ShadowViewProjections.size(); 
                         context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
-                        context.ShadowRenderer->AddDirectionalLight(context, DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex);
+                        context.Lights.push_back(
+                            LightPacker::PackDirection(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex)
+                        );
                         break;
                     }
                     case 1:
@@ -371,7 +371,9 @@ namespace TheFoolEngine
                         int shadowIndex = context.PointShadow.Count;
                         context.PointShadow.Lights[shadowIndex] = ShadowMath::ComputePointLightShadowData(lc.Position, 0.1f, 50.0f);
                         context.PointShadow.Count++;
-                        context.ShadowRenderer->AddPointLight(context, PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex);
+                        context.Lights.push_back(
+                            LightPacker::PackPoint(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex)
+                        );
                         break;
                     }
                     case 2:
@@ -387,11 +389,13 @@ namespace TheFoolEngine
                                 glm::degrees(lc.OuterAngle) * 2.0f
                             )
                         );
-                        context.ShadowRenderer->AddSpotLight(
-                            context,
-                            SpotLight{ lc.Position, glm::normalize(lc.Direction),
-                            lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
-                            shadowIndex);
+                        context.Lights.push_back(
+                            LightPacker::PackSpot(
+                                SpotLight{ lc.Position, glm::normalize(lc.Direction),
+                                lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
+                                shadowIndex
+                            )
+                        );
                         break;
                     }
                 }
@@ -411,7 +415,6 @@ namespace TheFoolEngine
                 context.Renderables.push_back(proxy);
             }
 
-            m_ShadowRenderer->SetGPULightFBO(context);
             m_RenderGraph.Execute(context);
         }
 

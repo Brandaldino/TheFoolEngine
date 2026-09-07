@@ -10,7 +10,6 @@
 namespace TheFoolEngine
 {
     class RenderGraph;
-    class ShadowRenderer;
 
     struct PBRRenderProxy
     {
@@ -41,7 +40,6 @@ namespace TheFoolEngine
         std::vector<glm::mat4> ShadowViewProjections; // direction | spot
         PointShadowData PointShadow; // pointshadow
         RenderGraph* RenderGraph = nullptr;
-        ShadowRenderer* ShadowRenderer = nullptr;
     };
 
     class Pass
