@@ -1,0 +1,483 @@
+{
+      "Scene": {
+            "Entity": [
+                  {
+                        "PBRModelComponent": {
+                              "FilePath": "E:\\TFE\\TheFoolEngine\\assets\\model\\BoxTextured.glb"
+                        },
+                        "TagComponent": {
+                              "Tag": "BoxTextured"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "CameraComponent": {
+                              "FixedAspectRatio": false,
+                              "Primary": false,
+                              "SceneCamera": {
+                                    "OrthographicFar": 1.0,
+                                    "OrthographicNear": -1.0,
+                                    "OrthographicSize": 10.0,
+                                    "PerspectiveFOV": 0.7853981852531433,
+                                    "PerspectiveFar": 1000.0,
+                                    "PerspectiveNear": 0.009999999776482582,
+                                    "ProjectionType": 1
+                              }
+                        },
+                        "TagComponent": {
+                              "Tag": "Clip-Camera Entity"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    -4.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "CameraComponent": {
+                              "FixedAspectRatio": false,
+                              "Primary": true,
+                              "SceneCamera": {
+                                    "OrthographicFar": 1.0,
+                                    "OrthographicNear": -1.0,
+                                    "OrthographicSize": 10.0,
+                                    "PerspectiveFOV": 0.7853981852531433,
+                                    "PerspectiveFar": 1000.0,
+                                    "PerspectiveNear": 0.009999999776482582,
+                                    "ProjectionType": 1
+                              }
+                        },
+                        "TagComponent": {
+                              "Tag": "Camera Entity"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    2.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "SpriteRendererComponent": {
+                              "Color": [
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        },
+                        "TagComponent": {
+                              "Tag": "Green Square"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "PBRModelComponent": {
+                              "FilePath": "assets/model/BoxTextured.glb"
+                        },
+                        "TagComponent": {
+                              "Tag": "Ground"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    100.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.05000000074505806,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    100.0,
+                                    0.0,
+                                    0.0,
+                                    -10.5,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "PBRModelComponent": {
+                              "FilePath": "assets/model/Furina.fbx"
+                        },
+                        "TagComponent": {
+                              "Tag": "Furina"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    1.9333525896072388,
+                                    0.11172189563512802,
+                                    0.16876220703125,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "LightComponent": {
+                              "Color": [
+                                    1.0,
+                                    0.800000011920929,
+                                    0.6000000238418579
+                              ],
+                              "Direction": [
+                                    0.2062842696905136,
+                                    -0.3094263970851898,
+                                    -0.9282791614532471
+                              ],
+                              "InnerAngle": 0.2617993950843811,
+                              "Intensity": 0.30000001192092896,
+                              "OuterAngle": 0.5235987901687622,
+                              "Position": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                              ],
+                              "Range": 10.0,
+                              "Type": 0
+                        },
+                        "TagComponent": {
+                              "Tag": "FillLight2"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "LightComponent": {
+                              "Color": [
+                                    0.6000000238418579,
+                                    0.699999988079071,
+                                    1.0
+                              ],
+                              "Direction": [
+                                    0.8164965510368347,
+                                    -0.40824827551841736,
+                                    0.40824827551841736
+                              ],
+                              "InnerAngle": 0.2617993950843811,
+                              "Intensity": 0.4000000059604645,
+                              "OuterAngle": 0.5235987901687622,
+                              "Position": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                              ],
+                              "Range": 10.0,
+                              "Type": 0
+                        },
+                        "TagComponent": {
+                              "Tag": "FillLight1"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "LightComponent": {
+                              "Color": [
+                                    1.0,
+                                    0.8999999761581421,
+                                    0.6000000238418579
+                              ],
+                              "Direction": [
+                                    0.4649905860424042,
+                                    -0.8137334585189819,
+                                    0.34874293208122253
+                              ],
+                              "InnerAngle": 0.2617993950843811,
+                              "Intensity": 55.0,
+                              "OuterAngle": 0.6108652353286743,
+                              "Position": [
+                                    -4.0,
+                                    6.0,
+                                    -3.0
+                              ],
+                              "Range": 30.0,
+                              "Type": 2
+                        },
+                        "TagComponent": {
+                              "Tag": "SpotLight"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "LightComponent": {
+                              "Color": [
+                                    0.6000000238418579,
+                                    0.800000011920929,
+                                    1.0
+                              ],
+                              "Direction": [
+                                    0.0,
+                                    -1.0,
+                                    0.0
+                              ],
+                              "InnerAngle": 0.2617993950843811,
+                              "Intensity": 200.0,
+                              "OuterAngle": 0.5235987901687622,
+                              "Position": [
+                                    -2.0,
+                                    3.0,
+                                    1.0
+                              ],
+                              "Range": 25.0,
+                              "Type": 1
+                        },
+                        "TagComponent": {
+                              "Tag": "PointLight2"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "LightComponent": {
+                              "Color": [
+                                    1.0,
+                                    0.800000011920929,
+                                    0.6000000238418579
+                              ],
+                              "Direction": [
+                                    0.0,
+                                    -1.0,
+                                    0.0
+                              ],
+                              "InnerAngle": 0.2617993950843811,
+                              "Intensity": 300.0,
+                              "OuterAngle": 0.5235987901687622,
+                              "Position": [
+                                    0.0,
+                                    4.0,
+                                    0.0
+                              ],
+                              "Range": 25.0,
+                              "Type": 1
+                        },
+                        "TagComponent": {
+                              "Tag": "PointLight1"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "LightComponent": {
+                              "Color": [
+                                    1.0,
+                                    0.949999988079071,
+                                    0.8999999761581421
+                              ],
+                              "Direction": [
+                                    -0.4319342076778412,
+                                    -0.8638684153556824,
+                                    -0.2591605484485626
+                              ],
+                              "InnerAngle": 0.2617993950843811,
+                              "Intensity": 1.5,
+                              "OuterAngle": 0.5235987901687622,
+                              "Position": [
+                                    0.0,
+                                    0.0,
+                                    0.0
+                              ],
+                              "Range": 10.0,
+                              "Type": 0
+                        },
+                        "TagComponent": {
+                              "Tag": "Sun"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  }
+            ],
+            "Environment": {},
+            "Name": "DefaultScene"
+      }
+}

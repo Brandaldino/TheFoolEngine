@@ -4,9 +4,11 @@
 
 #include "entt.hpp"
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
 
-	class Entity {
+	class Entity 
+    {
 	public:
 		Entity() = default;
 		Entity(entt::entity handle, Scene* scene);
@@ -55,8 +57,12 @@ namespace TheFoolEngine{
         Scene* GetScene() const { return m_Scene; };
         
         void SetAlive(bool alive) { m_IsAlive = alive; };
-        bool IsAlive() const { return m_IsAlive; }
+        bool IsAlive() const { return m_IsAlive; };
 
+        bool IsValid() const 
+        { 
+            return m_Scene && m_Scene->m_Registry.valid(m_EntityHandle);
+        }
 	private:
 		entt::entity m_EntityHandle{ entt::null };
 		Scene* m_Scene = nullptr;

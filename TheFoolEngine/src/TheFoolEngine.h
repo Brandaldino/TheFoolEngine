@@ -21,10 +21,12 @@
 
 #include "TheFoolEngine/ImGui/ImGuiLayer.h"
 
+// -- Scene ---------------------------
 #include "TheFoolEngine/Scene/Scene.h"
 #include "TheFoolEngine/Scene/Entity.h"
 #include "TheFoolEngine/Scene/ScriptableEntity.h"
 #include "TheFoolEngine/Scene/Components.h"
+#include "TheFoolEngine/Scene/SceneSerializer.h"
 
 // -- Renderer ------------------------
 #include "TheFoolEngine/Renderer/Renderer.h"

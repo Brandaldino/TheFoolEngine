@@ -76,6 +76,9 @@
     <Filter Include="vendor\imguizmo">
       <UniqueIdentifier>{B36F5F1F-1FFB-CCE3-280C-50D8941629E4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\nlohmann">
+      <UniqueIdentifier>{1D296E81-89B4-DB45-92C5-5E3AFECF3746}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor\stb_image">
       <UniqueIdentifier>{0DA0BA59-F998-D9AB-22CB-BE300E23B9B7}</UniqueIdentifier>
     </Filter>
@@ -313,6 +316,9 @@
       <Filter>src\TheFoolEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Scene\SceneCamera.h">
+      <Filter>src\TheFoolEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Scene\SceneSerializer.h">
       <Filter>src\TheFoolEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Scene\ScriptableEntity.h">
@@ -1584,9 +1590,13 @@
     <ClInclude Include="vendor\imguizmo\ImGuizmo.h">
       <Filter>vendor\imguizmo</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\nlohmann\json.hpp">
+      <Filter>vendor\nlohmann</Filter>
+    </ClInclude>
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Scene\JsonGlm.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1758,6 +1768,9 @@
       <Filter>src\TheFoolEngine\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Scene\SceneCamera.cpp">
+      <Filter>src\TheFoolEngine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Scene\SceneSerializer.cpp">
       <Filter>src\TheFoolEngine\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Test\Test.cpp">

@@ -24,6 +24,7 @@ IncludeDir["entt"] = "TheFoolEngine/vendor/entity/include"
 IncludeDir["assimp"] = "TheFoolEngine/vendor/assimp/include"
 IncludeDir["moodycamel"] = "TheFoolEngine/vendor/moodycamel/include"
 IncludeDir["imguizmo"] = "TheFoolEngine/vendor/imguizmo"
+IncludeDir["nlohmann"] = "TheFoolEngine/vendor/"
 
 include "TheFoolEngine/vendor/GLFW"
 include "TheFoolEngine/vendor/Glad"
@@ -59,6 +60,7 @@ project "TheFoolEngine"	-- ��Ŀ����
 		-- "%{prj.name}/vendor/assimp/**.hpp"
 		"%{prj.name}/vendor/imguizmo/**.cpp",
 		"%{prj.name}/vendor/imguizmo/**.h",
+		"%{prj.name}/vendor/nlohmann/**.hpp",
 	}
 
 	defines{
@@ -78,6 +80,7 @@ project "TheFoolEngine"	-- ��Ŀ����
 		"%{IncludeDir.assimp}",
 		"%{IncludeDir.moodycamel}",
 		"%{IncludeDir.imguizmo}",
+		"%{IncludeDir.nlohmann}",
 	}
 
 	links{
@@ -205,7 +208,7 @@ project "TheFool-Editor"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.assimp}",
-		"%{IncludeDir.imguizmo",
+		"%{IncludeDir.imguizmo}",
 	}
 
 	-- ���������Ŀ�

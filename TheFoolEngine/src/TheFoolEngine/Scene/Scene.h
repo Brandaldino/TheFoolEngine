@@ -30,8 +30,7 @@ namespace TheFoolEngine
 		friend class Entity;
 		friend class SceneHierarchyPanel;
 		friend class EditorLayer;
-
-        
+        friend class SceneSerializer;
 	};
 
 }

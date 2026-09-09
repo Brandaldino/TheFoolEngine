@@ -68,6 +68,8 @@ namespace TheFoolEngine
         Scope<BloomCombinePass> m_BloomCombinePass;
         Scope<ToneMappingPass> m_ToneMappingPass;
 
+        std::string m_ScenePath;
+
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
         PerspectiveCameraController m_PerspectiveCameraController;

@@ -21,6 +21,8 @@ namespace TheFoolEngine
     {
         TF_PROFILE_FUNCTION();
 
+        m_ScenePath = "SceneJson/test_01.json";
+
         // Shader
         m_ShadowShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
         m_PointShadowShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
@@ -420,9 +422,10 @@ namespace TheFoolEngine
 
         // FlatColor
         {
-            if (auto selected = m_SceneHierarchyPanel.GetSelectionContext())
+            auto selected = m_SceneHierarchyPanel.GetSelectionContext();
+            if (selected.IsValid())
             {
-                auto& modelData = m_SceneHierarchyPanel.GetSelectionContext().GetComponent<PBRModelComponent>().Model->GetModelData();
+                auto& modelData = selected.GetComponent<PBRModelComponent>().Model->GetModelData();
                 glm::vec3 mergedMin(1e30f), mergedMax(-1e30f);
 
                 for (auto& mesh : modelData.Meshes)
@@ -530,6 +533,13 @@ namespace TheFoolEngine
                 // Disabling fullscreen would allow the window to be moved to the front of other windows,
                 // which we can't undo at the moment without finer window depth/z control.
                 // ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
+                if (ImGui::MenuItem("Save Scene As..."))
+                {
+                    TF_INFO("PBRModel before load: {0}", (int)m_ActiveScene->m_Registry.view<PBRModelComponent>().size());
+                    SceneSerializer::Serialize(m_ActiveScene, m_ScenePath);
+                }
+                if (ImGui::MenuItem("Load Scene..."))
+                    SceneSerializer::Deserialize(m_ActiveScene, m_ScenePath);
 
                 if (ImGui::MenuItem("Exit"))
                     Application::Get().Close();
@@ -559,7 +569,7 @@ namespace TheFoolEngine
         ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
         ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 
-        if(m_SquareEntity)
+        if(m_SquareEntity && m_SquareEntity.IsValid())
         {
             ImGui::Separator();
             ImGui::Text("%s", m_SquareEntity.GetComponent<TagComponent>().Tag.c_str());
@@ -570,15 +580,18 @@ namespace TheFoolEngine
             ImGui::Separator();
         }
 
-        ImGui::DragFloat3("Camera Transform",
-            glm::value_ptr(m_MainCamera.GetComponent<TransformComponent>().Transform[3]));
+        if(m_MainCamera.IsValid())
+            ImGui::DragFloat3("Camera Transform",
+                glm::value_ptr(m_MainCamera.GetComponent<TransformComponent>().Transform[3]));
 
         if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
         {
             m_MainCamera.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
-            m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
+            if(m_SecondCamera.IsValid())
+                m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
         }
 
+        if (m_SecondCamera.IsValid())
         {
             auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
             float orthoSize = camera.GetOrthographicSize();
@@ -623,7 +636,8 @@ namespace TheFoolEngine
             PickEntity(ray);
         }
 
-        if (auto selected = m_SceneHierarchyPanel.GetSelectionContext())
+        auto selected = m_SceneHierarchyPanel.GetSelectionContext();
+        if (selected.IsValid())
         {
             auto& transform = selected.GetComponent<TransformComponent>().Transform;
 
@@ -721,7 +735,7 @@ namespace TheFoolEngine
         ofn.lpstrFile = path;
         ofn.nMaxFile = 260;
         ofn.lpstrFilter = L"Model Files\0*.fbx;*.glb;*.gltf\0All Files\0*.*\0";
-        ofn.Flags = OFN_FILEMUSTEXIST;
+        ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
         if (!GetOpenFileNameW(&ofn))
             return;

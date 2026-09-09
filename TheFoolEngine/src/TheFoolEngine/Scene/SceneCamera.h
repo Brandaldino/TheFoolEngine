@@ -11,7 +11,7 @@ namespace TheFoolEngine
 		SceneCamera();
 		virtual ~SceneCamera() = default;
 
-		enum class ProjectionType 
+		enum class ProjectionType : uint8_t
         { 
             Perspective = 0, 
             Orthographic = 1 
@@ -29,9 +29,13 @@ namespace TheFoolEngine
 		void SetPerspectiveFOV(float fov) { m_PerspectiveFOV = fov; RecalculateProjection(); }
 		void SetOrthographicSize(float size) { m_OrthographicSize = size; RecalculateProjection(); }
 
+        float GetPerspectiveNear() const { return m_PerspectiveNear; };
+        float GetPerspectiveFar() const { return m_PerspectiveFar; };
+        float GetOrthographicNear() const { return m_OrthographicNear; };
+        float GetOrthographicFar() const { return m_OrthographicFar; };
 	private:
 		void RecalculateProjection();
-
+    private:
 		ProjectionType m_ProjectionType = ProjectionType::Orthographic;
 
 		float m_PerspectiveFOV = glm::radians(45.0f);
