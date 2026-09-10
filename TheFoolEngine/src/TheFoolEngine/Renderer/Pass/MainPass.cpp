@@ -79,6 +79,24 @@ namespace TheFoolEngine
             m_Shader->SetMat4("u_Projection", ctx.Camera.ProjectionMatrix);
             m_Shader->SetFloat3("u_CameraPos", ctx.Camera.Position);
 
+            // IBL environment
+            auto& env = PBRRenderer::GetEnvironment();
+            if (env.IrradianceMap)
+            {
+                env.IrradianceMap->Bind(5);
+                m_Shader->SetInt("u_IrradianceMap", 5);
+            }
+            if (env.PrefilterMap)
+            {
+                env.PrefilterMap->Bind(6);
+                m_Shader->SetInt("u_PrefilterMap", 6);
+            }
+            if (env.BRDFLUT)
+            {
+                env.BRDFLUT->Bind(7);
+                m_Shader->SetInt("u_BRDFLUT", 7);
+            }
+
             // entity
             for (auto& proxy : ctx.Renderables)
             {
@@ -116,17 +134,17 @@ namespace TheFoolEngine
             }
 
             // Skybox
-            if (PBRRenderer::GetEnvironment().Skybox && PBRRenderer::GetEnvironment().SkyboxCubeVAO)
+            if (env.Skybox && env.SkyboxCubeVAO)
             {
-                PBRRenderer::GetEnvironment().SkyboxShader->Bind();
-                PBRRenderer::GetEnvironment().SkyboxShader->SetMat4("u_Projection", ctx.Camera.ProjectionMatrix);
+                env.SkyboxShader->Bind();
+                env.SkyboxShader->SetMat4("u_Projection", ctx.Camera.ProjectionMatrix);
                 glm::mat4 viewNoTranslate = glm::mat4(glm::mat3(ctx.Camera.ViewMatrix));
-                PBRRenderer::GetEnvironment().SkyboxShader->SetMat4("u_View", viewNoTranslate);
-                PBRRenderer::GetEnvironment().Skybox->Bind(0);
-                PBRRenderer::GetEnvironment().SkyboxShader->SetInt("u_Skybox", 0);
+                env.SkyboxShader->SetMat4("u_View", viewNoTranslate);
+                env.Skybox->Bind(0);
+                env.SkyboxShader->SetInt("u_Skybox", 0);
 
                 RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::LessEqual);
-                PBRRenderer::GetEnvironment().SkyboxCubeVAO->Bind();
+                env.SkyboxCubeVAO->Bind();
                 RenderCommand::DrawArrays(RendererAPI::DrawMode::Triangles, 36);
                 RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::Less);
             }
