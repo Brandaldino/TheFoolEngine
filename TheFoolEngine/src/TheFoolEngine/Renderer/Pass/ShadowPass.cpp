@@ -6,6 +6,7 @@
 #include "../RenderCommand.h"
 #include "../Shader.h"
 #include "../RenderGraph.h"
+#include "../Frustum.h"
 
 namespace TheFoolEngine
 {
@@ -27,6 +28,8 @@ namespace TheFoolEngine
 
     void ShadowPass::Execute(RenderContext& context)
     {
+        TF_PROFILE_FUNCTION();
+
         uint32_t layerCount = (uint32_t)context.ShadowViewProjections.size();
         if (layerCount == 0)
             return;
@@ -47,9 +50,15 @@ namespace TheFoolEngine
             RenderCommand::Clear();
             m_Shader->SetMat4("u_LightViewProjection", context.ShadowViewProjections[layer]);
 
-            for (auto& proxy : context.Renderables)
+            Frustum layerFrustum;
+            layerFrustum.Extract(context.ShadowViewProjections[layer]);
+
+            for (auto& proxy : context.ShadowCasters)
             {
                 if (!proxy.Visible)
+                    continue;
+
+                if (!layerFrustum.Intersects(proxy.BoundsCenter, proxy.BoundsHalfExtents))
                     continue;
 
                 auto& modelData = proxy.Model->GetModelData();
@@ -89,6 +98,8 @@ namespace TheFoolEngine
 
     void PointShadowPass::Execute(RenderContext& context)
     {
+        TF_PROFILE_FUNCTION();
+
         auto shadowMap = context.RenderGraph->GetPointShadowMap(m_Output);
         if (!shadowMap)
             return;
@@ -114,10 +125,16 @@ namespace TheFoolEngine
                 m_Shader->SetFloat3("u_LightPos", light.LightPosition);
                 m_Shader->SetFloat("u_FarPlane", light.FarPlane);
 
+                Frustum faceFrustum;
+                faceFrustum.Extract(light.ShadowProj * light.ShadowViews[face]);
+
                 // Traverse renderables to draw depth
-                for (auto& proxy : context.Renderables)
+                for (auto& proxy : context.ShadowCasters)
                 {
                     if (!proxy.Visible)
+                        continue;
+
+                    if (!faceFrustum.Intersects(proxy.BoundsCenter, proxy.BoundsHalfExtents))
                         continue;
 
                     auto& modelData = proxy.Model->GetModelData();

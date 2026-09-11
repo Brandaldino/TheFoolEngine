@@ -193,6 +193,7 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\Camera.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\CubeMap.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\FrameBuffer.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Frustum.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\IBLUtils.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Light.h" />

@@ -16,6 +16,8 @@ namespace TheFoolEngine
         std::string Name;
         Ref<PBRModel> Model;
         glm::mat4 Transform = glm::mat4(1.0f);
+        glm::vec3 BoundsCenter = glm::vec3(0.0f);
+        glm::vec3 BoundsHalfExtents = glm::vec3(1.0f);
         bool Visible = true;
     };
 
@@ -36,6 +38,7 @@ namespace TheFoolEngine
     {
         CameraData Camera;      // camera
         std::vector<PBRRenderProxy> Renderables; // from register. TODO: Is it feasible to automatically manage whether the entities are rendered or not in each frame?
+        std::vector<PBRRenderProxy> ShadowCasters;
         std::vector<GPULight> Lights;   // lights
         std::vector<glm::mat4> ShadowViewProjections; // direction | spot
         PointShadowData PointShadow; // pointshadow

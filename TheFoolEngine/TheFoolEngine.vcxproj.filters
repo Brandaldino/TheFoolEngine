@@ -1597,6 +1597,7 @@
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Scene\JsonGlm.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Frustum.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">

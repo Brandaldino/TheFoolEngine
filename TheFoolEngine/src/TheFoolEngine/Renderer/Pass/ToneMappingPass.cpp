@@ -37,6 +37,8 @@ namespace TheFoolEngine
 
     void ToneMappingPass::Execute(RenderContext& ctx)
     {
+        TF_PROFILE_FUNCTION();
+
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
 
         m_Shader->Bind();

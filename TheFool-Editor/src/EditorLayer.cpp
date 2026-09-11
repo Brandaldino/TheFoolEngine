@@ -299,6 +299,28 @@ namespace TheFoolEngine
         m_RenderGraph.AddPass(std::move(m_BloomBurPassV));
         m_RenderGraph.AddPass(std::move(m_BloomCombinePass));
         m_RenderGraph.AddPass(std::move(m_ToneMappingPass));
+
+
+        // ===== Stress test: N×N grid of models sharing one PBRModel =====
+        constexpr int GRID = 10;
+        constexpr float SPACING = 5.0f;
+
+        auto stressModel = CreateRef<PBRModel>();
+        stressModel->Import(groundPath);
+        PBRRenderer::DefaultTextureFill(stressModel);
+        stressModel->UpLoad();
+
+        for (int i = 0; i < GRID; ++i)
+        {
+            for (int j = 0; j < GRID; ++j)
+            {
+                glm::mat4 transform = glm::translate(glm::mat4(1.0f),
+                    glm::vec3((i - GRID / 2) * SPACING, 0.0f, (j - GRID / 2) * SPACING));
+                auto e = m_ActiveScene->CreateEntity("Stress_" + std::to_string(i * GRID + j));
+                e.GetComponent<TransformComponent>().Transform = transform;
+                e.AddComponent<PBRModelComponent>(stressModel);
+            }
+        }
     }
 
     void EditorLayer::OnDetach()
@@ -403,21 +425,66 @@ namespace TheFoolEngine
                 }
             }
 
-            // Renderable
+            // Renderable (view frustum culling)
+            Frustum frustum;
+            frustum.Extract(m_PerspectiveCameraController.GetCamera().GetViewProjectionMatrix());
+
             auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent, TagComponent>();
             for (auto entity : pbrView)
             {
                 auto& transform = pbrView.get<TransformComponent>(entity);
                 auto& pbr = pbrView.get<PBRModelComponent>(entity);
                 auto& tag = pbrView.get<TagComponent>(entity);
+
+                // 1. Model local AABB (merge all meshes; cacheable)
+                auto& modelData = pbr.Model->GetModelData();
+                glm::vec3 localMin(1e30f), localMax(-1e30f);
+                for (auto& mesh : modelData.Meshes)
+                {
+                    localMin = glm::min(localMin, mesh.AABBMin);
+                    localMax = glm::max(localMax, mesh.AABBMax);
+                }
+
+                // 2. Local → World (transform the 8 corners)
+                glm::vec3 corners[8] = {
+                     localMin,
+                    {localMax.x, localMin.y, localMin.z},
+                    {localMin.x, localMax.y, localMin.z},
+                    {localMax.x, localMax.y, localMin.z},
+                    {localMin.x, localMin.y, localMax.z},
+                    {localMax.x, localMin.y, localMax.z},
+                    {localMin.x, localMax.y, localMax.z},
+                     localMax
+                };
+                glm::vec3 worldMin(1e30f), worldMax(-1e30f);
+                for (auto& c : corners)
+                {
+                    glm::vec4 wc = transform.Transform * glm::vec4(c, 1.0f);
+                    worldMin = glm::min(worldMin, glm::vec3(wc));
+                    worldMax = glm::max(worldMax, glm::vec3(wc));
+                }
+
+                // 3. Frustum test
+                glm::vec3 center = (worldMin + worldMax) * 0.5f;
+                glm::vec3 halfExt = (worldMax - worldMin) * 0.5f;
+
                 PBRRenderProxy proxy;
                 proxy.Model = pbr.Model;
                 proxy.Transform = transform.Transform;
                 proxy.Name = tag.Tag;
+                proxy.BoundsCenter = center;
+                proxy.BoundsHalfExtents = halfExt;
+                context.ShadowCasters.push_back(proxy);
+                
+                if (!frustum.Intersects(center, halfExt))
+                    continue; // cull
+
                 context.Renderables.push_back(proxy);
             }
 
             m_RenderGraph.Execute(context);
+
+            TF_INFO("Culled: {0}/{1} visible", (int)context.Renderables.size(), (int)context.ShadowCasters.size());
         }
 
         // FlatColor
