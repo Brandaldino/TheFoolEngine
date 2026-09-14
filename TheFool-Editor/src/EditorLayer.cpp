@@ -87,6 +87,7 @@ namespace TheFoolEngine
                 {1.0f, 0.95f, 0.9f},            // Color: warm white (key light)
                 1.5f                            // Intensity
                 });
+            sun.GetComponent<LightComponent>().CastShadow = true;
 
             // === Point light: local accent (lighting focus) ======
             //auto pointLight = m_ActiveScene->CreateEntity("PointLight");
@@ -109,6 +110,7 @@ namespace TheFoolEngine
                 300.0f,                          // Intensity
                 25.0f                            // Range
                 });
+            pl1.GetComponent<LightComponent>().CastShadow = true;
 
             // === Point Light 2: front-left ========================
             auto pl2 = m_ActiveScene->CreateEntity("PointLight2");
@@ -120,6 +122,7 @@ namespace TheFoolEngine
                 200.0f,                          // Intensity
                 25.0f                            // Range
                 });
+            // pl2.GetComponent<LightComponent>().CastShadow = true;
 
             // === Point Light 3: front-right =======================
             //auto pl3 = m_ActiveScene->CreateEntity("PointLight3");
@@ -299,28 +302,6 @@ namespace TheFoolEngine
         m_RenderGraph.AddPass(std::move(m_BloomBurPassV));
         m_RenderGraph.AddPass(std::move(m_BloomCombinePass));
         m_RenderGraph.AddPass(std::move(m_ToneMappingPass));
-
-
-        // ===== Stress test: N×N grid of models sharing one PBRModel =====
-        constexpr int GRID = 10;
-        constexpr float SPACING = 5.0f;
-
-        auto stressModel = CreateRef<PBRModel>();
-        stressModel->Import(groundPath);
-        PBRRenderer::DefaultTextureFill(stressModel);
-        stressModel->UpLoad();
-
-        for (int i = 0; i < GRID; ++i)
-        {
-            for (int j = 0; j < GRID; ++j)
-            {
-                glm::mat4 transform = glm::translate(glm::mat4(1.0f),
-                    glm::vec3((i - GRID / 2) * SPACING, 0.0f, (j - GRID / 2) * SPACING));
-                auto e = m_ActiveScene->CreateEntity("Stress_" + std::to_string(i * GRID + j));
-                e.GetComponent<TransformComponent>().Transform = transform;
-                e.AddComponent<PBRModelComponent>(stressModel);
-            }
-        }
     }
 
     void EditorLayer::OnDetach()
@@ -377,49 +358,64 @@ namespace TheFoolEngine
                 {
                     case 0:
                     {
-                        if (context.ShadowViewProjections.size() >= MAX_SHADOW_LIGHTS)
-                            break;
+                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_SHADOW_LIGHTS)
+                        {
+                            int shadowIndex = (int)context.ShadowViewProjections.size();
+                            context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
+                            context.Lights.push_back(
+                                LightPacker::PackDirection(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex)
+                            );
+                        }
+                        else
+                            context.Lights.push_back(LightPacker::PackDirection(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, -1));
 
-                        int shadowIndex = (int)context.ShadowViewProjections.size(); 
-                        context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
-                        context.Lights.push_back(
-                            LightPacker::PackDirection(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex)
-                        );
                         break;
                     }
                     case 1:
                     {
-                        if (context.ShadowViewProjections.size() >= MAX_SHADOW_LIGHTS)
-                            break;
+                        if (lc.CastShadow && context.PointShadow.Count < MAX_SHADOW_LIGHTS)
+                        {
+                            int shadowIndex = context.PointShadow.Count;
+                            context.PointShadow.Lights[shadowIndex] = ShadowMath::ComputePointLightShadowData(lc.Position, 0.1f, 50.0f);
+                            context.PointShadow.Count++;
+                            context.Lights.push_back(
+                                LightPacker::PackPoint(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex)
+                            );
+                        }
+                        else
+                            context.Lights.push_back(
+                                LightPacker::PackPoint(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, -1)
+                            );
 
-                        int shadowIndex = context.PointShadow.Count;
-                        context.PointShadow.Lights[shadowIndex] = ShadowMath::ComputePointLightShadowData(lc.Position, 0.1f, 50.0f);
-                        context.PointShadow.Count++;
-                        context.Lights.push_back(
-                            LightPacker::PackPoint(PointLight{ lc.Position, lc.Color, lc.Intensity, lc.Range }, shadowIndex)
-                        );
                         break;
                     }
                     case 2:
                     {
-                        if (context.ShadowViewProjections.size() >= MAX_SHADOW_LIGHTS)
-                            break;
-
-                        int shadowIndex = (int)context.ShadowViewProjections.size();
-                        context.ShadowViewProjections.push_back(
-                            ShadowMath::ComputeSpotLightVP(
-                                lc.Position,
-                                glm::normalize(lc.Direction),
-                                glm::degrees(lc.OuterAngle) * 2.0f
-                            )
-                        );
-                        context.Lights.push_back(
-                            LightPacker::PackSpot(
-                                SpotLight{ lc.Position, glm::normalize(lc.Direction),
-                                lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
-                                shadowIndex
-                            )
-                        );
+                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_SHADOW_LIGHTS)
+                        {
+                            int shadowIndex = (int)context.ShadowViewProjections.size();
+                            context.ShadowViewProjections.push_back(
+                                ShadowMath::ComputeSpotLightVP(
+                                    lc.Position,
+                                    glm::normalize(lc.Direction),
+                                    glm::degrees(lc.OuterAngle) * 2.0f
+                                )
+                            );
+                            context.Lights.push_back(
+                                LightPacker::PackSpot(
+                                    SpotLight{ lc.Position, glm::normalize(lc.Direction),
+                                    lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle },
+                                    shadowIndex
+                                )
+                            );
+                        }
+                        else
+                            context.Lights.push_back(
+                                LightPacker::PackSpot(
+                                    SpotLight{ lc.Position, glm::normalize(lc.Direction),
+                                    lc.Color, lc.Intensity, lc.Range, lc.InnerAngle, lc.OuterAngle }, -1)
+                            );
+                        
                         break;
                     }
                 }

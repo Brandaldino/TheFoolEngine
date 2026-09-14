@@ -270,7 +270,7 @@ void main()
         vec3 diffuseBRDF = kD * albedo / PI;
 
         vec3 radiance = gl.Color.xyz * gl.Color.w * attenuation;
-        Lo += (diffuseBRDF + specularBRDF) * radiance * NdotL;
+        vec3 contribution = (diffuseBRDF + specularBRDF) * radiance * NdotL;
 
         if(gl.ShadowIndex >= 0)
         {
@@ -279,17 +279,19 @@ void main()
                 vec3 L2 = normalize(gl.Position.xyz - v_FragPos);
                 float bias = max(0.05f * (1.0f - dot(N, L2)), 0.005f);
                 float shadow = CalculatePointShadow(v_FragPos, gl.Position.xyz, N, bias, gl.ShadowIndex);
-                Lo *= (1.0 - shadow);
+                contribution *= (1.0 - shadow);
             }
             else
             {
                 vec4 shadowCoord = u_ShadowMatrices[gl.ShadowIndex] * vec4(v_FragPos, 1.0);
                 float shadow = CalculateShadow(shadowCoord, gl.ShadowIndex);
-                Lo *= (1.0 - shadow);
+                contribution *= (1.0 - shadow);
             }
         }
-    }
 
+        Lo += contribution;
+    }
+    
     vec3 ambient = CalculateIBL(N, V, F0, albedo, metallic, roughness, occlusion);
     vec3 result = ambient + Lo;
     result = result / (result + vec3(1.0));

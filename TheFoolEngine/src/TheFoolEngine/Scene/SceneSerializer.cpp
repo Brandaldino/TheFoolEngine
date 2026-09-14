@@ -50,6 +50,7 @@ namespace TheFoolEngine
                 entityJson["LightComponent"]["Range"] = lc.Range;
                 entityJson["LightComponent"]["InnerAngle"] = lc.InnerAngle;
                 entityJson["LightComponent"]["OuterAngle"] = lc.OuterAngle;
+                entityJson["LightComponent"]["CastShadow"] = lc.CastShadow;
             }
 
             // PBRModel
@@ -136,7 +137,8 @@ namespace TheFoolEngine
                     jl["Intensity"].get<float>(),
                     jl["Range"].get<float>(),
                     jl["InnerAngle"].get<float>(),
-                    jl["OuterAngle"].get<float>()
+                    jl["OuterAngle"].get<float>(),
+                    jl["CastShadow"].get<bool>()
                     });
             }
 

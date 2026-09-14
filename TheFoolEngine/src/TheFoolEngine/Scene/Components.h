@@ -84,6 +84,7 @@ namespace TheFoolEngine{
         float Range = 10.0f;
         float InnerAngle = glm::radians(15.0f);
         float OuterAngle = glm::radians(30.0f);
+        bool CastShadow = false;
     };
 
 }
