@@ -7,7 +7,8 @@
 
 namespace TheFoolEngine{
 
-	class Shader {
+	class Shader 
+    {
 	public:
 		virtual ~Shader() = default;
 
@@ -34,8 +35,11 @@ namespace TheFoolEngine{
 		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
 	};
 
-	class ShaderLibrary {
+	class ShaderLibrary 
+    {
 	public:
+        static ShaderLibrary& Get();
+
 		void Add(const Ref<Shader>& shader);
 		void Add(const std::string& name, const Ref<Shader>& shader);
 		Ref<Shader> Load(const std::string& filepath);

@@ -21,6 +21,7 @@ namespace TheFoolEngine
 		void OnEvent(Event& e) override;
 
         void PickEntity(const Ray::RayData& ray);
+        void PrecompileShaders();
     private:
         void ImportModel();
         void ImportSkybox();

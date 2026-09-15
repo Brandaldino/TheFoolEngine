@@ -36,7 +36,10 @@ namespace TheFoolEngine
 
     void PBRRenderer::Init()
     {
-        s_Data.Shader = Shader::Create("assets/shader/PBRShader.glsl");
+        {
+            std::string filepath = "assets/shader/PBRShader.glsl";
+            s_Data.Shader = ShaderLibrary::Get().Load(filepath);
+        }
 
         s_Data.DefaultWhite = Texture2D::Create(1, 1);
         uint32_t whiteData = 0xffffffff;
@@ -67,7 +70,10 @@ namespace TheFoolEngine
         s_Data.Shader->SetIntArray("u_Textures", samplers, MAX_TEXTURE_SLOTS);
 
         // SkyBox
-        s_Data.Environment.SkyboxShader = Shader::Create("assets/shader/SkyBoxShader.glsl");
+        {
+            std::string filepath = "assets/shader/SkyBoxShader.glsl";
+            s_Data.Environment.SkyboxShader = ShaderLibrary::Get().Load(filepath);
+        }
 
         float skyboxVerts[] = {
             -1, 1,-1, -1,-1,-1,  1,-1,-1,

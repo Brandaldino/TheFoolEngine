@@ -21,16 +21,28 @@ namespace TheFoolEngine
     {
         TF_PROFILE_FUNCTION();
 
+        PrecompileShaders();
+
         m_ScenePath = "SceneJson/test_01.json";
 
         // Shader
-        m_ShadowShader = Shader::Create("assets/shader/DepthOnlyShader.glsl");
-        m_PointShadowShader = Shader::Create("assets/shader/PointShadowDepthShader.glsl");
-        m_ToneMappingShader = Shader::Create("assets/shader/ToneMapping.glsl");
-        m_BloomExtractShader = Shader::Create("assets/shader/BloomExtract.glsl");
-        m_BloomBlurShader = Shader::Create("assets/shader/GaussianBlur.glsl");
-        m_BloomCombineShader = Shader::Create("assets/shader/BloomCombine.glsl");
-        m_FlatShader = Shader::Create("assets/shader/FlatColor.glsl");
+        {
+            std::string filepath = "";
+            filepath = "assets/shader/DepthOnlyShader.glsl";
+            m_ShadowShader = ShaderLibrary::Get().Load(filepath);
+            filepath = "assets/shader/PointShadowDepthShader.glsl";
+            m_PointShadowShader = ShaderLibrary::Get().Load(filepath);
+            filepath = "assets/shader/ToneMapping.glsl";
+            m_ToneMappingShader = ShaderLibrary::Get().Load(filepath);
+            filepath = "assets/shader/BloomExtract.glsl";
+            m_BloomExtractShader = ShaderLibrary::Get().Load(filepath);
+            filepath = "assets/shader/GaussianBlur.glsl";
+            m_BloomBlurShader = ShaderLibrary::Get().Load(filepath);
+            filepath = "assets/shader/BloomCombine.glsl";
+            m_BloomCombineShader = ShaderLibrary::Get().Load(filepath);
+            filepath = "assets/shader/FlatColor.glsl";
+            m_FlatShader = ShaderLibrary::Get().Load(filepath);
+        }
 
         // Handle Create
         TextureDesc dirSpotDesc;
@@ -785,6 +797,30 @@ namespace TheFoolEngine
             m_SceneHierarchyPanel.SetSelectionContext(picked);
         else
             m_SceneHierarchyPanel.SetSelectionContext(Entity{});
+    }
+
+    void EditorLayer::PrecompileShaders()
+    {
+        const char* shaderPaths[] =
+        {
+            "assets/shader/PBRShader.glsl",
+            "assets/shader/SkyBoxShader.glsl",
+            "assets/shader/DepthOnlyShader.glsl",
+            "assets/shader/PointShadowDepthShader.glsl",
+            "assets/shader/ToneMapping.glsl",
+            "assets/shader/BloomExtract.glsl",
+            "assets/shader/GaussianBlur.glsl",
+            "assets/shader/BloomCombine.glsl",
+            "assets/shader/FlatColor.glsl",
+            "assets/shader/Texture.glsl",
+            "assets/shader/IrradianceConvolution.glsl",
+            "assets/shader/PrefilterConvolution.glsl",
+            "assets/shader/BRDFLUT.glsl",
+            "assets/shader/EquirectToCubeMap.glsl",
+        };
+
+        for (auto path : shaderPaths)
+            ShaderLibrary::Get().Load(path);
     }
 
     void EditorLayer::ImportModel()

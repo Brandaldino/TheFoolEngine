@@ -123,7 +123,8 @@ namespace TheFoolEngine
         glVertexArrayAttribBinding(cubeVAO, 0, 0);
 
         // Shader + Matrix
-        auto shader = Shader::Create("assets/shader/EquirectToCubeMap.glsl");
+        std::string filepath = "assets/shader/EquirectToCubeMap.glsl";
+        auto shader = ShaderLibrary::Get().Load(filepath);
 
         glm::mat4 proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 

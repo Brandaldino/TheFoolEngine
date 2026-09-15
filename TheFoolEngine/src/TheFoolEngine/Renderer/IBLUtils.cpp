@@ -13,7 +13,8 @@ namespace TheFoolEngine
 {
     Ref<CubeMap> IBLUtils::CreateIrradianceMap(Ref<CubeMap> skybox, uint32_t size)
     {
-        auto shader = Shader::Create("assets/shader/IrradianceConvolution.glsl");
+        std::string filepath = "assets/shader/IrradianceConvolution.glsl";
+        auto shader = ShaderLibrary::Get().Load(filepath);
 
         Ref<CubeMap> irradianceMap = CubeMap::Create(size);
 
@@ -33,7 +34,8 @@ namespace TheFoolEngine
 
     Ref<CubeMap> IBLUtils::CreatePrefilteredMap(Ref<CubeMap> skybox, uint32_t size)
     {
-        auto shader = Shader::Create("assets/shader/PrefilterConvolution.glsl");
+        std::string filepath = "assets/shader/PrefilterConvolution.glsl";
+        auto shader = ShaderLibrary::Get().Load(filepath);
 
         Ref<CubeMap> prefilteredmap = CubeMap::Create(size);
         prefilteredmap->GenerateMipmap();
@@ -62,8 +64,8 @@ namespace TheFoolEngine
     Ref<Texture2D> IBLUtils::CreateBRDFLUT(uint32_t size)
     {
         auto texture = Texture2D::Create(size, size, TextureFormat::RG16F);
-
-        auto shader = Shader::Create("assets/shader/BRDFLUT.glsl");
+        std::string filepath = "assets/shader/BRDFLUT.glsl";
+        auto shader = ShaderLibrary::Get().Load(filepath);
 
         RenderUtil::Get()->RenderToTexture2D(texture, size, shader, [] {});
 
