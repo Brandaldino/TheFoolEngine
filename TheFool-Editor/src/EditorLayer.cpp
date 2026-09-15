@@ -34,18 +34,18 @@ namespace TheFoolEngine
 
         // Handle Create
         TextureDesc dirSpotDesc;
-        dirSpotDesc.Width = SHADOWMAP_SIZE;
-        dirSpotDesc.Height = SHADOWMAP_SIZE;
+        dirSpotDesc.Width = DIR_SPOT_SHADOW_SIZE;
+        dirSpotDesc.Height = DIR_SPOT_SHADOW_SIZE;
         dirSpotDesc.Type = RenderTargetType::DepthArray;
-        dirSpotDesc.LayerCount = MAX_SHADOW_LIGHTS;
+        dirSpotDesc.LayerCount = MAX_DIR_SPOT_SHADOWS;
         dirSpotDesc.IsTransient = true;
         m_ShadowFBOHandle = m_RenderGraph.CreateRenderTarget(dirSpotDesc, "Dir&SpotShadow");
 
         TextureDesc pointDesc;
-        pointDesc.Width = SHADOWMAP_SIZE;
-        pointDesc.Height = SHADOWMAP_SIZE;
+        pointDesc.Width = POINT_SHADOW_SIZE;
+        pointDesc.Height = POINT_SHADOW_SIZE;
         pointDesc.Type = RenderTargetType::CubeMapArray;
-        pointDesc.LayerCount = MAX_SHADOW_LIGHTS;
+        pointDesc.LayerCount = MAX_POINT_SHADOWS;
         pointDesc.IsTransient = true;
         m_PointShadowHandle = m_RenderGraph.CreateRenderTarget(pointDesc, "PointShadow");
 
@@ -358,7 +358,7 @@ namespace TheFoolEngine
                 {
                     case 0:
                     {
-                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_SHADOW_LIGHTS)
+                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_DIR_SPOT_SHADOWS)
                         {
                             int shadowIndex = (int)context.ShadowViewProjections.size();
                             context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
@@ -373,7 +373,7 @@ namespace TheFoolEngine
                     }
                     case 1:
                     {
-                        if (lc.CastShadow && context.PointShadow.Count < MAX_SHADOW_LIGHTS)
+                        if (lc.CastShadow && context.PointShadow.Count < MAX_POINT_SHADOWS)
                         {
                             int shadowIndex = context.PointShadow.Count;
                             context.PointShadow.Lights[shadowIndex] = ShadowMath::ComputePointLightShadowData(lc.Position, 0.1f, 50.0f);
@@ -391,7 +391,7 @@ namespace TheFoolEngine
                     }
                     case 2:
                     {
-                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_SHADOW_LIGHTS)
+                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_DIR_SPOT_SHADOWS)
                         {
                             int shadowIndex = (int)context.ShadowViewProjections.size();
                             context.ShadowViewProjections.push_back(
