@@ -75,6 +75,7 @@ namespace TheFoolEngine
         m_BloomAHandle = m_RenderGraph.CreateRenderTarget(desc, "BloomA");
         m_BloomBHandle = m_RenderGraph.CreateRenderTarget(desc, "BloomB");
         m_BloomCHandle = m_RenderGraph.CreateRenderTarget(desc, "BloomC");
+        m_BloomCombineHandle = m_RenderGraph.CreateRenderTarget(desc, "BloomCombine");
 
         m_ActiveScene = CreateRef<Scene>();
 
@@ -271,49 +272,9 @@ namespace TheFoolEngine
         m_OutlineVAO = VertexArray::Create();
         m_OutlineVAO->AddVertexBuffer(m_OutlineVBO);
 
-        // Pass init
-        m_MainPass = CreateScope<MainPass>(PBRRenderer::GetPBRShader());
-        m_MainPass->SetInputShadow(m_ShadowFBOHandle);
-        m_MainPass->SetInputPointShadow(m_PointShadowHandle);
-        m_MainPass->SetOutput(m_HDRHandle);
-        
-        m_ShadowPass = CreateScope<ShadowPass>(m_ShadowShader);
-        m_ShadowPass->SetOutput(m_ShadowFBOHandle);
-        m_PointShadowPass = CreateScope<PointShadowPass>(m_PointShadowShader);
-        m_PointShadowPass->SetOutput(m_PointShadowHandle);
-
-        m_BloomExtractPass = CreateScope<BloomExtractPass>(m_BloomExtractShader);
-        m_BloomExtractPass->SetInput(m_HDRHandle);
-        m_BloomExtractPass->SetOutput(m_BloomAHandle);
-
-        m_BloomBurPassH = CreateScope<BloomBlurPass>(m_BloomBlurShader);
-        m_BloomBurPassV = CreateScope<BloomBlurPass>(m_BloomBlurShader);
-
-        m_BloomBurPassH->SetInput(m_BloomAHandle);
-        m_BloomBurPassH->SetOutput(m_BloomBHandle);
-
-        m_BloomBurPassV->SetInput(m_BloomBHandle);
-        m_BloomBurPassV->SetOutput(m_BloomCHandle);
-
-        m_BloomCombinePass = CreateScope<BloomCombinePass>(m_BloomCombineShader);
-
-        m_BloomCombinePass->SetInputHDR(m_HDRHandle);
-        m_BloomCombinePass->SetInputBloom(m_BloomCHandle);
-        m_BloomCombinePass->SetOutput(m_LDRHandle);
-
-        m_ToneMappingPass = CreateScope<ToneMappingPass>(m_ToneMappingShader);
-
-        m_ToneMappingPass->SetInput(m_HDRHandle);
-        m_ToneMappingPass->SetOutput(m_LDRHandle);
-
-        m_RenderGraph.AddPass(std::move(m_MainPass));
-        m_RenderGraph.AddPass(std::move(m_PointShadowPass));
-        m_RenderGraph.AddPass(std::move(m_ShadowPass));
-        m_RenderGraph.AddPass(std::move(m_BloomExtractPass));
-        m_RenderGraph.AddPass(std::move(m_BloomBurPassH));
-        m_RenderGraph.AddPass(std::move(m_BloomBurPassV));
-        m_RenderGraph.AddPass(std::move(m_BloomCombinePass));
-        m_RenderGraph.AddPass(std::move(m_ToneMappingPass));
+        PassPipelineConfig config;
+        m_PipelineConfig = config;
+        BuildRenderGraph(config);
     }
 
     void EditorLayer::OnDetach()
@@ -324,6 +285,12 @@ namespace TheFoolEngine
     void EditorLayer::OnUpdate(TimeStep ts) 
     {
         TF_PROFILE_FUNCTION();
+
+        if (m_PipelineConfigDirty)
+        {
+            BuildRenderGraph(m_PipelineConfig);
+            m_PipelineConfigDirty = false;
+        }
 
         m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -362,6 +329,7 @@ namespace TheFoolEngine
 
             // Submit lights from ECS
             auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
+            bool shadowEnabled = m_PipelineConfig.EnableShadows;
             for (auto entity : lightView)
             {
                 auto& lc = lightView.get<LightComponent>(entity);
@@ -370,7 +338,7 @@ namespace TheFoolEngine
                 {
                     case 0:
                     {
-                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_DIR_SPOT_SHADOWS)
+                        if (shadowEnabled && lc.CastShadow && context.ShadowViewProjections.size() < MAX_DIR_SPOT_SHADOWS)
                         {
                             int shadowIndex = (int)context.ShadowViewProjections.size();
                             context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
@@ -385,7 +353,7 @@ namespace TheFoolEngine
                     }
                     case 1:
                     {
-                        if (lc.CastShadow && context.PointShadow.Count < MAX_POINT_SHADOWS)
+                        if (shadowEnabled && lc.CastShadow && context.PointShadow.Count < MAX_POINT_SHADOWS)
                         {
                             int shadowIndex = context.PointShadow.Count;
                             context.PointShadow.Lights[shadowIndex] = ShadowMath::ComputePointLightShadowData(lc.Position, 0.1f, 50.0f);
@@ -403,7 +371,7 @@ namespace TheFoolEngine
                     }
                     case 2:
                     {
-                        if (lc.CastShadow && context.ShadowViewProjections.size() < MAX_DIR_SPOT_SHADOWS)
+                        if (shadowEnabled && lc.CastShadow && context.ShadowViewProjections.size() < MAX_DIR_SPOT_SHADOWS)
                         {
                             int shadowIndex = (int)context.ShadowViewProjections.size();
                             context.ShadowViewProjections.push_back(
@@ -635,6 +603,11 @@ namespace TheFoolEngine
 
         ImGui::Begin("Settings");
 
+        if (ImGui::Checkbox("Bloom", &m_PipelineConfig.EnableBloom))
+            m_PipelineConfigDirty = true;
+        if (ImGui::Checkbox("Shadows", &m_PipelineConfig.EnableShadows))
+            m_PipelineConfigDirty = true;
+
         ImGui::Checkbox("3D Mode", &m_Is3DMode);
 
         auto stats = Renderer2D::GetStats();
@@ -821,6 +794,64 @@ namespace TheFoolEngine
 
         for (auto path : shaderPaths)
             ShaderLibrary::Get().Load(path);
+    }
+
+    void EditorLayer::BuildRenderGraph(const PassPipelineConfig& config)
+    {
+        m_RenderGraph.ClearPasses();
+
+        if (config.EnableShadows)
+        {
+            m_ShadowPass = CreateScope<ShadowPass>(m_ShadowShader);
+            m_ShadowPass->SetOutput(m_ShadowFBOHandle);
+            m_PointShadowPass = CreateScope<PointShadowPass>(m_PointShadowShader);
+            m_PointShadowPass->SetOutput(m_PointShadowHandle);
+            m_RenderGraph.AddPass(std::move(m_ShadowPass));
+            m_RenderGraph.AddPass(std::move(m_PointShadowPass));
+        }
+
+        m_MainPass = CreateScope<MainPass>(PBRRenderer::GetPBRShader());
+        m_MainPass->SetInputShadow(m_ShadowFBOHandle);
+        m_MainPass->SetInputPointShadow(m_PointShadowHandle);
+        m_MainPass->SetOutput(m_HDRHandle);
+        m_RenderGraph.AddPass(std::move(m_MainPass));
+
+        if (config.EnableBloom)
+        {
+            m_BloomExtractPass = CreateScope<BloomExtractPass>(m_BloomExtractShader);
+            m_BloomExtractPass->SetInput(m_HDRHandle);
+            m_BloomExtractPass->SetOutput(m_BloomAHandle);
+
+            m_BloomBurPassH = CreateScope<BloomBlurPass>(m_BloomBlurShader);
+            m_BloomBurPassH->SetInput(m_BloomAHandle);
+            m_BloomBurPassH->SetOutput(m_BloomBHandle);
+
+            m_BloomBurPassV = CreateScope<BloomBlurPass>(m_BloomBlurShader);
+            m_BloomBurPassV->SetInput(m_BloomBHandle);
+            m_BloomBurPassV->SetOutput(m_BloomCHandle);
+
+            m_BloomCombinePass = CreateScope<BloomCombinePass>(m_BloomCombineShader);
+            m_BloomCombinePass->SetInputHDR(m_HDRHandle);
+            m_BloomCombinePass->SetInputBloom(m_BloomCHandle);
+            m_BloomCombinePass->SetOutput(m_BloomCombineHandle);
+
+            m_ToneMappingPass = CreateScope<ToneMappingPass>(m_ToneMappingShader);
+            m_ToneMappingPass->SetInput(m_BloomCombineHandle);
+            m_ToneMappingPass->SetOutput(m_LDRHandle);
+
+            m_RenderGraph.AddPass(std::move(m_BloomExtractPass));
+            m_RenderGraph.AddPass(std::move(m_BloomBurPassH));
+            m_RenderGraph.AddPass(std::move(m_BloomBurPassV));
+            m_RenderGraph.AddPass(std::move(m_BloomCombinePass));
+            m_RenderGraph.AddPass(std::move(m_ToneMappingPass));
+        }
+        else
+        {
+            m_ToneMappingPass = CreateScope<ToneMappingPass>(m_ToneMappingShader);
+            m_ToneMappingPass->SetInput(m_HDRHandle);
+            m_ToneMappingPass->SetOutput(m_LDRHandle);
+            m_RenderGraph.AddPass(std::move(m_ToneMappingPass));
+        }
     }
 
     void EditorLayer::ImportModel()

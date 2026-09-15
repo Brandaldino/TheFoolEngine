@@ -22,6 +22,7 @@ namespace TheFoolEngine
         Ref<Texture2D> GetTexture(const TextureHandle& handle) const;
         void Resize(uint32_t width, uint32_t height);
 
+        void ClearPasses() { m_Passes.clear(); };
         void AddPass(Scope<Pass> pass);
         void Execute(RenderContext& context);
     public:

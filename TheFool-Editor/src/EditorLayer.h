@@ -7,6 +7,12 @@
 
 namespace TheFoolEngine
 {
+    struct PassPipelineConfig
+    {
+        bool EnableBloom = true;
+        bool EnableShadows = true;
+    };
+
 	class EditorLayer : public TheFoolEngine::Layer
 	{
 	public:
@@ -22,6 +28,8 @@ namespace TheFoolEngine
 
         void PickEntity(const Ray::RayData& ray);
         void PrecompileShaders();
+
+        void BuildRenderGraph(const PassPipelineConfig& config);
     private:
         void ImportModel();
         void ImportSkybox();
@@ -34,6 +42,7 @@ namespace TheFoolEngine
         TextureHandle m_BloomAHandle;
         TextureHandle m_BloomBHandle;
         TextureHandle m_BloomCHandle;
+        TextureHandle m_BloomCombineHandle;
 
         Ref<Shader> m_ShadowShader;
         Ref<Shader> m_PointShadowShader;
@@ -70,6 +79,8 @@ namespace TheFoolEngine
         Scope<ToneMappingPass> m_ToneMappingPass;
 
         std::string m_ScenePath;
+        PassPipelineConfig m_PipelineConfig;
+        bool m_PipelineConfigDirty = false;
 
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
