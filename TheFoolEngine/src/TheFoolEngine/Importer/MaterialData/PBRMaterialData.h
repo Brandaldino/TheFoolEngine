@@ -10,6 +10,12 @@ namespace TheFoolEngine
 
 #define MAX_PBR_BONE_INFLUENCE 4
 
+    struct TextureData
+    {
+        uint32_t Width = 0, Height = 0;
+        std::vector<unsigned char> Pixels;  // RGBA (stbi_load result, no GL)
+    };
+
     struct PBRVertexData
     {
         // base
@@ -40,10 +46,17 @@ namespace TheFoolEngine
 
     struct PBRMaterialTextureSet
     {
+        // GPU 
         Ref<Texture2D> AlbedoMap;
         Ref<Texture2D> NormalMap;
         Ref<Texture2D> MetallicRoughnessMap;
         Ref<Texture2D> AOMap;
+
+        // CPU
+        TextureData AlbedoCPU;
+        TextureData NormalCPU;
+        TextureData MetallicRoughnessCPU;
+        TextureData AOCPU;
 
         glm::vec3 AlbedoFactor = glm::vec3(1.0f);
         float MetallicFactor = 0.0f;

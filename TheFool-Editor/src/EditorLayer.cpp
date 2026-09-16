@@ -196,8 +196,8 @@ namespace TheFoolEngine
         m_PBRModel = CreateRef<PBRModel>();
         std::filesystem::path modelPath = "assets/model/Furina.fbx";
         m_PBRModel->Import(modelPath);
-        PBRRenderer::DefaultTextureFill(m_PBRModel);
         m_PBRModel->UpLoad();
+        PBRRenderer::DefaultTextureFill(m_PBRModel);
 
         auto modelEntity = m_ActiveScene->CreateEntity("Furina");
         modelEntity.AddComponent<PBRModelComponent>(m_PBRModel);
@@ -206,9 +206,9 @@ namespace TheFoolEngine
         auto groundModel = CreateRef<PBRModel>();
         std::filesystem::path groundPath = "assets/model/BoxTextured.glb";
         groundModel->Import(groundPath);
+        groundModel->UpLoad();
         groundModel->SetBaseColor(glm::vec3(0.05f, 0.05f, 0.05f));
         PBRRenderer::DefaultTextureFill(groundModel);
-        groundModel->UpLoad();
 
         auto& ground = m_ActiveScene->CreateEntity("Ground");
         ground.AddComponent<PBRModelComponent>(groundModel);
@@ -285,6 +285,8 @@ namespace TheFoolEngine
     void EditorLayer::OnUpdate(TimeStep ts) 
     {
         TF_PROFILE_FUNCTION();
+
+        m_AsssetLoader.ProcessCompleted();
 
         BuildRenderGraph(m_PipelineConfig);
 
@@ -456,7 +458,7 @@ namespace TheFoolEngine
 
             m_RenderGraph.Execute(context);
 
-            TF_INFO("Culled: {0}/{1} visible", (int)context.Renderables.size(), (int)context.ShadowCasters.size());
+            // TF_INFO("Culled: {0}/{1} visible", (int)context.Renderables.size(), (int)context.ShadowCasters.size());
         }
 
         // FlatColor
@@ -888,22 +890,12 @@ namespace TheFoolEngine
             return;
 
         std::filesystem::path filepath(path);
-
-        // load model
-        auto model = CreateRef<PBRModel>();
-        model->Import(filepath);
-        if (model->GetModelData().Meshes.empty())
-        {
-            TF_ERROR("Failed to import model: {0}", filepath.u8string());
-            return;
-        }
-
-        PBRRenderer::DefaultTextureFill(model);
-        model->UpLoad();
-
-        // create entity
-        auto entity = m_ActiveScene->CreateEntity(filepath.stem().u8string());
-        entity.AddComponent<PBRModelComponent>(model);
+        m_AsssetLoader.LoadModelAsync(filepath.string(),
+            [this](const std::string filepath, Ref<PBRModel> model) {
+            auto entity = m_ActiveScene->CreateEntity(std::filesystem::path(filepath).stem().u8string());
+            entity.AddComponent<PBRModelComponent>(model);
+            TF_CORE_INFO("Model added: {0}", model->GetPath().string());
+            });
     }
 
     void EditorLayer::ImportSkybox()

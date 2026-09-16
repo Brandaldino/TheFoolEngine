@@ -80,6 +80,7 @@ namespace TheFoolEngine
 
         std::string m_ScenePath;
         PassPipelineConfig m_PipelineConfig;
+        AsyncAssetLoader m_AsssetLoader;
 
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;

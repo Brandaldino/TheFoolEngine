@@ -58,6 +58,8 @@
 #include "TheFoolEngine/Renderer/Pass/BloomBlurPass.h"
 #include "TheFoolEngine/Renderer/Pass/BloomCombinePass.h"
 #include "TheFoolEngine/Renderer/Pass/ToneMappingPass.h"
+// -- Async ---------------------------
+#include "TheFoolEngine/Importer/Async/AsyncAssetLoader.h"
 // -- test ----------------------------
 
 // ------------------------------------

@@ -14,7 +14,7 @@ namespace TheFoolEngine
         PBRModel();
         ~PBRModel();
 
-        void Import(std::filesystem::path& path);
+        void Import(const std::filesystem::path& path);
         void UpLoad();
         void Release();
 
@@ -25,6 +25,8 @@ namespace TheFoolEngine
         const std::vector<Ref<VertexArray>>& GetVertexArray() const { return m_VertexArray; };
 
         void SetBaseColor(const glm::vec3& color);
+
+        Ref<Texture2D> UploadTextureGPU(const TextureData& data);
     private:
         std::filesystem::path m_FilePath;
         PBRMaterialData m_ModelData;

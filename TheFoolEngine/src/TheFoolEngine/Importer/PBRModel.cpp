@@ -16,14 +16,12 @@ namespace TheFoolEngine
         Release();
     }
 
-    void PBRModel::Import(std::filesystem::path& path)
+    void PBRModel::Import(const std::filesystem::path& path)
     {
         PBRMaterialData data = AssimpImporter::Import(path);
         
         // Ensure at least one blank texture set so material indices stay valid
         // and UpLoad() doesn't skip mesh upload for textureless models.
- /*       if (data.Textures.empty())
-            data.Textures.resize(1);*/
 
         m_ModelData = data;
         m_FilePath = path;
@@ -65,6 +63,14 @@ namespace TheFoolEngine
             // ensure data alive
             m_VertexArray.push_back(vao);
         }
+
+        for (auto& texSet : m_ModelData.Textures)
+        {
+            texSet.AlbedoMap = UploadTextureGPU(texSet.AlbedoCPU);
+            texSet.NormalMap = UploadTextureGPU(texSet.NormalCPU);
+            texSet.MetallicRoughnessMap = UploadTextureGPU(texSet.MetallicRoughnessCPU);
+            texSet.AOMap = UploadTextureGPU(texSet.AOCPU);
+        }
     }
 
     void PBRModel::Release()
@@ -99,6 +105,16 @@ namespace TheFoolEngine
             texSet.AlbedoMap.reset();
             texSet.NormalMap.reset();
         }
+    }
+
+    Ref<Texture2D> PBRModel::UploadTextureGPU(const TextureData& data)
+    {
+        if (data.Pixels.empty())
+            return nullptr;
+
+        auto tex = Texture2D::Create(data.Width, data.Height);
+        tex->SetData((void*)data.Pixels.data(), data.Pixels.size());
+        return tex;
     }
 
 }

@@ -34,6 +34,9 @@
     <Filter Include="src\TheFoolEngine\Importer">
       <UniqueIdentifier>{C470B95F-B080-6530-193A-CA4E056954C9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\TheFoolEngine\Importer\Async">
+      <UniqueIdentifier>{F1C21F63-DD13-0BA5-0678-F966F2279E0E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\TheFoolEngine\Importer\MaterialData">
       <UniqueIdentifier>{9CD2652A-0862-2715-115E-082D7D6C6221}</UniqueIdentifier>
     </Filter>
@@ -180,6 +183,9 @@
     <ClInclude Include="src\TheFoolEngine\ImGui\ImGuiLayer.h">
       <Filter>src\TheFoolEngine\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Importer\Async\AsyncAssetLoader.h">
+      <Filter>src\TheFoolEngine\Importer\Async</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Importer\MaterialData\PBRMaterialData.h">
       <Filter>src\TheFoolEngine\Importer\MaterialData</Filter>
     </ClInclude>
@@ -205,6 +211,9 @@
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\FrameBuffer.h">
+      <Filter>src\TheFoolEngine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\Frustum.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\GraphicsContext.h">
@@ -310,6 +319,9 @@
       <Filter>src\TheFoolEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Scene\Entity.h">
+      <Filter>src\TheFoolEngine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Scene\JsonGlm.h">
       <Filter>src\TheFoolEngine\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Scene\Scene.h">
@@ -1596,8 +1608,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\TheFoolEngine\Scene\JsonGlm.h" />
-    <ClInclude Include="src\TheFoolEngine\Renderer\Frustum.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1662,6 +1672,9 @@
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\ImGui\ImGuiLayer.cpp">
       <Filter>src\TheFoolEngine\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Importer\Async\AsyncAssetLoader.cpp">
+      <Filter>src\TheFoolEngine\Importer\Async</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Importer\ModelLoader.cpp">
       <Filter>src\TheFoolEngine\Importer</Filter>

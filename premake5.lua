@@ -209,6 +209,7 @@ project "TheFool-Editor"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.assimp}",
 		"%{IncludeDir.imguizmo}",
+		"%{IncludeDir.moodycamel}",
 	}
 
 	-- ���������Ŀ�

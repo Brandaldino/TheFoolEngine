@@ -111,17 +111,74 @@ namespace TheFoolEngine
                 ProcessNode(node->mChildren[i], scene, meshes);
         }
 
+        TextureData DecodeTextureCPU(aiMaterial* mat, aiTextureType aiType, const aiScene* scene, const std::filesystem::path& modelDir)
+        {
+            TextureData result;
+            if (mat->GetTextureCount(aiType) == 0)
+                return result;
+
+            aiString str;
+            mat->GetTexture(aiType, 0, &str);
+            std::string pathStr = str.C_Str();
+
+            int width = 0, height = 0, channel = 0;
+            unsigned char* data = nullptr;
+
+            if (pathStr[0] == '*') // embedded
+            {
+                int index = std::stoi(pathStr.substr(1));
+                if (!scene->HasTextures() || index >= (int)scene->mNumTextures)
+                    return result;
+                aiTexture* tex = scene->mTextures[index];
+                data = stbi_load_from_memory((unsigned char*)tex->pcData, tex->mWidth, &width, &height, &channel, 4);
+            }
+            else    // external
+            {
+                std::filesystem::path fullpath = modelDir / pathStr;
+                data = stbi_load(fullpath.string().c_str(), &width, &height, &channel, 4);
+            }
+
+            if (data)
+            {
+                result.Width = width;
+                result.Height = height;
+                result.Pixels.assign(data, data + width * height * 4);
+            }
+
+            return result;
+        }
+
         PBRMaterialTextureSet ProcessMaterial(aiMaterial* mat, const aiScene* scene, const std::filesystem::path& modelDir)
         {
             PBRMaterialTextureSet textureSet;
 
-            // map
-            textureSet.AlbedoMap = LoadTexture(mat, aiTextureType_DIFFUSE, scene, modelDir);
-            if (!textureSet.AlbedoMap)
-                textureSet.AlbedoMap = LoadTexture(mat, aiTextureType_BASE_COLOR, scene, modelDir);
+            //// map
+            //textureSet.AlbedoMap = LoadTexture(mat, aiTextureType_DIFFUSE, scene, modelDir);
+            //if (!textureSet.AlbedoMap)
+            //    textureSet.AlbedoMap = LoadTexture(mat, aiTextureType_BASE_COLOR, scene, modelDir);
 
-            textureSet.NormalMap = LoadTexture(mat, aiTextureType_NORMALS, scene, modelDir);
-            textureSet.MetallicRoughnessMap = LoadTexture(mat, aiTextureType_METALNESS, scene, modelDir);
+            //textureSet.NormalMap = LoadTexture(mat, aiTextureType_NORMALS, scene, modelDir);
+            //textureSet.MetallicRoughnessMap = LoadTexture(mat, aiTextureType_METALNESS, scene, modelDir);
+
+            //// factor
+            //mat->Get(AI_MATKEY_COLOR_DIFFUSE, textureSet.AlbedoFactor);
+            //mat->Get(AI_MATKEY_METALLIC_FACTOR, textureSet.MetallicFactor);
+            //mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, textureSet.RoughnessFactor);
+
+            //// AO
+            //textureSet.AOMap = LoadTexture(mat, aiTextureType_LIGHTMAP, scene, modelDir);
+            //if (!textureSet.AOMap)
+            //    textureSet.AOMap = LoadTexture(mat, aiTextureType_AMBIENT, scene, modelDir);
+
+            //return textureSet;
+
+            // map
+            textureSet.AlbedoCPU = DecodeTextureCPU(mat, aiTextureType_DIFFUSE, scene, modelDir);
+            if (textureSet.AlbedoCPU.Pixels.empty())
+                textureSet.AlbedoCPU = DecodeTextureCPU(mat, aiTextureType_BASE_COLOR, scene, modelDir);
+
+            textureSet.NormalCPU = DecodeTextureCPU(mat, aiTextureType_NORMALS, scene, modelDir);
+            textureSet.MetallicRoughnessCPU = DecodeTextureCPU(mat, aiTextureType_METALNESS, scene, modelDir);
 
             // factor
             mat->Get(AI_MATKEY_COLOR_DIFFUSE, textureSet.AlbedoFactor);
@@ -129,12 +186,13 @@ namespace TheFoolEngine
             mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, textureSet.RoughnessFactor);
 
             // AO
-            textureSet.AOMap = LoadTexture(mat, aiTextureType_LIGHTMAP, scene, modelDir);
-            if (!textureSet.AOMap)
-                textureSet.AOMap = LoadTexture(mat, aiTextureType_AMBIENT, scene, modelDir);
+            textureSet.AOCPU = DecodeTextureCPU(mat, aiTextureType_LIGHTMAP, scene, modelDir);
+            if (textureSet.AOCPU.Pixels.empty())
+                textureSet.AOCPU = DecodeTextureCPU(mat, aiTextureType_AMBIENT, scene, modelDir);
 
             return textureSet;
         }
+
     }
 
     PBRMaterialData AssimpImporter::Import(const std::filesystem::path& path)
