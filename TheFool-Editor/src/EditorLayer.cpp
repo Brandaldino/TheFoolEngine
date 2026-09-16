@@ -286,7 +286,7 @@ namespace TheFoolEngine
     {
         TF_PROFILE_FUNCTION();
 
-        m_AsssetLoader.ProcessCompleted();
+        AsyncAssetLoader::Get().ProcessCompleted();
 
         BuildRenderGraph(m_PipelineConfig);
 
@@ -890,7 +890,7 @@ namespace TheFoolEngine
             return;
 
         std::filesystem::path filepath(path);
-        m_AsssetLoader.LoadModelAsync(filepath.string(),
+        AsyncAssetLoader::Get().LoadModelAsync(filepath.string(),
             [this](const std::string filepath, Ref<PBRModel> model) {
             auto entity = m_ActiveScene->CreateEntity(std::filesystem::path(filepath).stem().u8string());
             entity.AddComponent<PBRModelComponent>(model);

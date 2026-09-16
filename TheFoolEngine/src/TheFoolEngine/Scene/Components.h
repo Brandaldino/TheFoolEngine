@@ -72,6 +72,9 @@ namespace TheFoolEngine{
     struct PBRModelComponent
     {
         Ref<PBRModel> Model;
+
+        PBRModelComponent() = default;
+        PBRModelComponent(const Ref<PBRModel>& model) : Model(model) {};
     };
 
     struct LightComponent

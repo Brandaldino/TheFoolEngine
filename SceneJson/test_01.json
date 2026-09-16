@@ -2,6 +2,62 @@
       "Scene": {
             "Entity": [
                   {
+                        "PBRModelComponent": {
+                              "FilePath": "E:\\TFE\\TheFoolEngine\\assets\\model\\BoxTextured.glb"
+                        },
+                        "TagComponent": {
+                              "Tag": "BoxTextured"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
+                        "PBRModelComponent": {
+                              "FilePath": "E:\\TFE\\TheFoolEngine\\assets\\model\\Furina.fbx"
+                        },
+                        "TagComponent": {
+                              "Tag": "Furina"
+                        },
+                        "TransformComponent": {
+                              "Transform": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    1.0,
+                                    0.0,
+                                    2.72819447517395,
+                                    1.1748472452163696,
+                                    0.04122162237763405,
+                                    1.0
+                              ]
+                        }
+                  },
+                  {
                         "CameraComponent": {
                               "FixedAspectRatio": false,
                               "Primary": false,
@@ -32,8 +88,8 @@
                                     0.0,
                                     1.0,
                                     0.0,
-                                    -2.9590835571289063,
-                                    2.8162384033203125,
+                                    -4.0,
+                                    0.0,
                                     0.0,
                                     1.0
                               ]
@@ -70,8 +126,8 @@
                                     0.0,
                                     1.0,
                                     0.0,
-                                    3.0409164428710938,
-                                    2.8162384033203125,
+                                    2.0,
+                                    0.0,
                                     0.0,
                                     1.0
                               ]
@@ -159,15 +215,16 @@
                                     0.0,
                                     1.0,
                                     0.0,
-                                    0.0,
-                                    0.0,
-                                    0.0,
+                                    -2.899618148803711,
+                                    -0.34686046838760376,
+                                    -0.0816497802734375,
                                     1.0
                               ]
                         }
                   },
                   {
                         "LightComponent": {
+                              "CastShadow": false,
                               "Color": [
                                     1.0,
                                     0.800000011920929,
@@ -215,6 +272,7 @@
                   },
                   {
                         "LightComponent": {
+                              "CastShadow": false,
                               "Color": [
                                     0.6000000238418579,
                                     0.699999988079071,
@@ -262,6 +320,7 @@
                   },
                   {
                         "LightComponent": {
+                              "CastShadow": false,
                               "Color": [
                                     1.0,
                                     0.8999999761581421,
@@ -309,6 +368,7 @@
                   },
                   {
                         "LightComponent": {
+                              "CastShadow": false,
                               "Color": [
                                     0.6000000238418579,
                                     0.800000011920929,
@@ -356,6 +416,7 @@
                   },
                   {
                         "LightComponent": {
+                              "CastShadow": true,
                               "Color": [
                                     1.0,
                                     0.800000011920929,
@@ -403,6 +464,7 @@
                   },
                   {
                         "LightComponent": {
+                              "CastShadow": true,
                               "Color": [
                                     1.0,
                                     0.949999988079071,

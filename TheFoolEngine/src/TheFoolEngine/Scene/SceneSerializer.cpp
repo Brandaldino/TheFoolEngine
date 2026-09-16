@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Components.h"
 #include "JsonGlm.h"
+#include "../Importer/Async/AsyncAssetLoader.h"
 
 #include "../Renderer/PBRRenderer.h"
 
@@ -118,6 +119,14 @@ namespace TheFoolEngine
 
         scene->m_Registry.clear();
 
+        struct PendingModel 
+        { 
+            Entity Entity; 
+            std::string Path; 
+        };
+        std::vector<PendingModel> pendingModels;
+
+        // 1. Sync: create entities + non-model components (preserve JSON order)
         for (auto& entityJson : sceneJson["Scene"]["Entity"])
         {
             std::string name = entityJson["TagComponent"]["Tag"].get<std::string>();
@@ -144,13 +153,8 @@ namespace TheFoolEngine
 
             if (entityJson.contains("PBRModelComponent"))
             {
-                auto model = CreateRef<PBRModel>();
-                std::filesystem::path path = entityJson["PBRModelComponent"]["FilePath"].get<std::string>();
-                model->Import(path);
-                PBRRenderer::DefaultTextureFill(model);
-                model->UpLoad();
-
-                entity.AddComponent<PBRModelComponent>(model);
+                std::string path = entityJson["PBRModelComponent"]["FilePath"].get<std::string>();
+                pendingModels.push_back({ entity, path });
             }
 
             if (entityJson.contains("SpriteRendererComponent"))
@@ -175,6 +179,21 @@ namespace TheFoolEngine
 
                 entity.AddComponent<CameraComponent>(cc);
             }
+        }
+
+        // 2. Async: load models one by one; attach components in callbacks
+        for (auto& pm : pendingModels)
+        {
+            AsyncAssetLoader::Get().LoadModelAsync(pm.Path,
+                [entity = pm.Entity](const std::string& path, Ref<PBRModel> model) mutable
+                {
+                    if (!entity.IsValid())
+                    {
+                        TF_CORE_WARN("Entity invalid, skip model: {0}", path);
+                        return;
+                    }
+                    entity.AddComponent<PBRModelComponent>(model);
+                });
         }
 
         TF_INFO("Lights after load: {0}", (int)scene->m_Registry.view<LightComponent>().size());

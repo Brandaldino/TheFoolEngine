@@ -19,6 +19,8 @@ namespace TheFoolEngine
     class AsyncAssetLoader
     {
     public:
+        static AsyncAssetLoader& Get();
+
         void LoadModelAsync(const std::string& path, LoadCallback callback);
         void ProcessCompleted();
     private:

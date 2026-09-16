@@ -9,6 +9,11 @@
 
 namespace TheFoolEngine
 {
+    AsyncAssetLoader& AsyncAssetLoader::Get()
+    {
+        static AsyncAssetLoader instance;
+        return instance;
+    }
 
     void AsyncAssetLoader::LoadModelAsync(const std::string& path, LoadCallback callback)
     {
