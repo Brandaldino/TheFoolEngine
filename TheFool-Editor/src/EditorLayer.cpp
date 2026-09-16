@@ -286,11 +286,7 @@ namespace TheFoolEngine
     {
         TF_PROFILE_FUNCTION();
 
-        if (m_PipelineConfigDirty)
-        {
-            BuildRenderGraph(m_PipelineConfig);
-            m_PipelineConfigDirty = false;
-        }
+        BuildRenderGraph(m_PipelineConfig);
 
         m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
@@ -603,10 +599,8 @@ namespace TheFoolEngine
 
         ImGui::Begin("Settings");
 
-        if (ImGui::Checkbox("Bloom", &m_PipelineConfig.EnableBloom))
-            m_PipelineConfigDirty = true;
-        if (ImGui::Checkbox("Shadows", &m_PipelineConfig.EnableShadows))
-            m_PipelineConfigDirty = true;
+        ImGui::Checkbox("Bloom", &m_PipelineConfig.EnableBloom);
+        ImGui::Checkbox("Shadows", &m_PipelineConfig.EnableShadows);
 
         ImGui::Checkbox("3D Mode", &m_Is3DMode);
 
@@ -798,16 +792,39 @@ namespace TheFoolEngine
 
     void EditorLayer::BuildRenderGraph(const PassPipelineConfig& config)
     {
+        TF_PROFILE_FUNCTION();
+
         m_RenderGraph.ClearPasses();
+
+        // Check scene shadow requirements (directional/spot vs point light separated)
+        bool hasDirSpotShadow = false, hasPointShadow = false;
+        auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
+        for (auto e : lightView)
+        {
+            auto& lc = lightView.get<LightComponent>(e);
+            if (lc.CastShadow)
+            {
+                if (lc.Type == 1)
+                    hasPointShadow = true;
+                else
+                    hasDirSpotShadow = true;    // Type 0 (direction) / 2 (spot)
+            }
+        }
 
         if (config.EnableShadows)
         {
-            m_ShadowPass = CreateScope<ShadowPass>(m_ShadowShader);
-            m_ShadowPass->SetOutput(m_ShadowFBOHandle);
-            m_PointShadowPass = CreateScope<PointShadowPass>(m_PointShadowShader);
-            m_PointShadowPass->SetOutput(m_PointShadowHandle);
-            m_RenderGraph.AddPass(std::move(m_ShadowPass));
-            m_RenderGraph.AddPass(std::move(m_PointShadowPass));
+            if (hasDirSpotShadow)
+            {
+                m_ShadowPass = CreateScope<ShadowPass>(m_ShadowShader);
+                m_ShadowPass->SetOutput(m_ShadowFBOHandle);
+                m_RenderGraph.AddPass(std::move(m_ShadowPass));
+            }
+            if (hasPointShadow)
+            {
+                m_PointShadowPass = CreateScope<PointShadowPass>(m_PointShadowShader);
+                m_PointShadowPass->SetOutput(m_PointShadowHandle);
+                m_RenderGraph.AddPass(std::move(m_PointShadowPass));
+            }
         }
 
         m_MainPass = CreateScope<MainPass>(PBRRenderer::GetPBRShader());

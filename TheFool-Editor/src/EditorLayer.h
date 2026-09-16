@@ -80,7 +80,6 @@ namespace TheFoolEngine
 
         std::string m_ScenePath;
         PassPipelineConfig m_PipelineConfig;
-        bool m_PipelineConfigDirty = false;
 
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
