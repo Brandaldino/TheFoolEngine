@@ -199,17 +199,20 @@ float CalculatePointShadow(vec3 fragPos, vec3 lightPos, vec3 N, float bias, int 
 
 void main()
 {
-    vec3 albedo = texture(u_Textures[1], v_TexCoord).rgb * u_AlbedoFactor;
+    float distToCam = distance(v_FragPos, u_CameraPos);
+    float lodBias = min(0.0, log2(distToCam / 10.0));   // Within 10m: bias = 0 (unchanged up close); at distance: bias goes negative (use lower mips)
 
-    vec3 tangentNormal = texture(u_Textures[2], v_TexCoord).rgb;
+    vec3 albedo = texture(u_Textures[1], v_TexCoord, lodBias).rgb * u_AlbedoFactor;
+    vec3 tangentNormal = texture(u_Textures[2], v_TexCoord, lodBias).rgb;
+    vec4 mr = texture(u_Textures[3], v_TexCoord, lodBias);
+    vec4 ao = texture(u_Textures[4], v_TexCoord, lodBias);
+
     vec3 N = (length(v_Tangent) < 0.001) ? normalize(v_Normal) : CalcFinalNormal(tangentNormal);
 
-    vec4 mr = texture(u_Textures[3], v_TexCoord);
     float roughness = mr.g * u_RoughnessFactor;
     float metallic = mr.b * u_MetallicFactor;
 
     float occlusion = 1.0;
-    vec4 ao = texture(u_Textures[4], v_TexCoord);
     occlusion = ao.r * u_AOStrength;
 
     vec3 V = normalize(u_CameraPos - v_FragPos);

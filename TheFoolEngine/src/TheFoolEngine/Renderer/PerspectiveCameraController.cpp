@@ -96,6 +96,8 @@ namespace TheFoolEngine
 		m_Camera.SetForward(m_CameraForward);
 		m_Camera.SetRight(m_CameraRight);
 		m_Camera.SetUp(m_CameraUp);
+
+        m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
 	}
 
 	bool PerspectiveCameraController::OnWindowResized(WindowResizeEvent& e)

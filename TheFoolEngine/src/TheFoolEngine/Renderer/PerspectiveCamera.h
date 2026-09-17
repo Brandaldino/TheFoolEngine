@@ -23,7 +23,7 @@ namespace TheFoolEngine {
 		void SetUp(const glm::vec3& up) { m_Up= up; RecalculateForward(); }
 
 		float GetPitch() const { return m_Pitch; }
-		void SetPitch(float pitch) { m_Pitch = pitch; RecalculateForward(); }
+		void SetPitch(float pitch) { m_Pitch = glm::clamp(pitch, -89.0f, 89.0f); RecalculateForward(); }
 
 		float GetYaw() const { return m_Yaw; }
 		void SetYaw(float yaw) { m_Yaw = yaw; RecalculateForward(); }

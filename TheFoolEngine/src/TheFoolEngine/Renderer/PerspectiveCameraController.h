@@ -6,9 +6,11 @@
 #include "TheFoolEngine/Events/ApplicationEvents.h"
 #include "TheFoolEngine/Events/MouseEvents.h"
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
 
-	class PerspectiveCameraController {
+	class PerspectiveCameraController 
+    {
 	public:
 		PerspectiveCameraController(float aspectRatio);
 
