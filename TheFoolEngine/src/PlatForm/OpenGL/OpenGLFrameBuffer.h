@@ -24,9 +24,14 @@ namespace TheFoolEngine
         virtual uint32_t GetDepthArrayTextureID() override { return m_DepthArrayTextureID; };
         virtual void AttachLayer(uint32_t layer) override; // Switch the current mounted layer
 
+        uint32_t GetMultisampleColorRBO() const { return m_MultisampleColorRBO; };
+
         void Invalidate();
+        void ResolveMultisample();
 	private:
 		uint32_t m_RendererID = 0;
+        uint32_t m_MultisampleColorRBO = 0;
+        uint32_t m_ResolveFBO = 0;
         Ref<Texture2D> m_ColorAttachment;
         Ref<Texture2D> m_DepthAttachment;
 		FrameBufferSpecification m_Specification;

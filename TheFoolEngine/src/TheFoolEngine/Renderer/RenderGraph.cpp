@@ -31,6 +31,7 @@ namespace TheFoolEngine
                     spec.Width = desc.Width;
                     spec.Height = desc.Height;
                     spec.FrameBufferFormat = desc.Format;
+                    spec.Samples = desc.Samples;
                     res.FrameBuffer = FrameBuffer::Create(spec);
                     break;
                 }

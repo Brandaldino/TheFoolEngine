@@ -65,24 +65,57 @@ namespace TheFoolEngine
         }
         else
         {
-            m_ColorAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, m_Specification.FrameBufferFormat);
-            m_ColorAttachment->Bind();
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            if (m_Specification.Samples > 1)
+            {
+                // MSAA color (renderbuffer)
+                glGenRenderbuffers(1, &m_MultisampleColorRBO);
+                glBindRenderbuffer(GL_RENDERBUFFER, m_MultisampleColorRBO);
+                glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Specification.Samples, GL_RGBA8, m_Specification.Width, m_Specification.Height);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_MultisampleColorRBO);
 
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColorAttachment->GetRendererID(), 0);
+                // MSAA depth
+                glGenRenderbuffers(1, &m_MultisampleColorRBO);
+                glBindRenderbuffer(GL_RENDERBUFFER, m_MultisampleColorRBO);
+                glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Specification.Samples, GL_DEPTH24_STENCIL8, m_Specification.Width, m_Specification.Height);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_MultisampleColorRBO);
 
-            m_DepthAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, AttachmentType::DepthStencil);
-            uint32_t depthID = m_DepthAttachment->GetRendererID();
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthID, 0);
+                // Resolve target (regular texture, sampleable for post-processing)
+                m_ColorAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, m_Specification.FrameBufferFormat);
+                glCreateFramebuffers(1, &m_ResolveFBO);
+                glBindFramebuffer(GL_FRAMEBUFFER, m_ResolveFBO);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColorAttachment->GetRendererID(), 0);
+            }
+            else
+            {
+                m_ColorAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, m_Specification.FrameBufferFormat);
+                m_ColorAttachment->Bind();
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColorAttachment->GetRendererID(), 0);
+
+                m_DepthAttachment = Texture2D::Create(m_Specification.Width, m_Specification.Height, AttachmentType::DepthStencil);
+                uint32_t depthID = m_DepthAttachment->GetRendererID();
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthID, 0);
+            }
         }
 
 		TF_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "FrameBuffer is incomplite.")
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+
+    void OpenGLFrameBuffer::ResolveMultisample()
+    {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);   // MSAA
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_ResolveFBO);   // normal
+        glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height,
+            0, 0, m_Specification.Width, m_Specification.Height,
+            GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
     void OpenGLFrameBuffer::AttachLayer(uint32_t layer)
     {
@@ -101,6 +134,8 @@ namespace TheFoolEngine
 
 	void OpenGLFrameBuffer::UnBind()
 	{
+        if (m_Specification.Samples > 1)
+            ResolveMultisample();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 

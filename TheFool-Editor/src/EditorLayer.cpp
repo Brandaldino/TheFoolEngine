@@ -65,6 +65,7 @@ namespace TheFoolEngine
         desc.Width = 1280;
         desc.Height = 720;
         desc.Format = TextureFormat::RGBA16F;
+        desc.Samples = 4;
         m_HDRHandle = m_RenderGraph.CreateRenderTarget(desc, "HDR");
 
         desc.Format = TextureFormat::RGBA8;
