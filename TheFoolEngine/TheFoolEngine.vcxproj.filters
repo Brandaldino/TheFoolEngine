@@ -22,6 +22,9 @@
     <Filter Include="src\TheFoolEngine\Core\Job">
       <UniqueIdentifier>{65DAF273-51EA-9E44-BAA3-0363A6D28DDD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\TheFoolEngine\Core\Utils">
+      <UniqueIdentifier>{3BFFDC3C-27BA-CCE8-D071-4533BC0B1779}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\TheFoolEngine\Debug">
       <UniqueIdentifier>{1984CB41-85BB-13D9-8EC5-77FCFA7B3AD2}</UniqueIdentifier>
     </Filter>
@@ -45,6 +48,9 @@
     </Filter>
     <Filter Include="src\TheFoolEngine\Renderer">
       <UniqueIdentifier>{697EBF40-558E-6B11-BE47-D02FAA765AAA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\TheFoolEngine\Renderer\BatchSystem">
+      <UniqueIdentifier>{7F4269C8-6B94-40B8-54B3-7DC840A459A1}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\TheFoolEngine\Renderer\Pass">
       <UniqueIdentifier>{EFF18B72-5BD5-9AB2-64D8-C8EED03A6103}</UniqueIdentifier>
@@ -162,6 +168,9 @@
     <ClInclude Include="src\TheFoolEngine\Core\TimeStep.h">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Core\Utils\HashUtils.h">
+      <Filter>src\TheFoolEngine\Core\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Core\Window.h">
       <Filter>src\TheFoolEngine\Core</Filter>
     </ClInclude>
@@ -200,6 +209,9 @@
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h">
       <Filter>src\TheFoolEngine\Importer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TheFoolEngine\Renderer\BatchSystem\BatchBuilder.h">
+      <Filter>src\TheFoolEngine\Renderer\BatchSystem</Filter>
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\Buffer.h">
       <Filter>src\TheFoolEngine\Renderer</Filter>
@@ -1687,6 +1699,9 @@
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Importer\PBRModel.cpp">
       <Filter>src\TheFoolEngine\Importer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TheFoolEngine\Renderer\BatchSystem\BatchBuilder.cpp">
+      <Filter>src\TheFoolEngine\Renderer\BatchSystem</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\Buffer.cpp">
       <Filter>src\TheFoolEngine\Renderer</Filter>

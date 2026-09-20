@@ -15,6 +15,7 @@ namespace TheFoolEngine
 		virtual void Clear() override;
 
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
+        virtual void DrawIndexedInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount) override;
 
         // === Depth State =========================================
         virtual void SetDepthFunc(DepthFunc func) override;

@@ -11,7 +11,11 @@ layout(location = 6) in vec4 a_Weights;
 
 uniform mat4 u_View;
 uniform mat4 u_Projection;
-uniform mat4 u_Model;
+// uniform mat4 u_Model;
+layout(std430, binding = 1) buffer InstanceBuffer
+{
+    mat4 u_InstanceModels[];
+};
 
 out vec2 v_TexCoord;
 out vec3 v_Tangent;
@@ -24,15 +28,16 @@ out vec3 v_FragPos;
 
 void main()
 {
+    mat4 model = u_InstanceModels[gl_InstanceID];
     v_TexCoord = a_TexCoord;
-    v_Tangent = normalize(mat3(u_Model) * a_Tangent);
-    v_BitTangent = normalize(mat3(u_Model) * a_BitTangent);
-    v_Normal = normalize(mat3(u_Model) * a_Normal);
+    v_Tangent = normalize(mat3(model) * a_Tangent);
+    v_BitTangent = normalize(mat3(model) * a_BitTangent);
+    v_Normal = normalize(mat3(model) * a_Normal);
     v_BoneIDs = a_BoneIDs;
     v_Weights = a_Weights;
 
-    gl_Position = u_Projection * u_View * u_Model * vec4(a_Position, 1.0);
-    v_FragPos = (u_Model * vec4(a_Position, 1.0)).xyz;
+    gl_Position = u_Projection * u_View * model * vec4(a_Position, 1.0);
+    v_FragPos = (model * vec4(a_Position, 1.0)).xyz;
 }
 
 #type fragment

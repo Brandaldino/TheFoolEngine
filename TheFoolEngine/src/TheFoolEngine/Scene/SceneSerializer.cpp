@@ -89,6 +89,8 @@ namespace TheFoolEngine
 
         std::ofstream out(filepath);
         out << sceneJson.dump(6);
+
+        TF_CORE_INFO("Scene file save start.");
     }
 
     void SceneSerializer::Deserialize(Ref<Scene> scene, const std::string& filepath)

@@ -7,6 +7,7 @@
 #include "../Shader.h"
 #include "../RenderGraph.h"
 #include "../LightPacker.h"
+#include "../BatchSystem/BatchBuilder.h"
 
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,6 +22,9 @@ namespace TheFoolEngine
         glCreateBuffers(1, &m_GPULightUBO);
         glNamedBufferStorage(m_GPULightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_GPULightUBO);
+
+        glCreateBuffers(1, &m_InstanceBuffer);
+        glNamedBufferStorage(m_InstanceBuffer, s_MaxInstances * sizeof(glm::mat4), nullptr, GL_DYNAMIC_STORAGE_BIT);
     }
 
     void MainPass::SetOutput(TextureHandle& output)
@@ -49,6 +53,7 @@ namespace TheFoolEngine
 
         m_Shader->Bind();
 
+        BatchBuilder batchBuilder;
         for (auto& output : m_Outputs)
         {
             ctx.RenderGraph->GetFrameBuffer(output)->Bind();
@@ -97,40 +102,81 @@ namespace TheFoolEngine
                 m_Shader->SetInt("u_BRDFLUT", 7);
             }
 
-            // entity
+            // batch entity
+            
             for (auto& proxy : ctx.Renderables)
             {
                 if (!proxy.Visible)
                     continue;
+                batchBuilder.AddRenderable(proxy);
+            }
+            batchBuilder.Sort();
+            auto& batches = batchBuilder.GetBatches();
 
-                auto& modelData = proxy.Model->GetModelData();
-                auto& vas = proxy.Model->GetVertexArray();
-                auto& meshes = modelData.Meshes;
-                auto& texSets = modelData.Textures;
+            // Fill instance matrices (each batch occupies a contiguous range)
+            uint32_t instanceOffset = 0;
+            for (auto& batch : batches)
+            {
+                if (batch.Elements.empty())
+                    continue;
+                glNamedBufferSubData(m_InstanceBuffer, instanceOffset * sizeof(glm::mat4), batch.Elements.size() * sizeof(glm::mat4), batch.Elements.data());
+                instanceOffset += (uint32_t)batch.Elements.size();
+            }
 
-                for (std::size_t i = 0; i < vas.size(); ++i)
+            // Render (state cache retained, draw changed to instanced)
+            instanceOffset = 0;
+            // State cache
+            Ref<VertexArray> curVAO = nullptr;
+            Ref<Texture2D> curTex[4] = { nullptr, nullptr, nullptr, nullptr };
+            for (auto& batch : batches)
+            {
+                if (batch.Elements.empty())
+                    continue;
+
+                const auto& key = batch.Key;
+                if (key.VAO != curVAO)
                 {
-                    // Per-mesh transform
-                    glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                    m_Shader->SetMat4("u_Model", model);
-
-                    // Per-mesh textures (override fallback if exists)
-                    auto& texSet = texSets[meshes[i].MaterialIndex];
-                    if (texSet.AlbedoMap)               texSet.AlbedoMap->Bind(1);
-                    if (texSet.NormalMap)               texSet.NormalMap->Bind(2);
-                    if (texSet.MetallicRoughnessMap)    texSet.MetallicRoughnessMap->Bind(3);
-                    if (texSet.AOMap)                    texSet.AOMap->Bind(4);
-
-                    // Per-mesh factors
-                    m_Shader->SetFloat3("u_AlbedoFactor", texSet.AlbedoFactor);
-                    m_Shader->SetFloat("u_MetallicFactor", texSet.MetallicFactor);
-                    m_Shader->SetFloat("u_RoughnessFactor", texSet.RoughnessFactor);
-                    m_Shader->SetFloat("u_AOStrength", texSet.AOStrength);
-
-                    // Draw
-                    vas[i]->Bind();
-                    RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
+                    curVAO = key.VAO;
+                    curVAO->Bind();
                 }
+
+                // Texture state cache
+                if (key.Albedo != curTex[0])
+                {
+                    curTex[0] = key.Albedo;
+                    if (key.Albedo)
+                        key.Albedo->Bind(1);
+                }
+                if (key.Normal != curTex[1])
+                {
+                    curTex[1] = key.Normal;
+                    if (key.Normal)
+                        key.Normal->Bind(2);
+                }
+                if (key.MetallicRoughness != curTex[2])
+                {
+                    curTex[2] = key.MetallicRoughness;
+                    if (key.MetallicRoughness)
+                        key.MetallicRoughness->Bind(3);
+                }
+                if (key.AO != curTex[3])
+                {
+                    curTex[3] = key.AO;
+                    if (key.AO)
+                        key.AO->Bind(4);
+                }
+
+                // material factor
+                m_Shader->SetFloat3("u_AlbedoFactor", glm::vec3(key.AlbedoFactor));
+                m_Shader->SetFloat("u_MetallicFactor", key.MetallicRoughnessFactor.x);
+                m_Shader->SetFloat("u_RoughnessFactor", key.MetallicRoughnessFactor.y);
+                m_Shader->SetFloat("u_AOStrength", key.AOStrength);
+
+                glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, m_InstanceBuffer, 
+                    instanceOffset * sizeof(glm::mat4),
+                    batch.Elements.size() * sizeof(glm::mat4));
+                RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Elements.size());
+                instanceOffset += (uint32_t)batch.Elements.size();
             }
 
             // Skybox
@@ -152,6 +198,8 @@ namespace TheFoolEngine
             ctx.RenderGraph->GetFrameBuffer(output)->UnBind();
         }
 
+        ctx.State.DrawCalls = (uint32_t)batchBuilder.GetBatches().size();
+        ctx.State.MeshCount = (uint32_t)batchBuilder.GetBatches().size();
     }
 
     void MainPass::SetInputShadow(TextureHandle& handle)

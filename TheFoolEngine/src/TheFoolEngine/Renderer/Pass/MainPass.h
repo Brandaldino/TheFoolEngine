@@ -28,5 +28,8 @@ namespace TheFoolEngine
         std::vector<TextureHandle> m_Inputs, m_Outputs;
 
         uint32_t m_GPULightUBO;
+
+        uint32_t m_InstanceBuffer = 0;
+        static constexpr uint32_t s_MaxInstances = 4096;
     };
 }

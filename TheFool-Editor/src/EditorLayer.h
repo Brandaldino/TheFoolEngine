@@ -81,6 +81,9 @@ namespace TheFoolEngine
         std::string m_ScenePath;
         PassPipelineConfig m_PipelineConfig;
 
+        uint32_t m_DrawCall = 0;
+        uint32_t m_MeshCount = 0;
+
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
         PerspectiveCameraController m_PerspectiveCameraController;

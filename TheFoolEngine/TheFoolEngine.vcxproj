@@ -177,6 +177,7 @@
     <ClInclude Include="src\TheFoolEngine\Core\MouseCodes.h" />
     <ClInclude Include="src\TheFoolEngine\Core\ThreadPool.h" />
     <ClInclude Include="src\TheFoolEngine\Core\TimeStep.h" />
+    <ClInclude Include="src\TheFoolEngine\Core\Utils\HashUtils.h" />
     <ClInclude Include="src\TheFoolEngine\Core\Window.h" />
     <ClInclude Include="src\TheFoolEngine\Debug\Instrumentor.h" />
     <ClInclude Include="src\TheFoolEngine\Events\ApplicationEvents.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\BatchSystem\BatchBuilder.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Buffer.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Camera.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\CubeMap.h" />
@@ -687,6 +689,7 @@
     <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\PBRModel.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\BatchSystem\BatchBuilder.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Buffer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\CubeMap.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\FrameBuffer.cpp" />

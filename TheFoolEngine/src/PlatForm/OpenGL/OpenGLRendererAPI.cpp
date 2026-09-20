@@ -38,6 +38,12 @@ namespace TheFoolEngine
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
+    void OpenGLRendererAPI::DrawIndexedInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount)
+    {
+        vertexArray->Bind();
+        glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+    }
+
 	void OpenGLRendererAPI::SetDepthFunc(DepthFunc func)
 	{
         glDepthFunc(func == DepthFunc::Less ? GL_LESS : GL_LEQUAL);

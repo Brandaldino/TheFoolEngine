@@ -459,7 +459,8 @@ namespace TheFoolEngine
 
             m_RenderGraph.Execute(context);
 
-            // TF_INFO("Culled: {0}/{1} visible", (int)context.Renderables.size(), (int)context.ShadowCasters.size());
+            m_DrawCall = context.State.DrawCalls;
+            m_MeshCount = context.State.MeshCount;
         }
 
         // FlatColor
@@ -613,6 +614,10 @@ namespace TheFoolEngine
         ImGui::Text("Quad Count: %d", stats.QuadCount);
         ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
         ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
+
+        ImGui::Text("PBRRenderer Stats:");
+        ImGui::Text("Draw Calls: %d", m_DrawCall);
+        ImGui::Text("Mesh Count: %d", m_MeshCount);
 
         if(m_SquareEntity && m_SquareEntity.IsValid())
         {

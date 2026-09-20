@@ -33,6 +33,11 @@ namespace TheFoolEngine
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
 
+        inline static void DrawIndexedInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount)
+        {
+            s_RendererAPI->DrawIndexedInstanced(vertexArray, indexCount, instanceCount);
+        }
+
         // === Render State ============================================================
         inline static void SetDepthFunc(RendererAPI::DepthFunc func) { s_RendererAPI->SetDepthFunc(func); };
         inline static void SetDepthWrite(RendererAPI::DepthWrite flag) { s_RendererAPI->SetDepthWrite(flag); };

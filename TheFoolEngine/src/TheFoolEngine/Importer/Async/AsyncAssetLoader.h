@@ -3,6 +3,8 @@
 #include "TheFoolEngine/Core/Base.h"
 #include "concurrentqueue.h"
 
+#include <unordered_map>
+
 namespace TheFoolEngine
 {
     class PBRModel;
@@ -24,6 +26,7 @@ namespace TheFoolEngine
         void LoadModelAsync(const std::string& path, LoadCallback callback);
         void ProcessCompleted();
     private:
+        std::unordered_map<std::string, Ref<PBRModel>> m_Cache; // path -> model
         moodycamel::ConcurrentQueue<AsyncLoadResult> m_Completed;
     };
 }

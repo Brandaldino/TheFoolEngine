@@ -4,9 +4,11 @@
 
 #include <glm/glm.hpp>
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
 
-	class RendererAPI {
+	class RendererAPI 
+    {
 	public:
         // === API =======================
 		enum class API
@@ -30,6 +32,7 @@ namespace TheFoolEngine{
 		virtual void Clear() = 0;
 
 		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
+        virtual void DrawIndexedInstanced(const Ref<VertexArray>& vertexArray, uint32_t indexCount, uint32_t instanceCount) = 0;
 
         // === Depth State =========================================
         virtual void SetDepthFunc(DepthFunc func) = 0;

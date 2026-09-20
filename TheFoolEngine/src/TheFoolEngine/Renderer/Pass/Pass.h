@@ -43,6 +43,8 @@ namespace TheFoolEngine
         std::vector<glm::mat4> ShadowViewProjections; // direction | spot
         PointShadowData PointShadow; // pointshadow
         RenderGraph* RenderGraph = nullptr;
+
+        PBRRenderState State;
     };
 
     class Pass
