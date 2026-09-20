@@ -8,6 +8,7 @@
 #include "../RenderGraph.h"
 #include "../LightPacker.h"
 #include "../BatchSystem/BatchBuilder.h"
+#include "../InstanceRenderer.h"
 
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,8 +24,7 @@ namespace TheFoolEngine
         glNamedBufferStorage(m_GPULightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_GPULightUBO);
 
-        glCreateBuffers(1, &m_InstanceBuffer);
-        glNamedBufferStorage(m_InstanceBuffer, s_MaxInstances * sizeof(glm::mat4), nullptr, GL_DYNAMIC_STORAGE_BIT);
+        m_InstanceRenderer = CreateScope<InstanceRenderer>(s_MaxInstances);
     }
 
     void MainPass::SetOutput(TextureHandle& output)
@@ -114,23 +114,18 @@ namespace TheFoolEngine
             auto& batches = batchBuilder.GetBatches();
 
             // Fill instance matrices (each batch occupies a contiguous range)
-            uint32_t instanceOffset = 0;
+            m_InstanceRenderer->Reset();
             for (auto& batch : batches)
-            {
-                if (batch.Elements.empty())
-                    continue;
-                glNamedBufferSubData(m_InstanceBuffer, instanceOffset * sizeof(glm::mat4), batch.Elements.size() * sizeof(glm::mat4), batch.Elements.data());
-                instanceOffset += (uint32_t)batch.Elements.size();
-            }
+                if (!batch.Matrices.empty())
+                    batch.RenderOffset = m_InstanceRenderer->AddInstances(batch.Matrices);
 
             // Render (state cache retained, draw changed to instanced)
-            instanceOffset = 0;
             // State cache
             Ref<VertexArray> curVAO = nullptr;
             Ref<Texture2D> curTex[4] = { nullptr, nullptr, nullptr, nullptr };
             for (auto& batch : batches)
             {
-                if (batch.Elements.empty())
+                if (batch.Matrices.empty())
                     continue;
 
                 const auto& key = batch.Key;
@@ -172,11 +167,8 @@ namespace TheFoolEngine
                 m_Shader->SetFloat("u_RoughnessFactor", key.MetallicRoughnessFactor.y);
                 m_Shader->SetFloat("u_AOStrength", key.AOStrength);
 
-                glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, m_InstanceBuffer, 
-                    instanceOffset * sizeof(glm::mat4),
-                    batch.Elements.size() * sizeof(glm::mat4));
-                RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Elements.size());
-                instanceOffset += (uint32_t)batch.Elements.size();
+                m_InstanceRenderer->BindRange(batch.RenderOffset, (uint32_t)batch.Matrices.size());
+                RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Matrices.size());
             }
 
             // Skybox

@@ -61,15 +61,11 @@ namespace TheFoolEngine
         std::size_t operator()(const BatchKey& key) const { return (std::size_t)key.GetHash(); };
     };
 
-    struct BatchElement
-    {
-        glm::mat4 Model;    // proxy.Transform * mesh.NodeTransform
-    };
-
     struct Batch
     {
         BatchKey Key;
-        std::vector<BatchElement> Elements;
+        std::vector<glm::mat4> Matrices;    // Instance matrix
+        uint32_t RenderOffset = 0;  // SSBO offset (filled during the fill phase)
     };
 
     class BatchBuilder
@@ -80,7 +76,7 @@ namespace TheFoolEngine
         void AddRenderable(const PBRRenderProxy& proxy);
         void Sort();
 
-        const std::vector<Batch>& GetBatches() const { return m_Sorted; };
+        std::vector<Batch>& GetBatches() { return m_Sorted; };
         std::size_t GetBatchCount() const { return m_Sorted.size(); };
     private:
         std::unordered_map<BatchKey, Batch, BatchKeyHash> m_Batches;

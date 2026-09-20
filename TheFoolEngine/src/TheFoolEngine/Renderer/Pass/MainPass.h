@@ -5,6 +5,7 @@
 namespace TheFoolEngine
 {
     class Shader;
+    class InstanceRenderer;
 
     class MainPass : public Pass
     {
@@ -29,7 +30,7 @@ namespace TheFoolEngine
 
         uint32_t m_GPULightUBO;
 
-        uint32_t m_InstanceBuffer = 0;
+        Scope<InstanceRenderer> m_InstanceRenderer;
         static constexpr uint32_t s_MaxInstances = 4096;
     };
 }

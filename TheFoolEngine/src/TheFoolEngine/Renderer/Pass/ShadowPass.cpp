@@ -7,12 +7,15 @@
 #include "../Shader.h"
 #include "../RenderGraph.h"
 #include "../Frustum.h"
+#include "../BatchSystem/BatchBuilder.h"
+#include "../InstanceRenderer.h"
 
 namespace TheFoolEngine
 {
     ShadowPass::ShadowPass(Ref<Shader> shader)
         :m_Shader(shader)
     {
+        m_InstanceRenderer = CreateScope<InstanceRenderer>(s_MaxInstances);
     }
 
     void ShadowPass::SetOutput(TextureHandle& handle)
@@ -53,7 +56,9 @@ namespace TheFoolEngine
             Frustum layerFrustum;
             layerFrustum.Extract(context.ShadowViewProjections[layer]);
 
-            for (auto& proxy : context.ShadowCasters)
+            // Per layer (cull → batch → fill → render)
+            BatchBuilder batchBuilder;
+            for (auto& proxy : context.ShadowCasters)   // Shadow culling: re-cull per cascade/layer
             {
                 if (!proxy.Visible)
                     continue;
@@ -61,18 +66,48 @@ namespace TheFoolEngine
                 if (!layerFrustum.Intersects(proxy.BoundsCenter, proxy.BoundsHalfExtents))
                     continue;
 
-                auto& modelData = proxy.Model->GetModelData();
-                auto& vas = proxy.Model->GetVertexArray();
-                auto& meshes = modelData.Meshes;
-
-                for (std::size_t i = 0; i < vas.size(); ++i)
-                {
-                    glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                    m_Shader->SetMat4("u_Model", model);
-                    vas[i]->Bind();
-                    RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
-                }
+                batchBuilder.AddRenderable(proxy);
             }
+            batchBuilder.Sort();
+            auto& batches = batchBuilder.GetBatches();
+
+            m_InstanceRenderer->Reset();
+            for (auto& batch : batches)
+                batch.RenderOffset = m_InstanceRenderer->AddInstances(batch.Matrices);
+
+            for (auto& batch : batches)
+            {
+                if (batch.Matrices.empty())
+                    continue;
+                const auto& key = batch.Key;
+                key.VAO->Bind();
+                m_InstanceRenderer->BindRange(batch.RenderOffset, (uint32_t)batch.Matrices.size());
+                RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Matrices.size());
+            }
+
+            //BatchBuilder batchBuilder;
+            //for (auto& proxy : context.ShadowCasters)   // Shadow culling: re-cull per cascade/layer
+            //{
+            //    if (!proxy.Visible)
+            //        continue;
+
+            //    if (!layerFrustum.Intersects(proxy.BoundsCenter, proxy.BoundsHalfExtents))
+            //        continue;
+
+            //    auto& modelData = proxy.Model->GetModelData();
+            //    auto& vas = proxy.Model->GetVertexArray();
+            //    auto& meshes = modelData.Meshes;
+
+            //    for (std::size_t i = 0; i < vas.size(); ++i)
+            //    {
+            //        glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
+            //        m_Shader->SetMat4("u_Model", model);
+            //        vas[i]->Bind();
+            //        RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
+            //    }
+            //}
+            //batchBuilder.Sort();
+
         }
 
         context.RenderGraph->GetFrameBuffer(m_Output)->UnBind();
@@ -83,6 +118,7 @@ namespace TheFoolEngine
     PointShadowPass::PointShadowPass(Ref<Shader> shader)
         :m_Shader(shader)
     {
+        m_InstanceRenderer = CreateScope<InstanceRenderer>(s_MaxInstances);
     }
 
     void PointShadowPass::SetOutput(TextureHandle& handle)
@@ -128,8 +164,9 @@ namespace TheFoolEngine
                 Frustum faceFrustum;
                 faceFrustum.Extract(light.ShadowProj * light.ShadowViews[face]);
 
+                BatchBuilder batchBuilder;
                 // Traverse renderables to draw depth
-                for (auto& proxy : context.ShadowCasters)
+                for (auto& proxy : context.ShadowCasters)   // Shadow culling: re-cull per cascade/layer
                 {
                     if (!proxy.Visible)
                         continue;
@@ -137,17 +174,44 @@ namespace TheFoolEngine
                     if (!faceFrustum.Intersects(proxy.BoundsCenter, proxy.BoundsHalfExtents))
                         continue;
 
-                    auto& modelData = proxy.Model->GetModelData();
-                    auto& vas = proxy.Model->GetVertexArray();
-                    auto& meshes = modelData.Meshes;
-                    for (std::size_t i = 0; i < vas.size(); ++i)
-                    {
-                        glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-                        m_Shader->SetMat4("u_Model", model);
-                        vas[i]->Bind();
-                        RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
-                    }
+                    batchBuilder.AddRenderable(proxy);
                 }
+                batchBuilder.Sort();
+                auto& batches = batchBuilder.GetBatches();
+
+                m_InstanceRenderer->Reset();
+                for (auto& batch : batches)
+                    batch.RenderOffset = m_InstanceRenderer->AddInstances(batch.Matrices);
+
+                for (auto& batch : batches)
+                {
+                    if (batch.Matrices.empty())
+                        continue;
+                    const auto& key = batch.Key;
+                    key.VAO->Bind();
+                    m_InstanceRenderer->BindRange(batch.RenderOffset, (uint32_t)batch.Matrices.size());
+                    RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Matrices.size());
+                }
+
+                //for (auto& proxy : context.ShadowCasters)
+                //{
+                //    if (!proxy.Visible)
+                //        continue;
+
+                //    if (!faceFrustum.Intersects(proxy.BoundsCenter, proxy.BoundsHalfExtents))
+                //        continue;
+
+                //    auto& modelData = proxy.Model->GetModelData();
+                //    auto& vas = proxy.Model->GetVertexArray();
+                //    auto& meshes = modelData.Meshes;
+                //    for (std::size_t i = 0; i < vas.size(); ++i)
+                //    {
+                //        glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
+                //        m_Shader->SetMat4("u_Model", model);
+                //        vas[i]->Bind();
+                //        RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
+                //    }
+                //}
             }
         }
 

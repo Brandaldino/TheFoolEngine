@@ -5,6 +5,7 @@
 namespace TheFoolEngine
 {
     class Shader;
+    class InstanceRenderer;
 
     // ====================== Direction & Spot Light Shadow ==================
     class ShadowPass : public Pass
@@ -23,6 +24,9 @@ namespace TheFoolEngine
         Ref<Shader> m_Shader;
         TextureHandle m_Output;
         std::vector<TextureHandle> m_Outputs;
+
+        Scope<InstanceRenderer> m_InstanceRenderer;
+        static constexpr uint32_t s_MaxInstances = 4096;
     };
 
     // ====================== Point Light Shadow =============================
@@ -42,5 +46,8 @@ namespace TheFoolEngine
         Ref<Shader> m_Shader;
         TextureHandle m_Output;
         std::vector<TextureHandle> m_Outputs;
+
+        Scope<InstanceRenderer> m_InstanceRenderer;
+        static constexpr uint32_t s_MaxInstances = 4096;
     };
 }

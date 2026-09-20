@@ -30,7 +30,7 @@ namespace TheFoolEngine
 
             auto& batch = m_Batches[key];
             batch.Key = key;
-            batch.Elements.push_back({ proxy.Transform * meshes[i].NodeTransform });
+            batch.Matrices.push_back({ proxy.Transform * meshes[i].NodeTransform });
         }
     }
 

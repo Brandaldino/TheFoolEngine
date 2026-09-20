@@ -199,6 +199,7 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\Frustum.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\IBLUtils.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\InstanceRenderer.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Light.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\LightPacker.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\OrthographicCamera.h" />
@@ -694,6 +695,7 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\CubeMap.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\IBLUtils.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\InstanceRenderer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\LightPacker.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\OrthographicCameraController.cpp" />
