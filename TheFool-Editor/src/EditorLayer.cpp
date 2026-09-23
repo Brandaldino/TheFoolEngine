@@ -23,6 +23,8 @@ namespace TheFoolEngine
 
         PrecompileShaders();
 
+        m_Occlusion = CreateRef<OcclusionManager>();
+
         m_ScenePath = "SceneJson/test_01.json";
 
         // Shader
@@ -311,6 +313,10 @@ namespace TheFoolEngine
         // Update Scene
         m_ActiveScene->OnUpdate(ts, !m_Is3DMode);
 
+        // read last frame
+        std::unordered_set<uint32_t> activeIDs;
+        m_Occlusion->ReadBackResults();
+
         // PBR pass (editor camera)
         RenderContext context;
         if (m_Is3DMode)
@@ -451,12 +457,20 @@ namespace TheFoolEngine
                 proxy.BoundsHalfExtents = halfExt;
                 context.ShadowCasters.push_back(proxy);
                 
-                if (!frustum.Intersects(center, halfExt))
-                    continue; // cull
+                uint32_t id = entt::to_integral(entity);
+                activeIDs.insert(id);
 
-                context.Renderables.push_back(proxy);
+                if (frustum.Intersects(center, halfExt))
+                {
+                    m_Occlusion->UpdateEntity(id, center, halfExt);
+                    if (!m_Occlusion->IsVisible(id))
+                        continue;
+                    context.Renderables.push_back(proxy);
+                }
             }
 
+            m_Occlusion->Prune(activeIDs);
+            context.Occlusion = m_Occlusion;
             m_RenderGraph.Execute(context);
 
             m_DrawCall = context.State.DrawCalls;
@@ -515,6 +529,8 @@ namespace TheFoolEngine
 
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::Off);
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
+
+        m_Occlusion->EndFrame();
     }
 
     void EditorLayer::OnImGuiRender() 
@@ -840,6 +856,10 @@ namespace TheFoolEngine
         m_MainPass->SetInputPointShadow(m_PointShadowHandle);
         m_MainPass->SetOutput(m_HDRHandle);
         m_RenderGraph.AddPass(std::move(m_MainPass));
+
+        auto occlPass = CreateScope<OcclusionPass>(m_ShadowShader); // depth Only shader
+        occlPass->SetDepthHandle(m_HDRHandle);
+        m_RenderGraph.AddPass(std::move(occlPass));
 
         if (config.EnableBloom)
         {

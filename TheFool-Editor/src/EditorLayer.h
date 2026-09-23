@@ -84,6 +84,8 @@ namespace TheFoolEngine
         uint32_t m_DrawCall = 0;
         uint32_t m_MeshCount = 0;
 
+        Ref<OcclusionManager> m_Occlusion;
+
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
         PerspectiveCameraController m_PerspectiveCameraController;

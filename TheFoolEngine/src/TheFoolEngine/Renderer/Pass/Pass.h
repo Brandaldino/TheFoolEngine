@@ -10,6 +10,7 @@
 namespace TheFoolEngine
 {
     class RenderGraph;
+    class OcclusionManager;
 
     struct PBRRenderProxy
     {
@@ -43,7 +44,7 @@ namespace TheFoolEngine
         std::vector<glm::mat4> ShadowViewProjections; // direction | spot
         PointShadowData PointShadow; // pointshadow
         RenderGraph* RenderGraph = nullptr;
-
+        Ref<OcclusionManager> Occlusion;
         PBRRenderState State;
     };
 

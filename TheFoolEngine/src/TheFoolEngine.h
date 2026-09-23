@@ -45,6 +45,7 @@
 #include "TheFoolEngine/Renderer/CubeMap.h"
 #include "TheFoolEngine/Renderer/IBLUtils.h"
 #include "TheFoolEngine/Renderer/RenderGraph.h"
+#include "TheFoolEngine/Renderer/OcclusionManager.h"
 
 #include "TheFoolEngine/Renderer/OrthographicCamera.h"
 #include "TheFoolEngine/Renderer/PerspectiveCameraController.h"
@@ -58,6 +59,7 @@
 #include "TheFoolEngine/Renderer/Pass/BloomBlurPass.h"
 #include "TheFoolEngine/Renderer/Pass/BloomCombinePass.h"
 #include "TheFoolEngine/Renderer/Pass/ToneMappingPass.h"
+#include "TheFoolEngine/Renderer/Pass/OcclusionPass.h"
 // -- Async ---------------------------
 #include "TheFoolEngine/Importer/Async/AsyncAssetLoader.h"
 // -- test ----------------------------
