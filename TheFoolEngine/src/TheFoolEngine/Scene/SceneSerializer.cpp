@@ -60,6 +60,11 @@ namespace TheFoolEngine
                 auto& mc = scene->m_Registry.get<PBRModelComponent>(entity);
                 // entityJson["PBRModelComponent"]["Name"] = mc.Model->GetName();
                 entityJson["PBRModelComponent"]["FilePath"] = mc.Model->GetPath().string();
+                for (std::size_t i = 0;i < mc.LODPaths.size(); ++i)
+                    entityJson["PBRModelComponent"]["LODs"].push_back({
+                        {"Path",mc.LODPaths[i]},
+                        {"Distance", mc.LODDistances[i]}
+                        });
             }
 
             // SpriteRenderer
@@ -124,7 +129,9 @@ namespace TheFoolEngine
         struct PendingModel 
         { 
             Entity Entity; 
-            std::string Path; 
+            std::string Path;
+            std::vector<std::string> LODPaths;
+            std::vector<float> LODDistances;
         };
         std::vector<PendingModel> pendingModels;
 
@@ -156,7 +163,17 @@ namespace TheFoolEngine
             if (entityJson.contains("PBRModelComponent"))
             {
                 std::string path = entityJson["PBRModelComponent"]["FilePath"].get<std::string>();
-                pendingModels.push_back({ entity, path });
+                std::vector<std::string> lodPaths;
+                std::vector<float> lodDistances;
+                if (entityJson["PBRModelComponent"].contains("LODs"))
+                {
+                    for (auto& lod : entityJson["PBRModelComponent"]["LODs"])
+                    {
+                        lodPaths.push_back(lod["Path"].get<std::string>());
+                        lodDistances.push_back(lod.value("Distance", FLT_MAX));
+                    }
+                }
+                pendingModels.push_back({ entity, path, lodPaths, lodDistances });
             }
 
             if (entityJson.contains("SpriteRendererComponent"))
@@ -187,14 +204,31 @@ namespace TheFoolEngine
         for (auto& pm : pendingModels)
         {
             AsyncAssetLoader::Get().LoadModelAsync(pm.Path,
-                [entity = pm.Entity](const std::string& path, Ref<PBRModel> model) mutable
+                [entity = pm.Entity, lodPaths = pm.LODPaths, lodDistances = pm.LODDistances](const std::string& path, Ref<PBRModel> model) mutable
                 {
                     if (!entity.IsValid())
                     {
                         TF_CORE_WARN("Entity invalid, skip model: {0}", path);
                         return;
                     }
-                    entity.AddComponent<PBRModelComponent>(model);
+
+                    PBRModelComponent comp(model);
+                    comp.LODPaths = lodPaths;
+                    comp.LODDistances = lodDistances;
+                    comp.LODModels.resize(lodPaths.size());
+                    entity.AddComponent<PBRModelComponent>(comp);
+
+                    // Asynchronously load LOD levels (callback fills by index)
+                    for (std::size_t i = 0; i < lodPaths.size(); ++i)
+                        AsyncAssetLoader::Get().LoadModelAsync(lodPaths[i],
+                            [entity, i](const std::string& lp, Ref<PBRModel> lmodel) mutable
+                            {
+                                if (!entity.IsValid())
+                                    return;
+                                if (entity.HasComponent<PBRModelComponent>())
+                                    entity.GetComponent<PBRModelComponent>().LODModels[i] = lmodel;
+                            }
+                        );
                 });
         }
 

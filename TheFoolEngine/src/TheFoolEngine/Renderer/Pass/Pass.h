@@ -20,6 +20,8 @@ namespace TheFoolEngine
         glm::vec3 BoundsCenter = glm::vec3(0.0f);
         glm::vec3 BoundsHalfExtents = glm::vec3(1.0f);
         bool Visible = true;
+
+        std::size_t LODLevel = 0;   // for debug
     };
 
     struct CameraData

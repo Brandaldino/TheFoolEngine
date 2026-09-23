@@ -449,12 +449,25 @@ namespace TheFoolEngine
                 glm::vec3 center = (worldMin + worldMax) * 0.5f;
                 glm::vec3 halfExt = (worldMax - worldMin) * 0.5f;
 
+                Ref<PBRModel> model = pbr.Model;
+                std::size_t lodLevel = 0;   // for debug
+                float dist = glm::length(context.Camera.Position - center);
+                for (std::size_t i = 0; i < pbr.LODModels.size(); ++i)
+                {
+                    if (pbr.LODModels[i] && dist > pbr.LODDistances[i])
+                    {
+                        model = pbr.LODModels[i];
+                        lodLevel = i + 1;
+                    }
+                }
+
                 PBRRenderProxy proxy;
-                proxy.Model = pbr.Model;
+                proxy.Model = model;
                 proxy.Transform = transform.Transform;
                 proxy.Name = tag.Tag;
                 proxy.BoundsCenter = center;
                 proxy.BoundsHalfExtents = halfExt;
+                proxy.LODLevel = lodLevel;  // for debug
                 context.ShadowCasters.push_back(proxy);
                 
                 uint32_t id = entt::to_integral(entity);
@@ -466,6 +479,9 @@ namespace TheFoolEngine
                     if (!m_Occlusion->IsVisible(id))
                         continue;
                     context.Renderables.push_back(proxy);
+
+                    if(proxy.Name == "Furina")
+                        TF_CORE_INFO("Entity {0}: LOD{1} dist={2}", proxy.Name, proxy.LODLevel, dist);
                 }
             }
 
