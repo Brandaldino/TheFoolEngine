@@ -142,8 +142,8 @@
                         "PBRModelComponent": {
                               "FilePath": "assets/model/Furina.fbx",
                               "LODs":[
-                                    {"Path": "E:\\TFE\\TheFoolEngine\\assets\\model\\Furina.fbx", "Distance": 30.0},
-                                    {"Path": "E:\\TFE\\TheFoolEngine\\assets\\model\\Furina.fbx", "Distance": 60.0}
+                                    {"Path": "E:\\TFE\\TheFoolEngine\\assets\\model\\Furina_LOD1.fbx", "Distance": 30.0},
+                                    {"Path": "E:\\TFE\\TheFoolEngine\\assets\\model\\Furina_LOD2.fbx", "Distance": 60.0}
                               ]
                         },
                         "TagComponent": {
