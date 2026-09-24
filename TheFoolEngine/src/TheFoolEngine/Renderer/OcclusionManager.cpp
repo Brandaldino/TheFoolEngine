@@ -27,26 +27,26 @@ namespace TheFoolEngine
         }
     }
 
-    void OcclusionManager::UpdateEntity(uint32_t id, const glm::vec3& center, const glm::vec3& halfExt)
+    void OcclusionManager::UpdateEntity(UUID id, const glm::vec3& center, const glm::vec3& halfExt)
     {
         auto& entry = m_Entries[id];
         entry.BoundsCenter = center;
         entry.BoundsHalfExtents = halfExt;
     }
 
-    std::vector<uint32_t>& OcclusionManager::GetEntitiesToTest()
+    std::vector<UUID>& OcclusionManager::GetEntitiesToTest()
     {
         m_TestCandidates.clear();
         for (auto& [id, entry] : m_Entries)
         {
-            uint32_t interval = GetTestInterval(entry.State);
+            UUID interval = GetTestInterval(entry.State);
             if (entry.FramesSinceTest >= interval)
                 m_TestCandidates.push_back(id);
         }
         return m_TestCandidates;
     }
 
-    bool OcclusionManager::IsVisible(uint32_t id) const
+    bool OcclusionManager::IsVisible(UUID id) const
     {
         auto it = m_Entries.find(id);
         if (it == m_Entries.end())
@@ -54,7 +54,7 @@ namespace TheFoolEngine
         return it->second.State == OcclusionState::Visible;
     }
 
-    OcclusionEntry& OcclusionManager::GetEntry(uint32_t id)
+    OcclusionEntry& OcclusionManager::GetEntry(UUID id)
     {
         return m_Entries[id];
     }
@@ -65,12 +65,12 @@ namespace TheFoolEngine
             entry.FramesSinceTest++;    // Increment frame counter++
     }
 
-    void OcclusionManager::RemoveEntity(uint32_t id)
+    void OcclusionManager::RemoveEntity(UUID id)
     {
         m_Entries.erase(id);
     }
 
-    void OcclusionManager::Prune(const std::unordered_set<uint32_t>& activeIDs)
+    void OcclusionManager::Prune(const std::unordered_set<UUID>& activeIDs)
     {
         for (auto it = m_Entries.begin(); it != m_Entries.end();)
         {
@@ -81,7 +81,7 @@ namespace TheFoolEngine
         }
     }
 
-    uint32_t OcclusionManager::GetTestInterval(OcclusionState state) const
+    UUID OcclusionManager::GetTestInterval(OcclusionState state) const
     {
         switch (state)
         {

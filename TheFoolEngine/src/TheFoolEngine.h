@@ -12,6 +12,8 @@
 
 #include "TheFoolEngine/Core/TimeStep.h"
 
+#include "TheFoolEngine/Core/UUID.h"
+
 // --Intercation-----------------------
 
 #include "TheFoolEngine/Core/Input.h"

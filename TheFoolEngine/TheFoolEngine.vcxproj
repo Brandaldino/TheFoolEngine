@@ -179,6 +179,7 @@
     <ClInclude Include="src\TheFoolEngine\Core\ThreadPool.h" />
     <ClInclude Include="src\TheFoolEngine\Core\TimeStep.h" />
     <ClInclude Include="src\TheFoolEngine\Core\Utils\HashUtils.h" />
+    <ClInclude Include="src\TheFoolEngine\Core\UUID.h" />
     <ClInclude Include="src\TheFoolEngine\Core\Window.h" />
     <ClInclude Include="src\TheFoolEngine\Debug\Instrumentor.h" />
     <ClInclude Include="src\TheFoolEngine\Events\ApplicationEvents.h" />

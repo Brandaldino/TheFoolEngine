@@ -1625,6 +1625,7 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\OcclusionManager.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\Pass\OcclusionPass.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLOcclusionQuery.h" />
+    <ClInclude Include="src\TheFoolEngine\Core\UUID.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">

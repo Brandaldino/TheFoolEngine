@@ -6,7 +6,17 @@
 #include "ScriptableEntity.h"
 #include "../Importer/PBRModel.h"
 
-namespace TheFoolEngine{
+#include "TheFoolEngine/Core/UUID.h"
+
+namespace TheFoolEngine
+{
+    struct IDComponent
+    {
+        UUID ID;
+
+        IDComponent() : ID(GenerateUUID()) {};
+        IDComponent(const UUID& id) :ID(id) {};
+    };
 
 	struct TagComponent
 	{

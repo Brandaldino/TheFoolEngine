@@ -316,7 +316,7 @@ namespace TheFoolEngine
         m_ActiveScene->OnUpdate(ts, !m_Is3DMode);
 
         // read last frame
-        std::unordered_set<uint32_t> activeIDs;
+        std::unordered_set<UUID> activeIDs;
         m_Occlusion->ReadBackResults();
 
         // PBR pass (editor camera)
@@ -412,12 +412,13 @@ namespace TheFoolEngine
             Frustum frustum;
             frustum.Extract(m_PerspectiveCameraController.GetCamera().GetViewProjectionMatrix());
 
-            auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent, TagComponent>();
+            auto pbrView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent, TagComponent, IDComponent>();
             for (auto entity : pbrView)
             {
                 auto& transform = pbrView.get<TransformComponent>(entity);
                 auto& pbr = pbrView.get<PBRModelComponent>(entity);
                 auto& tag = pbrView.get<TagComponent>(entity);
+                auto& uid = pbrView.get<IDComponent>(entity);
 
                 // 1. Model local AABB (merge all meshes; cacheable)
                 auto& modelData = pbr.Model->GetModelData();
@@ -472,7 +473,7 @@ namespace TheFoolEngine
                 proxy.LODLevel = lodLevel;  // for debug
                 context.ShadowCasters.push_back(proxy);
                 
-                uint32_t id = entt::to_integral(entity);
+                UUID id = uid.ID;
                 activeIDs.insert(id);
 
                 if (frustum.Intersects(center, halfExt))

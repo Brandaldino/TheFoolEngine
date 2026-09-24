@@ -24,10 +24,13 @@ namespace TheFoolEngine
         sceneJson["Scene"]["Environment"] = Json::object();
 
         // Iterate over entities
-        auto view = scene->m_Registry.view<TagComponent>();
+        auto view = scene->m_Registry.view<IDComponent, TagComponent>();
         for (auto entity : view)
         {
             Json entityJson;
+
+            // UUID
+            entityJson["IDComponent"]["ID"] = view.get<IDComponent>(entity).ID;
 
             // Tag
             entityJson["TagComponent"]["Tag"] = view.get<TagComponent>(entity).Tag;
@@ -140,6 +143,9 @@ namespace TheFoolEngine
         {
             std::string name = entityJson["TagComponent"]["Tag"].get<std::string>();
             Entity entity = scene->CreateEntity(name);
+
+            if (entityJson.contains("IDComponent"))
+                entity.GetComponent<IDComponent>().ID = entityJson["IDComponent"]["ID"].get<UUID>();
 
             if (entityJson.contains("TransformComponent"))
                 entity.GetComponent<TransformComponent>().Transform = entityJson["TransformComponent"]["Transform"].get<glm::mat4>();

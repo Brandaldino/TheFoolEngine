@@ -1,6 +1,8 @@
 #pragma once
 
 #include "OcclusionQuery.h"
+#include "TheFoolEngine/Core/UUID.h"
+
 #include <glm/glm.hpp>
 #include <unordered_set>
 
@@ -26,17 +28,17 @@ namespace TheFoolEngine
     {
     public:
         void ReadBackResults(); // Frame start: read previous frame's query and update state
-        void UpdateEntity(uint32_t id, const glm::vec3& center, const glm::vec3& halfExt);
-        std::vector<uint32_t>& GetEntitiesToTest(); // Entities to submit for query this frame (grouped by state intervals)
-        bool IsVisible(uint32_t id) const;  // Render set filtering
-        OcclusionEntry& GetEntry(uint32_t id);
+        void UpdateEntity(UUID id, const glm::vec3& center, const glm::vec3& halfExt);
+        std::vector<UUID>& GetEntitiesToTest(); // Entities to submit for query this frame (grouped by state intervals)
+        bool IsVisible(UUID id) const;  // Render set filtering
+        OcclusionEntry& GetEntry(UUID id);
         void EndFrame();    // End of frame: FramesSinceTest++
-        void RemoveEntity(uint32_t id); // Clean up entities that no longer exist
-        void Prune(const std::unordered_set<uint32_t>& activeIDs);
+        void RemoveEntity(UUID id); // Clean up entities that no longer exist
+        void Prune(const std::unordered_set<UUID>& activeIDs);
     private:
-        uint32_t GetTestInterval(OcclusionState state) const;
+        UUID GetTestInterval(OcclusionState state) const;
     private:
-        std::unordered_map<uint32_t, OcclusionEntry> m_Entries; // id -> entry
-        std::vector<uint32_t> m_TestCandidates; // every frame rebuild
+        std::unordered_map<UUID, OcclusionEntry> m_Entries; // id -> entry
+        std::vector<UUID> m_TestCandidates; // every frame rebuild
     };
 }
