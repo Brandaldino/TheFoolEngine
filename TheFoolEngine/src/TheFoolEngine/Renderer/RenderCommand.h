@@ -48,6 +48,10 @@ namespace TheFoolEngine
         inline static void SetBlend(bool flag) { s_RendererAPI->SetBlend(flag); };
         inline static void DrawArrays(RendererAPI::DrawMode mode, uint32_t count) { s_RendererAPI->DrawArrays(mode, count); };
         inline static void BindArrayTexture(uint32_t renderID, uint32_t slot) { s_RendererAPI->BindArrayTexture(renderID, slot); };
+        inline static void SetColorMask(bool r, bool g, bool b, bool a) { s_RendererAPI->SetColorMask(r, g, b, a); };
+        inline static void BindTextureUnit(uint32_t unit, uint32_t textureID) { s_RendererAPI->BindTextureUnit(unit, textureID); };    // DSA texture bind
+        inline static void BindUniformBuffer(uint32_t binding, uint32_t bufferID) { s_RendererAPI->BindUniformBuffer(binding, bufferID); };
+        inline static void SetPolygonOffset(bool enable, float factor, float units) { s_RendererAPI->SetPolygonOffset(enable, factor, units); };
 	private:
 		static RendererAPI* s_RendererAPI;
 	};

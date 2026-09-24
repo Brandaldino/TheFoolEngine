@@ -4,15 +4,14 @@
 
 namespace TheFoolEngine
 {
+    class StorageBuffer;
 
     namespace LightPacker
     {
-
         GPULight PackDirection(const DirectionLight& light, int shadowIndex = -1);
         GPULight PackSpot(const SpotLight& light, int shadowIndex = -1);
         GPULight PackPoint(const PointLight& light, int shadowIndex = -1);
-        void SetGPULightFBO(uint32_t ubo, std::vector<GPULight> lights);
-
+        void SetGPULightFBO(Ref<StorageBuffer> ubo, std::vector<GPULight> lights);
     }
 
 }

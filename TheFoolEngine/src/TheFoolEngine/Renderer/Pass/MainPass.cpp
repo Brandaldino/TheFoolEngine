@@ -18,12 +18,9 @@ namespace TheFoolEngine
     MainPass::MainPass(Ref<Shader> shader)
         :m_Shader(shader)
     {
-        m_GPULightUBO = 0;
-
-        glCreateBuffers(1, &m_GPULightUBO);
-        glNamedBufferStorage(m_GPULightUBO, sizeof(LightGPUBlock), nullptr, GL_DYNAMIC_STORAGE_BIT);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_GPULightUBO);
-
+        m_GPULightUBO = StorageBuffer::Create(sizeof(LightGPUBlock));
+        RenderCommand::BindUniformBuffer(2, m_GPULightUBO->GetRendererID());
+        
         m_InstanceRenderer = CreateScope<InstanceRenderer>(s_MaxInstances);
     }
 
@@ -66,7 +63,7 @@ namespace TheFoolEngine
             // PointLightShadow
             if (ctx.RenderGraph->GetPointShadowMap(m_InputPointShadow))
             {
-                glBindTextureUnit(9, ctx.RenderGraph->GetPointShadowMap(m_InputPointShadow)->GetRendererID());
+                RenderCommand::BindTextureUnit(9, ctx.RenderGraph->GetPointShadowMap(m_InputPointShadow)->GetRendererID());
                 m_Shader->SetInt("u_PointShadowMaps", 9);
 
                 std::vector<float> farPlanes(MAX_SHADOW_LIGHTS, 100.0f);

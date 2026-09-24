@@ -60,9 +60,8 @@ namespace TheFoolEngine
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
         RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::Off);
         RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::Less);
-        glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(0.0f, -2.0f);   // Depth offset toward camera (negative value)
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);    // no color
+        RenderCommand::SetPolygonOffset(true, 0.0f, -36.0f);   // Depth offset toward camera (negative value)
+        RenderCommand::SetColorMask(false, false, false, false);    // no color
 
         m_Shader->Bind();
         m_Shader->SetMat4("u_Projection", context.Camera.ProjectionMatrix);
@@ -81,11 +80,11 @@ namespace TheFoolEngine
             entry.Query->End();
         }
 
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        RenderCommand::SetColorMask(true, true, true, true);
         RenderCommand::SetDepthWrite(RendererAPI::DepthWrite::On);
         RenderCommand::SetDepthTest(RendererAPI::DepthTest::On);
 
-        glDisable(GL_POLYGON_OFFSET_FILL);
+        RenderCommand::SetPolygonOffset(false, 0.0f, 0.0f);
         RenderCommand::SetDepthFunc(RendererAPI::DepthFunc::Less);
         fb->UnBind();
     }

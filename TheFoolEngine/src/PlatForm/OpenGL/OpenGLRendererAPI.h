@@ -32,9 +32,10 @@ namespace TheFoolEngine
         // === ArrayTexture ========================================
         virtual void BindArrayTexture(uint32_t renderID, uint32_t slot) override;
         // === OcclusionQuery ======================================
-        void SetColorMask(bool r, bool g, bool b, bool a) override;
-        void BindTextureUnit(uint32_t unit, uint32_t textureID) override;
-        void BindUniformBuffer(uint32_t binding, uint32_t bufferID) override;
+        virtual void SetColorMask(bool r, bool g, bool b, bool a) override;
+        virtual void BindTextureUnit(uint32_t unit, uint32_t textureID) override;
+        virtual void BindUniformBuffer(uint32_t binding, uint32_t bufferID) override;
+        virtual void SetPolygonOffset(bool enable, float factor, float units) override;
         // =========================================================
 	};
 

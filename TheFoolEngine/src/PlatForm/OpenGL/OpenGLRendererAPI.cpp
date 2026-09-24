@@ -126,4 +126,13 @@ namespace TheFoolEngine
         glBindBufferBase(GL_UNIFORM_BUFFER, binding, bufferID);
     }
 
+    void OpenGLRendererAPI::SetPolygonOffset(bool enable, float factor, float units)
+    {
+        if (enable)
+            glEnable(GL_POLYGON_OFFSET_FILL);
+        else
+            glDisable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(factor, units);
+    }
+
 }

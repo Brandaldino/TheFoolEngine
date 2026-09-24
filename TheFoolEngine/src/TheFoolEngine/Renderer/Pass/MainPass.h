@@ -6,6 +6,7 @@ namespace TheFoolEngine
 {
     class Shader;
     class InstanceRenderer;
+    class StorageBuffer;
 
     class MainPass : public Pass
     {
@@ -28,7 +29,7 @@ namespace TheFoolEngine
         TextureHandle m_InputShadow, m_InputPointShadow, m_Output;
         std::vector<TextureHandle> m_Inputs, m_Outputs;
 
-        uint32_t m_GPULightUBO;
+        Ref<StorageBuffer> m_GPULightUBO;
 
         Scope<InstanceRenderer> m_InstanceRenderer;
         static constexpr uint32_t s_MaxInstances = 4096;

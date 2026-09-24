@@ -1,6 +1,8 @@
 #include "tfpch.h"
 #include "LightPacker.h"
 
+#include "TheFoolEngine/Renderer/Buffer.h"
+
 #include <glad/glad.h>
 
 namespace TheFoolEngine
@@ -48,7 +50,7 @@ namespace TheFoolEngine
             return gpu;
         }
 
-        void SetGPULightFBO(uint32_t ubo, std::vector<GPULight> lights)
+        void SetGPULightFBO(Ref<StorageBuffer> ubo, std::vector<GPULight> lights)
         {
             LightGPUBlock lightblock = {};
             lightblock.LightCount = (int32_t)lights.size();
@@ -60,7 +62,7 @@ namespace TheFoolEngine
                 lightblock.Lights[i].Params = lights[i].Params;
                 lightblock.Lights[i].ShadowIndex = lights[i].ShadowIndex;
             }
-            glNamedBufferSubData(ubo, 0, sizeof(LightGPUBlock), &lightblock);
+            ubo->UpLoadData(0, sizeof(LightGPUBlock), &lightblock);
         }
 
     }

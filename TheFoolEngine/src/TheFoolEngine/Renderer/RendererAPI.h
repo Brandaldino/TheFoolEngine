@@ -52,6 +52,7 @@ namespace TheFoolEngine
         virtual void SetColorMask(bool r, bool g, bool b, bool a) = 0;
         virtual void BindTextureUnit(uint32_t unit, uint32_t textureID) = 0;    // DSA texture bind
         virtual void BindUniformBuffer(uint32_t binding, uint32_t bufferID) = 0;
+        virtual void SetPolygonOffset(bool enable, float factor, float units) = 0;
         // =========================================================
 		inline static API GetAPI() { return s_API; }
 	private:
