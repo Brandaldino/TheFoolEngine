@@ -167,7 +167,7 @@ namespace TheFoolEngine
                 m_Shader->SetFloat("u_RoughnessFactor", key.MetallicRoughnessFactor.y);
                 m_Shader->SetFloat("u_AOStrength", key.AOStrength);
 
-                m_InstanceRenderer->BindRange(batch.RenderOffset, (uint32_t)batch.Matrices.size());
+                m_InstanceRenderer->BindRange(1, batch.RenderOffset, (uint32_t)batch.Matrices.size());
                 RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Matrices.size());
             }
 

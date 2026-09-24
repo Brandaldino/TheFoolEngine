@@ -42,7 +42,21 @@
 - 分步：先收新加的（SSBO、OcclusionQuery），再收历史遗留（DSA 调用、直接 gl*）
 - 对齐 UE5：`RHI`（RHIResource/RHICmdList）分层
 
+## 规划 3：HZB 遮挡剔除演进（遮挡剔除根治）
+
+**目标**：从硬件遮挡查询（画包围盒 + 深度测试）演进为 **HZB（Hierarchical Z-Buffer）**——UE5 做法。
+
+**动机**：
+- 当前画包围盒 + 深度测试有**贴合问题**（扁平物体包围盒深度 ≈ 场景深度 → `GL_LESS` 误判），需 Polygon Offset 调参
+- HZB 不画包围盒，直接采样深度 mip 判断——**从根上避免贴合问题**，且零包围盒 draw call
+
+**设计要点**：
+- 深度 FBO 生成 HZB（深度 mip 链，2x2 取最靠近相机的深度）
+- 包围盒投影 → 选匹配 mip level → 采样判断是否被遮挡
+- 保留现有分层状态机（Visible/RecentlyOccluded/Occluded）
+- 前置：RHI 抽象完成（需要 HZB 生成 pass + 采样逻辑）
+
 ## 其他候选
 
 - 阴影质量（2048/PCF，之前搁置）
-- 真纹理流送、pass 并行调度、HZB 遮挡演进
+- 真纹理流送、pass 并行调度

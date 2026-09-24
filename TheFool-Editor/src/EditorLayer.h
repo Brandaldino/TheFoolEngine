@@ -50,6 +50,7 @@ namespace TheFoolEngine
 		Ref<Shader> m_BloomBlurShader;
 		Ref<Shader> m_BloomCombineShader;
         Ref<Shader> m_ToneMappingShader;
+        Ref<Shader> m_OcclusionPassShader;
 
         Ref<VertexArray> m_OutlineVAO;
         Ref<VertexBuffer> m_OutlineVBO;

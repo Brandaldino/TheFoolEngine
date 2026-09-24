@@ -48,6 +48,10 @@ namespace TheFoolEngine
         virtual void DrawArrays(DrawMode mode, uint32_t count) = 0;
         // === ArrayTexture ========================================
         virtual void BindArrayTexture(uint32_t renderID, uint32_t slot) = 0;
+        // === OcclusionQuery ======================================
+        virtual void SetColorMask(bool r, bool g, bool b, bool a) = 0;
+        virtual void BindTextureUnit(uint32_t unit, uint32_t textureID) = 0;    // DSA texture bind
+        virtual void BindUniformBuffer(uint32_t binding, uint32_t bufferID) = 0;
         // =========================================================
 		inline static API GetAPI() { return s_API; }
 	private:

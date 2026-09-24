@@ -1,42 +1,23 @@
 #include "tfpch.h"
 #include "OcclusionQuery.h"
-#include <glad/glad.h>
+
+#include "Renderer.h"
+
+#include "PlatForm/OpenGL/OpenGLOcclusionQuery.h"
 
 namespace TheFoolEngine
 {
-    OcclusionQuery::OcclusionQuery()
-    {
-        glGenQueries(1, &m_RendererID);
-    }
 
-    OcclusionQuery::~OcclusionQuery()
+    Ref<OcclusionQuery> OcclusionQuery::Create()
     {
-        glDeleteQueries(1, &m_RendererID);
-    }
+        switch (Renderer::GetAPI())
+        {
+            case RendererAPI::API::None:		TF_CORE_ASSERT(false, "RendererAPI::None is currentlly not supported!"); return nullptr;
+            case RendererAPI::API::OpenGL:	return CreateRef<OpenGLOcclusionQuery>();
+        }
 
-    void OcclusionQuery::Begin()
-    {
-        // CONSERVATIVE: consistent behavior across vendors (GL 4.6)
-        glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, m_RendererID);
-    }
-
-    void OcclusionQuery::End()
-    {
-        glEndQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
-    }
-
-    bool OcclusionQuery::Available()
-    {
-        GLint available = 0;
-        glGetQueryObjectiv(m_RendererID, GL_QUERY_RESULT_AVAILABLE, &available);
-        return available != 0;
-    }
-
-    uint32_t OcclusionQuery::GetResult()
-    {
-        GLuint result = 0;
-        glGetQueryObjectuiv(m_RendererID, GL_QUERY_RESULT, &result);
-        return result;
+        TF_CORE_ASSERT(false, "Unknown RendererAPI.");
+        return nullptr;
     }
 
 }

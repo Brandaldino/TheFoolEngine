@@ -6,6 +6,8 @@
 
 namespace TheFoolEngine
 {
+    class StorageBuffer;
+
     class InstanceRenderer
     {
     public:
@@ -14,11 +16,12 @@ namespace TheFoolEngine
 
         void Reset(); // Reset offset to zero at frame start
         uint32_t AddInstances(const std::vector<glm::mat4>& matrices);  // Fill and return the starting instance offset
-        void BindRange(uint32_t offset, uint32_t count) const;
+        void BindRange(uint32_t binding, uint32_t offset, uint32_t count) const;
 
-        const uint32_t GetRendererID() const { return m_RendererID; };
+        const uint32_t GetRendererID() const;
     private:
-        uint32_t m_RendererID = 0;
+        Ref<StorageBuffer> m_StorageBuffer;
+
         uint32_t m_MaxInstances = 0;
         uint32_t m_Offset = 0;
     };

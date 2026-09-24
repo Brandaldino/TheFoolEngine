@@ -2,7 +2,8 @@
 
 #include "TheFoolEngine/Renderer/Buffer.h"
 
-namespace TheFoolEngine{
+namespace TheFoolEngine
+{
 
 	class OpenGLVertexBuffer :public VertexBuffer 
     {
@@ -43,4 +44,17 @@ namespace TheFoolEngine{
 		uint32_t m_RendererID;
 		uint32_t m_Count;
 	};
+
+    class OpenGLStorageBuffer : public StorageBuffer
+    {
+    public:
+        OpenGLStorageBuffer(uint32_t size);
+        virtual ~OpenGLStorageBuffer();
+
+        virtual void UpLoadData(uint32_t offset, uint32_t size, const void* data) override;
+        virtual void BindRange(uint32_t binding, uint32_t offset, uint32_t size) override;
+        virtual const uint32_t GetRendererID() const override { return m_RendererID; };
+    private:
+        uint32_t m_RendererID;
+    };
  }

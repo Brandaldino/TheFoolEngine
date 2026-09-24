@@ -81,7 +81,7 @@ namespace TheFoolEngine
                     continue;
                 const auto& key = batch.Key;
                 key.VAO->Bind();
-                m_InstanceRenderer->BindRange(batch.RenderOffset, (uint32_t)batch.Matrices.size());
+                m_InstanceRenderer->BindRange(1, batch.RenderOffset, (uint32_t)batch.Matrices.size());
                 RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Matrices.size());
             }
 
@@ -189,7 +189,7 @@ namespace TheFoolEngine
                         continue;
                     const auto& key = batch.Key;
                     key.VAO->Bind();
-                    m_InstanceRenderer->BindRange(batch.RenderOffset, (uint32_t)batch.Matrices.size());
+                    m_InstanceRenderer->BindRange(1, batch.RenderOffset, (uint32_t)batch.Matrices.size());
                     RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Matrices.size());
                 }
 

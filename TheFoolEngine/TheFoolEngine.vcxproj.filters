@@ -1622,6 +1622,9 @@
     </ClInclude>
     <ClInclude Include="src\TheFoolEngine\Renderer\InstanceRenderer.h" />
     <ClInclude Include="src\TheFoolEngine\Renderer\OcclusionQuery.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\OcclusionManager.h" />
+    <ClInclude Include="src\TheFoolEngine\Renderer\Pass\OcclusionPass.h" />
+    <ClInclude Include="src\PlatForm\OpenGL\OpenGLOcclusionQuery.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1817,5 +1820,9 @@
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
     <ClCompile Include="src\TheFoolEngine\Renderer\InstanceRenderer.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\OcclusionManager.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\OcclusionQuery.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Renderer\Pass\OcclusionPass.cpp" />
+    <ClCompile Include="src\PlatForm\OpenGL\OpenGLOcclusionQuery.cpp" />
   </ItemGroup>
 </Project>

@@ -44,6 +44,8 @@ namespace TheFoolEngine
             m_BloomCombineShader = ShaderLibrary::Get().Load(filepath);
             filepath = "assets/shader/FlatColor.glsl";
             m_FlatShader = ShaderLibrary::Get().Load(filepath);
+            filepath = "assets/shader/OcclusionShader.glsl";
+            m_OcclusionPassShader = ShaderLibrary::Get().Load(filepath);
         }
 
         // Handle Create
@@ -824,6 +826,7 @@ namespace TheFoolEngine
             "assets/shader/PrefilterConvolution.glsl",
             "assets/shader/BRDFLUT.glsl",
             "assets/shader/EquirectToCubeMap.glsl",
+            "assets/shader/OcclusionShader.glsl",
         };
 
         for (auto path : shaderPaths)
@@ -873,7 +876,8 @@ namespace TheFoolEngine
         m_MainPass->SetOutput(m_HDRHandle);
         m_RenderGraph.AddPass(std::move(m_MainPass));
 
-        auto occlPass = CreateScope<OcclusionPass>(m_ShadowShader); // depth Only shader
+
+        auto occlPass = CreateScope<OcclusionPass>(m_OcclusionPassShader); // Occlusion shader
         occlPass->SetDepthHandle(m_HDRHandle);
         m_RenderGraph.AddPass(std::move(occlPass));
 

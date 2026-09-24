@@ -3,7 +3,8 @@
 
 #include <glad/glad.h>
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
 	////////////////////////////////////////////////////////////////
 	// VertexBuffer ////////////////////////////////////////////////
@@ -109,4 +110,30 @@ namespace TheFoolEngine {
 
         glNamedBufferSubData(m_RendererID, 0, size, data);
 	}
+
+    ///////////////////////////////////////////////////////////////
+    // StorageBuffer //////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+
+	OpenGLStorageBuffer::OpenGLStorageBuffer(uint32_t size) // total size
+	{
+        glCreateBuffers(1, &m_RendererID);
+        glNamedBufferStorage(m_RendererID, size, nullptr, GL_DYNAMIC_STORAGE_BIT);
+	}
+
+    OpenGLStorageBuffer::~OpenGLStorageBuffer()
+    {
+        glDeleteBuffers(1, &m_RendererID);
+    }
+
+    void OpenGLStorageBuffer::UpLoadData(uint32_t offset, uint32_t size, const void* data)
+    {
+        glNamedBufferSubData(m_RendererID, offset, size, data);
+    }
+
+    void OpenGLStorageBuffer::BindRange(uint32_t binding, uint32_t offset, uint32_t size)
+    {
+        glBindBufferRange(GL_SHADER_STORAGE_BUFFER, binding, m_RendererID, offset, size);
+    }
+
 }

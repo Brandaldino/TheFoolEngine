@@ -1,13 +1,17 @@
 #pragma once
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
-	enum class ShaderDataType : uint8_t {
+	enum class ShaderDataType : uint8_t 
+    {
 		None = 0,Float, Float2, Float3, Float4, Mat3, Mat4,Int, Int2, Int3, Int4, Bool
 	};
 
-	static uint32_t ShaderDataTypeSize(ShaderDataType type) {
-		switch (type) {
+	static uint32_t ShaderDataTypeSize(ShaderDataType type) 
+    {
+		switch (type) 
+        {
 			case ShaderDataType::Float:		return 4;
 			case ShaderDataType::Float2:	return 4 * 2;
 			case ShaderDataType::Float3:	return 4 * 3;
@@ -25,7 +29,8 @@ namespace TheFoolEngine {
 		return 0;
 	}
 
-	struct BufferElement {
+	struct BufferElement 
+    {
 		std::string Name;
 		ShaderDataType Type;
 		uint32_t Offset;
@@ -39,8 +44,10 @@ namespace TheFoolEngine {
 		{
 		}
 
-		uint32_t GetComponentCount() const {
-			switch (Type) {
+		uint32_t GetComponentCount() const 
+        {
+			switch (Type) 
+            {
 				case ShaderDataType::Float:		return 1;
 				case ShaderDataType::Float2:	return 2;
 				case ShaderDataType::Float3:	return 3;
@@ -58,7 +65,8 @@ namespace TheFoolEngine {
 		}
 	};
 
-	class BufferLayout {
+	class BufferLayout 
+    {
 	public:
 		BufferLayout() {};
 
@@ -76,11 +84,14 @@ namespace TheFoolEngine {
 		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
 		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
 	private:
-		void CalculateOffsetAndStride() {
-			for (auto& element : m_Elements) {
+		void CalculateOffsetAndStride() 
+        {
+			for (auto& element : m_Elements) 
+            {
 				uint32_t offset = 0;
 				m_Stride = 0;
-				for (auto& element : m_Elements) {
+				for (auto& element : m_Elements) 
+                {
 					element.Offset = offset;
 					offset += element.Size;
 					m_Stride += element.Size;
@@ -92,9 +103,10 @@ namespace TheFoolEngine {
 		uint32_t m_Stride = 0;
 	};
 
-	class VertexBuffer {
+	class VertexBuffer 
+    {
 	public:
-		virtual ~VertexBuffer() {};
+		virtual ~VertexBuffer() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -111,9 +123,10 @@ namespace TheFoolEngine {
 	};
 
 	// Currently TheFoolEngine only supports 32-bit index buffers
-	class IndexBuffer {
+	class IndexBuffer 
+    {
 	public:
-		virtual ~IndexBuffer() {};
+		virtual ~IndexBuffer() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -126,4 +139,15 @@ namespace TheFoolEngine {
 		static Ref<IndexBuffer> Create(uint32_t size);
 		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t size);
 	};
+
+    class StorageBuffer  // -> SSBO
+    {
+    public:
+        virtual ~StorageBuffer() = default;
+        virtual void UpLoadData(uint32_t offset, uint32_t size, const void* data) = 0;
+        virtual void BindRange(uint32_t binding, uint32_t offset, uint32_t size) = 0;
+        virtual const uint32_t GetRendererID() const = 0;
+
+        static Ref<StorageBuffer> Create(uint32_t size);
+    };
 }

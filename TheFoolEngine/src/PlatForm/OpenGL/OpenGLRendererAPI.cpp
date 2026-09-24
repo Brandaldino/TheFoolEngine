@@ -111,4 +111,19 @@ namespace TheFoolEngine
         glBindTextureUnit(slot, renderID);
     }
 
+    void OpenGLRendererAPI::SetColorMask(bool r, bool g, bool b, bool a)
+    {
+        glColorMask(r, g, b, a);
+    }
+
+    void OpenGLRendererAPI::BindTextureUnit(uint32_t unit, uint32_t textureID)
+    {
+        glBindTextureUnit(unit, textureID); // DSA texture bind
+    }
+
+    void OpenGLRendererAPI::BindUniformBuffer(uint32_t binding, uint32_t bufferID)
+    {
+        glBindBufferBase(GL_UNIFORM_BUFFER, binding, bufferID);
+    }
+
 }

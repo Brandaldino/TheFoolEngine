@@ -15,7 +15,7 @@ namespace TheFoolEngine
 
     struct OcclusionEntry
     {
-        Scope<OcclusionQuery> Query = CreateScope<OcclusionQuery>();
+        Ref<OcclusionQuery> Query = OcclusionQuery::Create();
         OcclusionState State = OcclusionState::Visible; // First frame render establishes the baseline
         uint32_t FramesSinceTest = 0;
         glm::vec3 BoundsCenter = glm::vec3(0.0f);

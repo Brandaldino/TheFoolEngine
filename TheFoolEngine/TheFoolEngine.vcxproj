@@ -156,6 +156,7 @@
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLCubeMap.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.h" />
+    <ClInclude Include="src\PlatForm\OpenGL\OpenGLOcclusionQuery.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLRenderUtil.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLRendererAPI.h" />
@@ -671,6 +672,7 @@
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLCubeMap.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLFrameBuffer.cpp" />
+    <ClCompile Include="src\PlatForm\OpenGL\OpenGLOcclusionQuery.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLPointShadowMap.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLRenderUtil.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLRendererAPI.cpp" />
