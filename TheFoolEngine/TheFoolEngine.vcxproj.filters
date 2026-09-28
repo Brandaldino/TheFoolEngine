@@ -1626,6 +1626,8 @@
     <ClInclude Include="src\TheFoolEngine\Renderer\Pass\OcclusionPass.h" />
     <ClInclude Include="src\PlatForm\OpenGL\OpenGLOcclusionQuery.h" />
     <ClInclude Include="src\TheFoolEngine\Core\UUID.h" />
+    <ClInclude Include="src\TheFoolEngine\Importer\Asset.h" />
+    <ClInclude Include="src\TheFoolEngine\Importer\AssetRegistry.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLBuffer.cpp">
@@ -1825,5 +1827,6 @@
     <ClCompile Include="src\TheFoolEngine\Renderer\OcclusionQuery.cpp" />
     <ClCompile Include="src\TheFoolEngine\Renderer\Pass\OcclusionPass.cpp" />
     <ClCompile Include="src\PlatForm\OpenGL\OpenGLOcclusionQuery.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Importer\AssetRegistry.cpp" />
   </ItemGroup>
 </Project>

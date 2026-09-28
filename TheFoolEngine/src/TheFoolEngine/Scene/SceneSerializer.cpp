@@ -5,8 +5,8 @@
 #include "Components.h"
 #include "JsonGlm.h"
 #include "../Importer/Async/AsyncAssetLoader.h"
-
 #include "../Renderer/PBRRenderer.h"
+#include "TheFoolEngine/Importer/AssetRegistry.h"
 
 #include <nlohmann/json.hpp>
 
@@ -61,7 +61,7 @@ namespace TheFoolEngine
             if (scene->m_Registry.all_of<PBRModelComponent>(entity))
             {
                 auto& mc = scene->m_Registry.get<PBRModelComponent>(entity);
-                // entityJson["PBRModelComponent"]["Name"] = mc.Model->GetName();
+                entityJson["PBRModelComponent"]["UUID"] = mc.ModelID;
                 entityJson["PBRModelComponent"]["FilePath"] = mc.Model->GetPath().string();
                 for (std::size_t i = 0;i < mc.LODPaths.size(); ++i)
                     entityJson["PBRModelComponent"]["LODs"].push_back({
@@ -219,9 +219,12 @@ namespace TheFoolEngine
                     }
 
                     PBRModelComponent comp(model);
+                    comp.ModelID = AssetRegistry::HashPath(path);
                     comp.LODPaths = lodPaths;
                     comp.LODDistances = lodDistances;
                     comp.LODModels.resize(lodPaths.size());
+                    for(auto& lp : lodPaths)
+                        comp.LODModelIDs.push_back(AssetRegistry::HashPath(lp));
                     entity.AddComponent<PBRModelComponent>(comp);
 
                     // Asynchronously load LOD levels (callback fills by index)

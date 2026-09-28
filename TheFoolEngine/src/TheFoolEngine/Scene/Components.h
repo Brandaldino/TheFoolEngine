@@ -81,9 +81,11 @@ namespace TheFoolEngine
 
     struct PBRModelComponent
     {
+        UUID ModelID = 0;
         Ref<PBRModel> Model;    // LOD-0
         std::vector<std::string> LODPaths;  // LOD-1、LOD-2
         std::vector<float> LODDistances;    // LOD switch distance
+        std::vector<UUID> LODModelIDs;
         std::vector<Ref<PBRModel>> LODModels;   // Runtime LOD level
 
         PBRModelComponent() = default;

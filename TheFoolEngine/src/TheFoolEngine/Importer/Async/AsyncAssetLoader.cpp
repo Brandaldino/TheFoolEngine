@@ -1,9 +1,10 @@
 #include "tfpch.h"
 #include "AsyncAssetLoader.h"
 
-#include "../PBRModel.h"
+#include "TheFoolEngine/Importer/PBRModel.h"
 #include "TheFoolEngine/Core/Job/JobSystem.h"
-#include "../../Renderer/PBRRenderer.h"
+#include "TheFoolEngine/Renderer/PBRRenderer.h"
+#include "TheFoolEngine/Importer/AssetRegistry.h"
 
 #include <thread>
 
@@ -17,34 +18,30 @@ namespace TheFoolEngine
 
     void AsyncAssetLoader::LoadModelAsync(const std::string& path, LoadCallback callback)
     {
-        // Normalize: relative → absolute + unify separators + canonicalize
-        std::filesystem::path fsPath(path);
-        std::string key = std::filesystem::weakly_canonical(fsPath).string();
+        std::string key = AssetRegistry::NormalizePath(path);
 
-        // Cache hit: invoke the callback directly (sharing the same Model)
-        auto it = m_Cache.find(key);
-        if (it != m_Cache.end())
+        // Already loaded (in registry) → invoke callback directly (share ModelAsset)
+        auto asset = AssetRegistry::Get().GetByPath(key);
+        if (asset && asset->GetType() == AssetType::Model)
         {
+            auto modelAsset = std::static_pointer_cast<ModelAsset>(asset);
             if (callback)
-                callback(key, it->second);
+                callback(key, modelAsset->GetModel());
             return;
         }
 
-        JobSystem::Get().Submit([this, key, callback]()
+        // Not loaded → background import
+        JobSystem::Get().Submit([this, path, key, callback]()
             {
-                TF_CORE_INFO("Async load on worker thread: {0}", std::hash<std::thread::id>{}(std::this_thread::get_id()));
-
                 auto model = CreateRef<PBRModel>();
-                std::filesystem::path fsPath(key);
-                model->Import(fsPath);
+                model->Import(std::filesystem::path(path));
 
                 if (model->GetModelData().Meshes.empty())
                 {
-                    TF_ERROR("Async import failed: {0}", key);
+                    TF_CORE_ERROR("Async import failed: {0}", path);
                     return;
                 }
-
-                m_Completed.enqueue({ key, model, callback });
+                m_Completed.enqueue({ key,model, callback });
             });
     }
 
@@ -56,13 +53,21 @@ namespace TheFoolEngine
             result.Model->UpLoad();
             PBRRenderer::DefaultTextureFill(result.Model);
 
-            // Cache: if already exists (duplicate request), reuse cached one and discard newly loaded
-            auto [it, inserted] = m_Cache.emplace(result.Path, result.Model);
-            if (!inserted)
-                result.Model = it->second;
+            // Register in AssetRegistry (deduplicate by path)
+            UUID id = AssetRegistry::HashPath(result.Path);
+            auto modelAsset = CreateRef<ModelAsset>(result.Model, id, result.Path);
+            UUID registeredID = AssetRegistry::Get().Register(modelAsset, result.Path);
+
+            // Concurrent duplicate request: already exists → use the one in registry (discard the newly loaded one)
+            Ref<PBRModel> model = result.Model;
+            if (registeredID != id)
+            {
+                auto existing = AssetRegistry::Get().GetAsset(registeredID);
+                model = std::static_pointer_cast<ModelAsset>(existing)->GetModel();
+            }
 
             if (result.Callback)
-                result.Callback(result.Path, result.Model);
+                result.Callback(result.Path, model);
         }
     }
 

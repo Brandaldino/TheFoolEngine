@@ -187,6 +187,8 @@
     <ClInclude Include="src\TheFoolEngine\Events\KeyBoardEvents.h" />
     <ClInclude Include="src\TheFoolEngine\Events\MouseEvents.h" />
     <ClInclude Include="src\TheFoolEngine\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\TheFoolEngine\Importer\Asset.h" />
+    <ClInclude Include="src\TheFoolEngine\Importer\AssetRegistry.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\Async\AsyncAssetLoader.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\MaterialData\PBRMaterialData.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\ModelLoader.h" />
@@ -691,6 +693,7 @@
     <ClCompile Include="src\TheFoolEngine\Core\ThreadPool.cpp" />
     <ClCompile Include="src\TheFoolEngine\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\TheFoolEngine\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Importer\AssetRegistry.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\Async\AsyncAssetLoader.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\ModelLoader.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.cpp" />
