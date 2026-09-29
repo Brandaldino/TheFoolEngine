@@ -470,7 +470,7 @@ namespace TheFoolEngine
                 proxy.Name = tag.Tag;
                 proxy.BoundsCenter = center;
                 proxy.BoundsHalfExtents = halfExt;
-                proxy.LODLevel = lodLevel;  // for debug
+                proxy.LODLevel = lodLevel;  // for debugfrustum.Intersects(center, halfExt)
                 context.ShadowCasters.push_back(proxy);
                 
                 UUID id = uid.ID;
@@ -479,12 +479,17 @@ namespace TheFoolEngine
                 if (frustum.Intersects(center, halfExt))
                 {
                     m_Occlusion->UpdateEntity(id, center, halfExt);
-                    if (!m_Occlusion->IsVisible(id))
-                        continue;
-                    context.Renderables.push_back(proxy);
 
-                    if(proxy.Name == "Furina")
-                        TF_CORE_INFO("Entity {0}: LOD{1} dist={2}", proxy.Name, proxy.LODLevel, dist);
+                    // Camera inside bounding box → always visible (skip occlusion query)
+                    bool cameraInside =
+                        glm::abs(context.Camera.Position.x - center.x) <= halfExt.x &&
+                        glm::abs(context.Camera.Position.y - center.y) <= halfExt.y &&
+                        glm::abs(context.Camera.Position.z - center.z) <= halfExt.z;
+
+                    if (!cameraInside && !m_Occlusion->IsVisible(id))
+                        continue;
+
+                    context.Renderables.push_back(proxy);
                 }
             }
 
