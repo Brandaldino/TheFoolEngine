@@ -45,6 +45,7 @@ namespace TheFoolEngine
         std::vector<GPULight> Lights;   // lights
         std::vector<glm::mat4> ShadowViewProjections; // direction | spot
         PointShadowData PointShadow; // pointshadow
+        glm::vec3 CascadeSplits;    // Main directional light cascade splits
         RenderGraph* RenderGraph = nullptr;
         Ref<OcclusionManager> Occlusion;
         PBRRenderState State;

@@ -84,30 +84,6 @@ namespace TheFoolEngine
                 m_InstanceRenderer->BindRange(1, batch.RenderOffset, (uint32_t)batch.Matrices.size());
                 RenderCommand::DrawIndexedInstanced(key.VAO, key.IndexCount, (uint32_t)batch.Matrices.size());
             }
-
-            //BatchBuilder batchBuilder;
-            //for (auto& proxy : context.ShadowCasters)   // Shadow culling: re-cull per cascade/layer
-            //{
-            //    if (!proxy.Visible)
-            //        continue;
-
-            //    if (!layerFrustum.Intersects(proxy.BoundsCenter, proxy.BoundsHalfExtents))
-            //        continue;
-
-            //    auto& modelData = proxy.Model->GetModelData();
-            //    auto& vas = proxy.Model->GetVertexArray();
-            //    auto& meshes = modelData.Meshes;
-
-            //    for (std::size_t i = 0; i < vas.size(); ++i)
-            //    {
-            //        glm::mat4 model = proxy.Transform * meshes[i].NodeTransform;
-            //        m_Shader->SetMat4("u_Model", model);
-            //        vas[i]->Bind();
-            //        RenderCommand::DrawIndexed(vas[i], (uint32_t)meshes[i].indices.size());
-            //    }
-            //}
-            //batchBuilder.Sort();
-
         }
 
         context.RenderGraph->GetFrameBuffer(m_Output)->UnBind();

@@ -2,9 +2,11 @@
 
 #include <glm/glm.hpp>
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
-	class PerspectiveCamera {
+	class PerspectiveCamera 
+    {
 	public:
 		PerspectiveCamera(float fovDegrees = 45.0f, float aspectRatio = 1280.0f / 720.0f, float nearClip = 0.1f, float farClip = 100.0f);
 
@@ -34,6 +36,8 @@ namespace TheFoolEngine {
 		const glm::mat4 GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		const glm::mat4 GetViewMatrix() const { return m_ViewMatrix; }
 		const glm::mat4 GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
+        const float GetFovDegrees() const { return m_FovDegrees; };
+        const float GetAspectRatio() const { return m_AspectRatio; };
 	private:
 		void RecalculateForward();
 		void RecalculateFrustumMatrix();

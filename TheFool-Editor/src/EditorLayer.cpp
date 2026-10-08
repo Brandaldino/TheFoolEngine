@@ -207,6 +207,7 @@ namespace TheFoolEngine
         auto modelEntity = m_ActiveScene->CreateEntity("Furina");
         modelEntity.AddComponent<PBRModelComponent>(m_PBRModel);
 
+
         // ground
         auto groundModel = CreateRef<PBRModel>();
         std::filesystem::path groundPath = "assets/model/BoxTextured.glb";
@@ -335,23 +336,102 @@ namespace TheFoolEngine
             context.Camera = cameraData;
 
             // Submit lights from ECS
+            bool mainDirShadowed = false;
+
             auto lightView = m_ActiveScene->m_Registry.view<LightComponent>();
             bool shadowEnabled = m_PipelineConfig.EnableShadows;
             for (auto entity : lightView)
             {
                 auto& lc = lightView.get<LightComponent>(entity);
-
+                
                 switch (lc.Type)
                 {
                     case 0:
                     {
-                        if (shadowEnabled && lc.CastShadow && context.ShadowViewProjections.size() < MAX_DIR_SPOT_SHADOWS)
+                        // Main light needs 3 slots, allocated from the total layer budget
+                        if (shadowEnabled && lc.CastShadow && context.ShadowViewProjections.size() + 2 < MAX_SHADOW_LIGHTS)
                         {
+                            // Capacity: the main light requires 3 slots
                             int shadowIndex = (int)context.ShadowViewProjections.size();
-                            context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
-                            context.Lights.push_back(
-                                LightPacker::PackDirection(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, shadowIndex)
-                            );
+
+                            // First CastShadow directional light → main light (3 cascades)
+                            if (!mainDirShadowed)    // Main light flag (initialized to false before the light loop in OnUpdate)
+                            {
+                                mainDirShadowed = true;
+
+                                glm::vec3 sceneMin(1e30f), sceneMax(-1e30f);
+                                auto aabbView = m_ActiveScene->m_Registry.view<TransformComponent, PBRModelComponent>();
+                                for (auto e : aabbView)
+                                {
+                                    auto& tf = aabbView.get<TransformComponent>(e);
+                                    auto& pbr = aabbView.get<PBRModelComponent>(e);
+
+                                    auto& md = pbr.Model->GetModelData();
+                                    glm::vec3 localMin(1e30f), localMax(-1e30f);
+                                    for (auto& mesh : md.Meshes)
+                                    {
+                                        localMin = glm::min(localMin, mesh.AABBMin);
+                                        localMax = glm::max(localMax, mesh.AABBMax);
+                                    }
+
+                                    glm::vec3 corners[8] = {
+                                        localMin,
+                                        {localMax.x, localMin.y, localMin.z},
+                                        {localMin.x, localMax.y, localMin.z},
+                                        {localMax.x, localMax.y, localMin.z},
+                                        {localMin.x, localMin.y, localMax.z},
+                                        {localMax.x, localMin.y, localMax.z},
+                                        {localMin.x, localMax.y, localMax.z},
+                                        localMax,
+                                    };
+                                    for (auto& c : corners)
+                                    {
+                                        glm::vec4 wc = tf.Transform * glm::vec4(c, 1.0f);
+                                        sceneMin = glm::min(sceneMin, glm::vec3(wc));
+                                        sceneMax = glm::max(sceneMax, glm::vec3(wc));
+                                    }
+                                }
+
+                                // Compute splits + 3 cascade matrices
+                                float splits[3];
+                                for (int i = 0; i < 3; ++i)
+                                    splits[i] = ShadowMath::CascadeSplit(0.1f, 100.0f, 0.5f, i, 3);
+
+                                for (int i = 0; i < 3; ++i)
+                                {
+                                    float near_ = (i == 0) ? 0.1f : splits[i - 1];
+                                    float far_ = splits[i];
+                                    context.ShadowViewProjections.push_back(
+                                        ShadowMath::ComputeDirLightCascadeVP(
+                                            glm::normalize(lc.Direction),
+                                            context.Camera.Position,
+                                            m_PerspectiveCameraController.GetCamera().GetForward(),
+                                            m_PerspectiveCameraController.GetCamera().GetUp(),
+                                            glm::radians(m_PerspectiveCameraController.GetCamera().GetFovDegrees()),
+                                            m_PerspectiveCameraController.GetCamera().GetAspectRatio(),
+                                            near_, far_,
+                                            sceneMin, sceneMax
+                                        )
+                                    );
+                                }
+                                context.CascadeSplits = glm::vec3(splits[0], splits[1], splits[2]);
+                                context.Lights.push_back(
+                                    LightPacker::PackDirection(
+                                        DirectionLight{ glm::normalize(lc.Direction),lc.Color,lc.Intensity },
+                                        shadowIndex
+                                    )
+                                );
+                            }
+                            else // Other directional lights → single cascade
+                            {
+                                context.ShadowViewProjections.push_back(ShadowMath::ComputeDirLightVP(glm::normalize(lc.Direction)));
+                                context.Lights.push_back(
+                                    LightPacker::PackDirection(
+                                        DirectionLight{ glm::normalize(lc.Direction),lc.Color,lc.Intensity },
+                                        shadowIndex
+                                    )
+                                );
+                            }
                         }
                         else
                             context.Lights.push_back(LightPacker::PackDirection(DirectionLight{ glm::normalize(lc.Direction), lc.Color, lc.Intensity }, -1));

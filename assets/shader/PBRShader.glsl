@@ -12,6 +12,7 @@ layout(location = 6) in vec4 a_Weights;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 // uniform mat4 u_Model;
+
 layout(std430, binding = 1) buffer InstanceBuffer
 {
     mat4 u_InstanceModels[];
@@ -93,6 +94,7 @@ uniform sampler2D  u_BRDFLUT;
 uniform sampler2DArray  u_ShadowMaps; // slot 8
 uniform samplerCubeArray u_PointShadowMaps; // slot 9
 uniform float u_PointShadowFarPlanes[MAX_SHADOW_LIGHTS];
+uniform vec3 u_CascadeSplits;
 
 // ============= PBR Functions =============
 float DistributionGGX(float NdotH, float roughness)
@@ -247,6 +249,7 @@ void main()
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
     vec3 Lo = vec3(0.0);
+    
     for (int i = 0; i < u_LightCount; ++i)
     {
         GPU_Light gl = u_Lights[i];
@@ -302,6 +305,14 @@ void main()
         vec3 radiance = gl.Color.xyz * gl.Color.w * attenuation;
         vec3 contribution = (diffuseBRDF + specularBRDF) * radiance * NdotL;
 
+        // Vertex (or fragment) selects cascade by distance
+        int cascade = 0;
+        float dist = length(v_FragPos - u_CameraPos); // Fragment-to-camera distance
+        if(dist > u_CascadeSplits.x)
+            cascade = 1;
+        if(dist > u_CascadeSplits.y)
+            cascade = 2;  
+
         if(gl.ShadowIndex >= 0)
         {
             if (type == LIGHT_TYPE_POINT)
@@ -313,8 +324,9 @@ void main()
             }
             else
             {
-                vec4 shadowCoord = u_ShadowMatrices[gl.ShadowIndex] * vec4(v_FragPos, 1.0);
-                float shadow = CalculateShadow(shadowCoord, gl.ShadowIndex);
+                int layer = gl.ShadowIndex + cascade;
+                vec4 shadowCoord = u_ShadowMatrices[layer] * vec4(v_FragPos, 1.0);
+                float shadow = CalculateShadow(shadowCoord, layer);
                 contribution *= (1.0 - shadow);
             }
         }
@@ -328,5 +340,9 @@ void main()
     color = vec4(result, 1.0);
 
     // === Test Color ==============
-    // color = vec4(1.0, 0.0, 0.0, 1.0);
+    // vec4 shadowCoord = u_ShadowMatrices[0] * vec4(v_FragPos, 1.0);
+    // vec3 projCoords = shadowCoord.xyz / shadowCoord.w;
+    // projCoords = projCoords * 0.5 + 0.5;
+    // float d = texture(u_ShadowMaps, vec3(projCoords.xy, 0)).r;
+    // color = vec4(projCoords.xy, d, 1.0);
 }

@@ -99,8 +99,10 @@ namespace TheFoolEngine
                 m_Shader->SetInt("u_BRDFLUT", 7);
             }
 
+            // 
+            m_Shader->SetFloat3("u_CascadeSplits", ctx.CascadeSplits);
+
             // batch entity
-            
             for (auto& proxy : ctx.Renderables)
             {
                 if (!proxy.Visible)
