@@ -63,7 +63,8 @@ namespace TheFoolEngine
             const glm::vec3& camUp,
             float verticalFovRad, float aspect, // ← Use vertical FOV (consistent with projection; previous pitfall)
             float cascadeNear, float cascadeFar,
-            const glm::vec3& sceneBoundsMin, const glm::vec3& sceneBoundsMax)   // Scene model AABB
+            const glm::vec3& sceneBoundsMin, const glm::vec3& sceneBoundsMax,   // Scene model AABB 
+            float shadowMapSize = 2048)
         {
             // 1. 8 corners of the camera frustum slice (using vertical FOV)
             glm::vec3 right = glm::normalize(glm::cross(camForward, camUp));
@@ -115,12 +116,21 @@ namespace TheFoolEngine
                 minB.z = glm::min(minB.z, lc.z);
                 maxB.z = glm::max(maxB.z, lc.z);
             }
-            float padding = 20.0f;
-            minB -= padding;
-            maxB += padding;
+            minB.x -= 5.0f;  maxB.x += 5.0f;
+            minB.y -= 5.0f;  maxB.y += 5.0f;
+            minB.z -= 20.0f; maxB.z += 20.0f;
 
             // 5. Ortho: light-space z is all negative (OpenGL -Z), flip to positive depth
             // Nearest = largest z, furthest = smallest z
+            glm::vec3 center = (minB + maxB) * 0.5f;
+            glm::vec3 extent = maxB - minB;
+            float texelWorld = extent.x / shadowMapSize;    // World units per texel
+            center.x = floor(center.x / texelWorld + 0.5f) * texelWorld;    // Center-align to nearest texel
+            center.y = floor(center.y / texelWorld + 0.5f) * texelWorld;
+            // Rebuild the AABB using the aligned center (extent unchanged → coverage unchanged)
+            minB = center - extent * 0.5f;
+            maxB = center + extent * 0.5f;
+
             float nearDepth = -maxB.z;   // nearest → positive depth
             float farDepth = -minB.z;    // furthest → positive depth
             glm::mat4 lightProj = glm::ortho(minB.x, maxB.x, minB.y, maxB.y, nearDepth, farDepth);

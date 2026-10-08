@@ -410,7 +410,8 @@ namespace TheFoolEngine
                                             glm::radians(m_PerspectiveCameraController.GetCamera().GetFovDegrees()),
                                             m_PerspectiveCameraController.GetCamera().GetAspectRatio(),
                                             near_, far_,
-                                            sceneMin, sceneMax
+                                            sceneMin, sceneMax,
+                                            DIR_SPOT_SHADOW_SIZE
                                         )
                                     );
                                 }

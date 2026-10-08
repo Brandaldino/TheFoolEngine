@@ -305,14 +305,6 @@ void main()
         vec3 radiance = gl.Color.xyz * gl.Color.w * attenuation;
         vec3 contribution = (diffuseBRDF + specularBRDF) * radiance * NdotL;
 
-        // Vertex (or fragment) selects cascade by distance
-        int cascade = 0;
-        float dist = length(v_FragPos - u_CameraPos); // Fragment-to-camera distance
-        if(dist > u_CascadeSplits.x)
-            cascade = 1;
-        if(dist > u_CascadeSplits.y)
-            cascade = 2;  
-
         if(gl.ShadowIndex >= 0)
         {
             if (type == LIGHT_TYPE_POINT)
@@ -324,9 +316,35 @@ void main()
             }
             else
             {
+                // Vertex (or fragment) selects cascade by distance
+                int cascade = 0;
+                float blend = 0.0f;
+                float dist = length(v_FragPos - u_CameraPos); // Fragment-to-camera distance
+                const float cascadeBlend = 1.5f;    // Transition region width
+                if(dist > u_CascadeSplits.x)
+                    cascade = 1;
+                if(dist > u_CascadeSplits.y)
+                    cascade = 2;  
+
+                // Shadow (current cascade)
                 int layer = gl.ShadowIndex + cascade;
                 vec4 shadowCoord = u_ShadowMatrices[layer] * vec4(v_FragPos, 1.0);
                 float shadow = CalculateShadow(shadowCoord, layer);
+
+                if(cascade > 0)
+                {
+                    float prevSplit = (cascade == 1) ? u_CascadeSplits.x : u_CascadeSplits.y;
+                    float t = smoothstep(prevSplit - cascadeBlend, prevSplit + cascadeBlend, dist);
+                    // t≈0 (just past the split) → use previous cascade; t≈1 (far away) → current cascade
+                    if(t < 1.0f)
+                    {
+                        int prevLayer = gl.ShadowIndex + cascade -1;
+                        vec4 prevCoord = u_ShadowMatrices[prevLayer] * vec4(v_FragPos, 1.0);
+                        float shadowPrev = CalculateShadow(prevCoord, prevLayer);
+                        shadow = mix(shadowPrev, shadow, t);
+                    }
+                }
+
                 contribution *= (1.0 - shadow);
             }
         }
