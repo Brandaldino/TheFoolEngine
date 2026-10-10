@@ -9,7 +9,7 @@ namespace TheFoolEngine
     InstanceRenderer::InstanceRenderer(uint32_t maxInstance)
         :m_MaxInstances(maxInstance)
     {
-        m_StorageBuffer = StorageBuffer::Create(maxInstance);
+        m_StorageBuffer = StorageBuffer::Create(maxInstance * sizeof(glm::mat4));
     }
 
     InstanceRenderer::~InstanceRenderer()

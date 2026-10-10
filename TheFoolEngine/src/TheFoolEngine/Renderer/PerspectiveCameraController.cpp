@@ -36,9 +36,9 @@ namespace TheFoolEngine
 			m_CameraPosition += m_CameraRight * velocity;
 
 		if (Input::IsKeyPressed(Key::Q))
-			m_CameraPosition -= m_CameraUp * velocity;
+			m_CameraPosition.y -= velocity;
 		else if (Input::IsKeyPressed(Key::E))
-			m_CameraPosition += m_CameraUp * velocity;
+			m_CameraPosition.y += velocity;
 
 		if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
 			AdjustCameraAngles(Input::GetMouseX(), Input::GetMouseY());

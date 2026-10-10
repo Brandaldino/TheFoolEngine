@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <glm/glm.hpp>
 
 #include "TheFoolEngine/Core/Base.h"
@@ -40,8 +41,8 @@ namespace TheFoolEngine
         glm::mat4 NodeTransform = glm::mat4(1.0f);
 
         // outline
-        glm::vec3 AABBMin = glm::vec3(1.0f);
-        glm::vec3 AABBMax = glm::vec3(-1.0f);
+        glm::vec3 AABBMin = glm::vec3(std::numeric_limits<float>::max());
+        glm::vec3 AABBMax = glm::vec3(std::numeric_limits<float>::lowest());
     };
 
     struct PBRMaterialTextureSet

@@ -3,7 +3,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 
 	PerspectiveCamera::PerspectiveCamera(float fovDegrees, float aspectRatio, float nearClip, float farClip)
 		:m_FovDegrees(fovDegrees), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip)

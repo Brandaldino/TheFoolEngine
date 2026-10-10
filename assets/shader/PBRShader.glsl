@@ -185,17 +185,6 @@ float CalculateShadow(vec4 shadowCoord, int layer)
         shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
     }
 
-    // for(int x = -1; x <= 1; ++x)
-    // {
-    //     for(int y = -1; y <= 1; ++y)
-    //     {
-    //         float pcfDepth = texture(u_ShadowMaps, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
-    //         shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-    //     }
-    // }
-
-    // return shadow / 9.0;
-    
     return shadow / 16.0;
 }
 
