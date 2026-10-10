@@ -6,6 +6,8 @@
 #include "TheFoolEngine/Renderer/PBRRenderer.h"
 #include "TheFoolEngine/Importer/AssetRegistry.h"
 
+#include "TheFoolEngine/Importer/ModelAnalyzer.h"
+
 #include <thread>
 
 namespace TheFoolEngine
@@ -35,7 +37,6 @@ namespace TheFoolEngine
             {
                 auto model = CreateRef<PBRModel>();
                 model->Import(std::filesystem::path(path));
-
                 if (model->GetModelData().Meshes.empty())
                 {
                     TF_CORE_ERROR("Async import failed: {0}", path);

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "MaterialData/PBRMaterialData.h"
+#include "../Renderer/VertexArray.h"
+#include "TheFoolEngine/Importer/ModelAnalyzer.h"
 
 #include <filesystem>
 
-#include "../Renderer/VertexArray.h"
 
 namespace TheFoolEngine
 {
@@ -27,9 +28,14 @@ namespace TheFoolEngine
         void SetBaseColor(const glm::vec3& color);
 
         Ref<Texture2D> UploadTextureGPU(const TextureData& data);
+
+        MeshStats GetMeshState() const { return m_MeshStats; };
     private:
         std::filesystem::path m_FilePath;
         PBRMaterialData m_ModelData;
         std::vector<Ref<VertexArray>> m_VertexArray;
+
+        // === Mesh State =================
+        MeshStats m_MeshStats;
     };
 }

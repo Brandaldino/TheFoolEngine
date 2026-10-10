@@ -191,7 +191,9 @@
     <ClInclude Include="src\TheFoolEngine\Importer\AssetRegistry.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\Async\AsyncAssetLoader.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\MaterialData\PBRMaterialData.h" />
+    <ClInclude Include="src\TheFoolEngine\Importer\ModelAnalyzer.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\ModelLoader.h" />
+    <ClInclude Include="src\TheFoolEngine\Importer\ModelStats.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.h" />
     <ClInclude Include="src\TheFoolEngine\Importer\PBRModel.h" />
@@ -695,6 +697,7 @@
     <ClCompile Include="src\TheFoolEngine\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\AssetRegistry.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\Async\AsyncAssetLoader.cpp" />
+    <ClCompile Include="src\TheFoolEngine\Importer\ModelAnalyzer.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\ModelLoader.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterial.cpp" />
     <ClCompile Include="src\TheFoolEngine\Importer\PBRMaterial\PBRMaterialManager.cpp" />

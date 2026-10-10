@@ -27,5 +27,8 @@ namespace TheFoolEngine
 	private:
 		Ref<Scene> m_Context;
 		Entity m_SelectionContext;
+
+        // ==============================
+        std::vector<entt::entity> m_ToDelete; // Deferred deletion queue
 	};
 }

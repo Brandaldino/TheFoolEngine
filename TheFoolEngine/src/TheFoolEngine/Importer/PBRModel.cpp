@@ -25,6 +25,7 @@ namespace TheFoolEngine
 
         m_ModelData = data;
         m_FilePath = path;
+        m_MeshStats = ModelAnalyzer::ComputeMeshStats(data);
     }
 
     void PBRModel::UpLoad()

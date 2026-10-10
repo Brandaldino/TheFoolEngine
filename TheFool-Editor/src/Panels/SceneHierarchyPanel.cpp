@@ -20,14 +20,25 @@ namespace TheFoolEngine
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
+        m_ToDelete.clear();
+
 		ImGui::Begin("Scene Hierarchy");
 
-		m_Context->m_Registry.each([&](auto entityID)
-			{
-				Entity entity{ entityID, m_Context.get() };
-				DrawEntityNode(entity);
-			}
-		);
+        auto pbrView = m_Context->m_Registry.view<PBRModelComponent>();
+        for (auto pbrEntity : pbrView)
+        {
+            Entity entity{ pbrEntity, m_Context.get() };
+            DrawEntityNode(entity);
+        }
+
+        // Delete all at once after traversal completes
+        for (auto e : m_ToDelete)
+        {
+            if (m_SelectionContext == Entity{ e, m_Context.get() })
+                m_SelectionContext = {};
+
+            m_Context->m_Registry.destroy(e);
+        }
 
 		ImGui::End();
 	}
@@ -42,9 +53,11 @@ namespace TheFoolEngine
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 
 		if (ImGui::IsItemClicked())
-		{
-			m_SelectionContext = entity;
-		}
+            m_SelectionContext = entity;
+
+        ImGui::SameLine();
+        if (ImGui::SmallButton(("Remove##" + tag).c_str()))
+            m_ToDelete.push_back(entity.GetEnttHandle());
 
 		if (opened)
 		{
@@ -151,6 +164,9 @@ namespace TheFoolEngine
         if (ImGui::CollapsingHeader("PBR Model"))
         {
             ImGui::Text("Model: %s", entity.GetComponent<PBRModelComponent>().Model->GetPath().u8string().c_str());
+            ImGui::Text("Vertex: %d", entity.GetComponent<PBRModelComponent>().Model->GetMeshState().Vertices);
+            ImGui::Text("Face: %d", entity.GetComponent<PBRModelComponent>().Model->GetMeshState().Faces);
+            ImGui::Text("Edge: %d", entity.GetComponent<PBRModelComponent>().Model->GetMeshState().Edges);
         }
     }
 }
