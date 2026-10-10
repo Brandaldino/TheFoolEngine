@@ -11,8 +11,10 @@
 
 #include "TheFoolEngine/ImGui/ImGuiLayer.h"
 
-namespace TheFoolEngine {
-	class Application{
+namespace TheFoolEngine 
+{
+	class Application
+    {
 	public:
 		Application(const std::string& name = "TheFoolEngine App");
 		virtual ~Application();

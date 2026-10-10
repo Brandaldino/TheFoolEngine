@@ -5,7 +5,8 @@
 
 #include <vector>
 
-namespace TheFoolEngine {
+namespace TheFoolEngine 
+{
 	class LayerStack
 	{
 	public:

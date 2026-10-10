@@ -6,7 +6,8 @@
 
 extern TheFoolEngine::Application* TheFoolEngine::CreateApplication();
 
-int main(int argc,char** argv) {
+int main(int argc,char** argv) 
+{
 	TheFoolEngine::Log::Init();
 
 	TF_PROFILE_BEGIN_SESSION("Startup", "TheFoolEngineProfile-Startup.json");
