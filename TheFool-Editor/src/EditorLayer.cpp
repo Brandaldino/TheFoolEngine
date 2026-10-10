@@ -224,17 +224,6 @@ namespace TheFoolEngine
         groundTransform.Transform = glm::translate(groundTransform.Transform, glm::vec3(0.0f, -10.5f, 0.0f));
         groundTransform.Transform = glm::scale(groundTransform.Transform, glm::vec3(100.0f, 0.05f, 100.0f));
 
-        auto square = m_ActiveScene->CreateEntity("Green Square");
-        square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
-
-        m_SquareEntity = square;
-
-        m_MainCamera = m_ActiveScene->CreateEntity("Camera Entity");
-        m_MainCamera.AddComponent<CameraComponent>();
-
-        m_SecondCamera = m_ActiveScene->CreateEntity("Clip-Camera Entity");
-        m_SecondCamera.AddComponent<CameraComponent>().Primary = false;
-
         class CameraController : public ScriptableEntity
         {
         public:
@@ -265,9 +254,6 @@ namespace TheFoolEngine
             }
         };
 
-		m_MainCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-        m_SecondCamera.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
         // FlatColor
@@ -292,6 +278,10 @@ namespace TheFoolEngine
     {
         TF_PROFILE_FUNCTION();
 
+        // FPS display
+        const float dt = ts.GetSeconds();
+        m_SmoothedDt = m_SmoothedDt == 0.0f ? dt : m_SmoothedDt * 0.9f + dt * 0.1f;
+
         AsyncAssetLoader::Get().ProcessCompleted();
 
         BuildRenderGraph(m_PipelineConfig);
@@ -310,11 +300,8 @@ namespace TheFoolEngine
         // Update editor camera
         m_PerspectiveCameraController.OnUpdate(ts);
 
-        // Render
-        Renderer2D::ResetStats();
-
         // Update Scene
-        m_ActiveScene->OnUpdate(ts, !m_Is3DMode);
+        m_ActiveScene->OnUpdate(ts);
 
         // read last frame
         std::unordered_set<UUID> activeIDs;
@@ -322,7 +309,6 @@ namespace TheFoolEngine
 
         // PBR pass (editor camera)
         RenderContext context;
-        if (m_Is3DMode)
         {
             CameraData cameraData;
             {
@@ -720,6 +706,7 @@ namespace TheFoolEngine
             ImGui::EndMenuBar();
         }
 
+        // TODO: Currently, only PBR entities can be selected and controlled, 
 		m_SceneHierarchyPanel.OnImGuiRender();
 
         ImGui::Begin("Settings");
@@ -727,48 +714,11 @@ namespace TheFoolEngine
         ImGui::Checkbox("Bloom", &m_PipelineConfig.EnableBloom);
         ImGui::Checkbox("Shadows", &m_PipelineConfig.EnableShadows);
 
-        ImGui::Checkbox("3D Mode", &m_Is3DMode);
-
-        auto stats = Renderer2D::GetStats();
-        ImGui::Text("Renderer2D Stats:");
-        ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-        ImGui::Text("Quad Count: %d", stats.QuadCount);
-        ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
-        ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
+        ImGui::Text("FPS: %.1f (%.2f ms)", 1.0f / m_SmoothedDt, m_SmoothedDt * 1000.0f);
 
         ImGui::Text("PBRRenderer Stats:");
         ImGui::Text("Draw Calls: %d", m_DrawCall);
         ImGui::Text("Mesh Count: %d", m_MeshCount);
-
-        if(m_SquareEntity && m_SquareEntity.IsValid())
-        {
-            ImGui::Separator();
-            ImGui::Text("%s", m_SquareEntity.GetComponent<TagComponent>().Tag.c_str());
-
-
-            auto& squareColor = m_SquareEntity.GetComponent<SpriteRendererComponent>().Color;
-            ImGui::ColorEdit4("Square Color", glm::value_ptr(squareColor));
-            ImGui::Separator();
-        }
-
-        if(m_MainCamera.IsValid())
-            ImGui::DragFloat3("Camera Transform",
-                glm::value_ptr(m_MainCamera.GetComponent<TransformComponent>().Transform[3]));
-
-        if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
-        {
-            m_MainCamera.GetComponent<CameraComponent>().Primary = m_PrimaryCamera;
-            if(m_SecondCamera.IsValid())
-                m_SecondCamera.GetComponent<CameraComponent>().Primary = !m_PrimaryCamera;
-        }
-
-        if (m_SecondCamera.IsValid())
-        {
-            auto& camera = m_SecondCamera.GetComponent<CameraComponent>().Camera;
-            float orthoSize = camera.GetOrthographicSize();
-            if (ImGui::DragFloat("Second Camera Ortho Size", &orthoSize))
-                camera.SetOrthographicSize(orthoSize);
-        }
 
         ImGui::End();
 
@@ -1028,6 +978,7 @@ namespace TheFoolEngine
             auto entity = m_ActiveScene->CreateEntity(std::filesystem::path(filepath).stem().u8string());
             entity.AddComponent<PBRModelComponent>(model);
             TF_CORE_INFO("Model added: {0}", model->GetPath().string());
+            TF_CORE_INFO("Assimp meshes: {}", model->GetModelData().Meshes.size());
             });
     }
 

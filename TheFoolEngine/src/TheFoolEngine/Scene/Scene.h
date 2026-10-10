@@ -16,14 +16,8 @@ namespace TheFoolEngine
 
 		Entity CreateEntity(const std::string& name = std::string());
 
-		void OnUpdate(const TimeStep& ts, bool render2D = true);
+		void OnUpdate(const TimeStep& ts);
 		void OnViewportResize(uint32_t width, uint32_t height);
-	private:
-		//template<typename T>
-		//void OnComponentAdded(Entity entity, T& component)
-		//{
-		//	static_assert(sizeof(T) == 0);
-		//}
 	private:
 		entt::registry m_Registry;
 

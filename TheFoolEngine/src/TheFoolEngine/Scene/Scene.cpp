@@ -2,20 +2,14 @@
 #include "Scene.h"
 
 #include "Components.h"
-#include "TheFoolEngine/Renderer/Renderer2D.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Entity.h"
 
-namespace TheFoolEngine {
-
-	static void DoMaths(const glm::mat4& transform)
-	{
-
-	}
-
+namespace TheFoolEngine
+{
 	Scene::Scene()
 	{
 #if ENTT_EXAMPLE_CODE
@@ -55,7 +49,7 @@ namespace TheFoolEngine {
 		return entity;
 	}
 
-	void Scene::OnUpdate(const TimeStep& ts, bool render2D)
+	void Scene::OnUpdate(const TimeStep& ts)
 	{
 		// Update Scripts
 		{
@@ -73,43 +67,6 @@ namespace TheFoolEngine {
 				}
 			);
 		}
-
-		// Render 2D
-        if (render2D)
-        {
-            Camera* mainCamera = nullptr;
-            glm::mat4* cameraTransform = nullptr;
-            {
-                auto view = m_Registry.view<TransformComponent, CameraComponent>();
-                for (auto entity : view)
-                {
-                    auto& [transform, camera] = view.get<TransformComponent, CameraComponent>(entity);
-
-                    if (camera.Primary)
-                    {
-                        mainCamera = &camera.Camera;
-                        cameraTransform = &transform.Transform;
-                        break;
-                    }
-                }
-            }
-
-            if (mainCamera)
-            {
-                Renderer2D::BeginScene(mainCamera->GetProjection(), *cameraTransform);
-
-                auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-                for (auto entity : group)
-                {
-                    auto& [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
-                    Renderer2D::DrawQuad(transform, sprite.Color);
-                }
-
-                Renderer2D::EndScene();
-            }
-        }
-
 	}
 	
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)

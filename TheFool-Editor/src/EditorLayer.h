@@ -57,11 +57,6 @@ namespace TheFoolEngine
         Ref<Shader> m_FlatShader;
 
 		Ref<Scene> m_ActiveScene;
-		Entity m_SquareEntity;
-		Entity m_MainCamera;
-		Entity m_SecondCamera;
-
-		bool m_PrimaryCamera = false;
 
 		bool m_ViewportFocused = false, m_ViewportHovered = false;
 
@@ -87,14 +82,14 @@ namespace TheFoolEngine
 
         Ref<OcclusionManager> m_Occlusion;
 
+        float m_SmoothedDt = 0.0f;
+
         // === PBR TEST ===============================================
         Ref<PBRModel> m_PBRModel;
         PerspectiveCameraController m_PerspectiveCameraController;
 
 		// Panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-
-        bool m_Is3DMode = true;
 		// ============================================================
 	};
 }
